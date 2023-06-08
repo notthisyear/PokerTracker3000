@@ -65,7 +65,7 @@
                     <RowDefinition Height="100" />
                 </Grid.RowDefinitions>
 
-                
+                <!-- Title bar -->
                 <components:CustomTitleBar x:Name="titleBar"
                                         Grid.Row="0" 
                                         Title="PokerTracker3000"
@@ -74,6 +74,7 @@
                                         ShowMaximizeButton="True"
                                         TitleBarButtonPressed="TitleBarButtonPressed"/>
 
+                <!-- Side menu-->
                 <Border Grid.Row="1"
                         Grid.RowSpan="2">
                     <Border.Style>
@@ -111,13 +112,30 @@
                 <components:SessionOverview Grid.Row="1"
                                             HorizontalAlignment="Center"
                                             SessionManager="{Binding Path=ViewModel.SessionManager}" />
-                
-                <components:Player Grid.Row="2"
-                                   HorizontalAlignment="Center"
-                                   Margin="10"/>
 
+                <!-- Players -->
+                <ItemsControl Grid.Row="2"
+                              HorizontalAlignment="Center"
+                              Margin="10"
+                              ItemsSource="{Binding Path=ViewModel.SessionManager.Players}"
+                              x:Name="playersOverview">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <components:Player PlayerData="{Binding Path=.}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Bottom bar -->
                 <Border Grid.Row="3"
                         Background="{StaticResource BackgroundColorDarkerShade}">
+
+                    <!-- Poker chips -->
                     <StackPanel HorizontalAlignment="Center"
                                 Orientation="Horizontal">
 
@@ -152,7 +170,6 @@
                                               Height="80"/>
                     </StackPanel>
                 </Border>
-                
             </Grid>
         </Border>
     </Viewbox>

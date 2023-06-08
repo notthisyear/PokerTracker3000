@@ -41,7 +41,9 @@
                    Text="Settings" />
 
         <TextBlock Style="{StaticResource itemStyleSettings}"
-                   Text="Add/remove player" />
+                   Text="Add player" />
+        <TextBlock Style="{StaticResource itemStyleSettings}"
+                   Text="Load player" />
         <TextBlock Style="{StaticResource itemStyleSettings}"
                    Text="Add/remove chip" />
     </StackPanel>

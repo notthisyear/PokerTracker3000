@@ -34,14 +34,14 @@ namespace PokerTracker3000.ViewModels
         {
             _settings = settings;
             InputManager = new();
-            SessionManager = new();
+            SessionManager = new(settings.DefaultPlayerImagePath);
 
-            InputManager.StartButtonPressed += (s, e) => { ShowStartMenu = !ShowStartMenu; };
-            
             SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
             //Task.Run(SpotifyClientViewModel.AuthorizeApplication);
         }
 
-        public void NotifyWindowClosed() { }
+        public void NotifyWindowClosed()
+        {
+        }
     }
 }

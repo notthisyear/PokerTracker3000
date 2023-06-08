@@ -1,5 +1,6 @@
 {
     "client_id": "",
     "local_http_listener_port": 3000,
-    "pkce_authorization_verifier_length":  128
+    "pkce_authorization_verifier_length": 128,
+    "default_player_image_path": "C:\\Users\\Calle Lindquist\\Pictures\\IMG_0295.JPG"
 }
