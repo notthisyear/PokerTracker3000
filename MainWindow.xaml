@@ -90,7 +90,7 @@
                                 </Setter.Value>
                             </Setter>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=ViewModel.ShowStartMenu}" Value="True">
+                                <DataTrigger Binding="{Binding Path=SideMenuOpen}" Value="True">
                                     <DataTrigger.EnterActions>
                                         <BeginStoryboard Storyboard="{StaticResource movePanelInFromLeft}" />
                                         <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
