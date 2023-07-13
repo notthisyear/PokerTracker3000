@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -16,26 +17,26 @@ namespace PokerTracker3000.Spotify
         public enum AuthorizationFlowType
         {
             AuthorizationCode,
-            AuthorizationCodePkce, // Proof Key for Code Exchange
+            AuthorizationCodePkce, // Proof Key for Code Exchange (PKCE)
             ClientCredentials,
             ImplicitGrant
         };
 
         #region Private fields
-        private static readonly char[] s_randomCharacters =
+        private static readonly char[] s_randomCharacterSeed =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_".ToCharArray();
         private static string? s_currentPkceState;
         private static TaskCompletionSource<(bool success, string codeOrError)>? s_pkceAuthenticationCodeAwaiter;
         private static Timer? s_pkceAuthenticationCodeTimeoutTimer;
         #endregion
 
-        public static async Task<SpotifyAccessToken?> TryAuthorizationUsingAuthorizationCodePkce(SpotifyHttpListener listener, SpotifyHttpClient client, string clientId, int pkceVerifierLength, IProgress<string> progressReporter)
+        public static async Task<SpotifyAccessToken?> TryAuthorizationUsingAuthorizationCodePkce(SpotifyHttpListener listener, SpotifyHttpClient client, List<AccessScopeType> scopes, string clientId, int pkceVerifierLength, IProgress<string> progressReporter)
         {
             if (pkceVerifierLength < 43 || pkceVerifierLength > 128)
                 throw new ArgumentOutOfRangeException($"{nameof(pkceVerifierLength)}", "Parameter must be within the range 43 - 128");
             var (codeVerifier, codeChallenge) = GetCodeVerifierAndChallenge(pkceVerifierLength);
 
-            var queryUri = GetPkceGetQuery(listener.ListeningOnUrl, clientId, codeChallenge);
+            var queryUri = GetPkceGetQuery(listener.ListeningOnUrl, scopes, clientId, codeChallenge);
 
             listener.RegisterCallbackForNextRequest(HandlePkceAuthorizationGetQuery);
             s_pkceAuthenticationCodeAwaiter = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -46,7 +47,7 @@ namespace PokerTracker3000.Spotify
                 if (s_pkceAuthenticationCodeAwaiter != default)
                     s_pkceAuthenticationCodeAwaiter.SetResult((false, "Request timed out"));
             }, default, 60000, Timeout.Infinite);
-            
+
             var p = Process.Start(new ProcessStartInfo(queryUri) { UseShellExecute = true });
             var (success, codeOrError) = await s_pkceAuthenticationCodeAwaiter.Task.ConfigureAwait(false);
 
@@ -119,14 +120,14 @@ namespace PokerTracker3000.Spotify
             return (codeVerifier, codeChallenge);
         }
 
-        private static string GetPkceGetQuery(string listeningOnUrl, string clientId, string codeChallenge)
+        private static string GetPkceGetQuery(string listeningOnUrl, List<AccessScopeType> scopes, string clientId, string codeChallenge)
         {
             s_currentPkceState = GetRandomString(16);
             var parameters = new Dictionary<string, string>
             {
                 { "response_type", "code" },
                 { "client_id", clientId },
-                { "scope", $"{AccessScopeType.UserReadPrivate.GetCustomAttributeFromEnum<AccessScopeAttribute>().attr!.ScopeName} {AccessScopeType.UserReadEmail.GetCustomAttributeFromEnum<AccessScopeAttribute>().attr!.ScopeName}" },
+                { "scope", string.Join(' ', scopes.Select(x => x.GetCustomAttributeFromEnum<AccessScopeAttribute>()!.attr!.ScopeName)) },
                 { "state", s_currentPkceState },
                 { "redirect_uri", listeningOnUrl.TrimEnd('/') },
                 { "code_challenge_method", "S256" },
@@ -206,12 +207,10 @@ namespace PokerTracker3000.Spotify
             for (var i = 0; i < length; i++)
             {
                 var rnd = BitConverter.ToUInt32(data, i * 4);
-                sb.Append(s_randomCharacters[rnd % s_randomCharacters.Length]);
+                sb.Append(s_randomCharacterSeed[rnd % s_randomCharacterSeed.Length]);
             }
 
             return sb.ToString();
-
         }
-        #endregion
     }
 }
