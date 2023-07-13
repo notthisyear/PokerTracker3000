@@ -65,6 +65,7 @@ namespace PokerTracker3000.Spotify
 
             progressReporter.Report("Getting access token...");
 
+            var timestamp = DateTime.UtcNow;
             var (requestSuccessful, statusCode, reason, token) = await client.SendRequestAndDeserializeResponse<SpotifyAccessToken>(SpotifyHttpClient.HttpRequestMethod.Post,
                 SpotifyEndpoint.OAuthTokenEndpoint,
                 GetPkceFetchContent(codeOrError, listener.ListeningOnUrl, clientId, codeVerifier));
@@ -76,11 +77,34 @@ namespace PokerTracker3000.Spotify
             else
             {
                 if (token != default)
+                {
+                    token.SetExpiration(timestamp);
                     token.ParseScopes();
+                }
                 progressReporter.Report(token == default ? $"Token parsing failed - '{reason}'" : "Successfully got token!");
             }
 
             return token;
+        }
+
+        public static async Task<SpotifyAccessToken?> TryRefreshToken(SpotifyHttpClient client, string clientId, SpotifyAccessToken token)
+        {
+            var timestamp = DateTime.UtcNow;
+            var (requestSuccessful, _, _, refreshedToken) = await client.SendRequestAndDeserializeResponse<SpotifyAccessToken>(
+                SpotifyHttpClient.HttpRequestMethod.Post,
+                SpotifyEndpoint.OAuthTokenEndpoint,
+                GetPkceTokenRefreshContentContent(clientId, token.RefreshToken!));
+
+            if (requestSuccessful)
+            {
+                if (refreshedToken != default)
+                {
+                    refreshedToken.SetExpiration(timestamp);
+                    refreshedToken.ParseScopes();
+                }
+            }
+
+            return refreshedToken;
         }
 
         #region Flow for AuthorizationCodePkce method
@@ -165,6 +189,14 @@ namespace PokerTracker3000.Spotify
         private static string GetHtmlResponseForPkceGetQuery(bool success, string? codeOrError)
             => $"<html><body>{(success ? "Success" : codeOrError)}. You can close this window.</body></html>";
 
+        private static HttpContent GetPkceTokenRefreshContentContent(string clientId, string refreshToken)
+            => new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "grant_type", "refresh_token" },
+                { "refresh_token", refreshToken },
+                { "client_id", clientId }
+            });
+        #endregion
         private static string GetRandomString(int length)
         {
             var data = new byte[4 * length];

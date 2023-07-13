@@ -50,9 +50,7 @@ namespace PokerTracker3000.Spotify.ApiCalls
                     return TokenStatus.TokenInsufficient;
             }
 
-            // TODO: Check for expired token
-
-            return TokenStatus.TokenOk;
+            return accessToken.HasExpired() ? TokenStatus.TokenExpired : TokenStatus.TokenOk;
         }
 
         public HttpRequestMessage GetHttpRequestMessage(SpotifyAccessToken accessToken)

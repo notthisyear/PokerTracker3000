@@ -52,10 +52,16 @@ namespace PokerTracker3000.Spotify
             if (_currentAccessToken == default)
                 return false;
 
-            if (call.VerifyAccessToken(_currentAccessToken) != TokenStatus.TokenOk)
-            {
-                // TODO: Deal with Token.Expired
+            var tokenStatus = call.VerifyAccessToken(_currentAccessToken);
+            if (tokenStatus == TokenStatus.TokenInsufficient)
                 return false;
+
+            if (tokenStatus == TokenStatus.TokenExpired)
+            {
+                var newToken = await Authorizer.TryRefreshToken(_client, _clientId, _currentAccessToken);
+                if (newToken == default)
+                    return false;
+                _currentAccessToken = newToken;
             }
 
             var request = call.GetHttpRequestMessage(_currentAccessToken);
