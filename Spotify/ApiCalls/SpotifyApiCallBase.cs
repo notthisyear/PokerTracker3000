@@ -24,7 +24,7 @@ namespace PokerTracker3000.Spotify.ApiCalls
 
         public bool SuccessfulStatusCode { get; private set; }
 
-        public HttpStatusCode ReturnStatusCode { get; private set;  }
+        public HttpStatusCode ReturnStatusCode { get; private set; }
 
         public string? ErrorReasonString { get; private set; }
         #endregion
@@ -37,19 +37,21 @@ namespace PokerTracker3000.Spotify.ApiCalls
         protected abstract string Endpoint { get; }
 
         protected HttpResponseMessage? ResponseMessage { get; private set; }
+
+        protected delegate Exception? CustomResponseHandler<T>(T response, string rawContent);
         #endregion
 
         #region Private constants
         private const string AuthorizationHeaderKey = "Authorization";
-        private const string AuthorizationHeaderValueBase = "Bearer"; // NOTE: This is wrong, it depends on the token type!
+
         #endregion
 
         #region Public methods
         public TokenStatus VerifyAccessToken(SpotifyAccessToken accessToken)
         {
-            foreach (var scope in Scopes)
+            foreach (var requiredScope in Scopes)
             {
-                if (!accessToken.HasScope(scope))
+                if (!accessToken.HasScope(requiredScope))
                     return TokenStatus.TokenInsufficient;
             }
 
@@ -66,7 +68,7 @@ namespace PokerTracker3000.Spotify.ApiCalls
                 _ => throw new NotImplementedException(),
             }, GetEndpoint());
 
-            request.Headers.Add(AuthorizationHeaderKey, GetAuthorizationHeaderValue(accessToken.AccessToken!));
+            request.Headers.Add(AuthorizationHeaderKey, GetAuthorizationHeaderValue(accessToken.TokenType!, accessToken.AccessToken!));
             AddBodyToRequestIfNeeded(request);
             return request;
         }
@@ -85,26 +87,28 @@ namespace PokerTracker3000.Spotify.ApiCalls
         protected virtual void AddBodyToRequestIfNeeded(HttpRequestMessage request) { }
 
         protected virtual Task ParseResponse() => Task.CompletedTask;
-        
+
         protected virtual string GetEndpoint() => Endpoint;
 
-        protected async Task<(bool success, T? response)> ReadAndDeserializeJsonResponse<T>()
+        protected async Task<(bool success, bool isEmpty, T? response)> ReadAndDeserializeJsonResponse<T>(bool emptyResponseValid = false, CustomResponseHandler<T>? customResponseHandler = default)
         {
             if (SuccessfulStatusCode && (ResponseMessage?.IsSuccessStatusCode ?? false))
             {
                 var content = await ResponseMessage.Content.ReadAsStringAsync();
                 if (string.IsNullOrEmpty(content))
-                    return (false, default);
+                    return (emptyResponseValid, true, default);
 
                 var (r, e) = content.DeserializeJsonString<T>(convertSnakeCaseToPascalCase: true);
-                return (e == default, r);
+                if (customResponseHandler != default)
+                    e = customResponseHandler.Invoke(r!, content);
+                return (e == default, false, r);
             }
 
-            return (false, default);
+            return (false, true, default);
         }
         #endregion
 
-        private static string GetAuthorizationHeaderValue(string accessToken)
-            => AuthorizationHeaderValueBase + " " + accessToken;
+        private static string GetAuthorizationHeaderValue(string tokenType, string accessToken)
+            => tokenType + " " + accessToken;
     }
 }
