@@ -11,7 +11,10 @@ namespace PokerTracker3000.Spotify.ApiCalls
     public enum SpotifyApiCallType
     {
         GetCurrentUserProfile,
-        GetUserTopItems
+        GetAvailableDevices,
+        GetPlaybackState,
+        StartOrResumePlayback,
+        PausePlayback
     }
 
     internal abstract class SpotifyApiCallBase
