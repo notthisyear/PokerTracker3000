@@ -74,25 +74,26 @@ namespace PokerTracker3000.Spotify.ApiCalls
         {
             var (success, isEmpty, data) = await ReadAndDeserializeJsonResponse<ResponseData>(true, (r, s) =>
             {
-                var itemContent = s.TryGetTokenFromRawInput("item");
-                if (itemContent == default)
-                    return default;
-                var serializer = JsonExtensionMethods.GetSnakeCaseNameingSerializer();
-
-                TrackObject? trackItem = default;
-                trackItem = itemContent.ToObject<TrackObject>(serializer);
-                if (trackItem == default)
-                {
-                    var episodeItem = itemContent.ToObject<EpisodeObject>(serializer);
-                    if (episodeItem != default)
-                        r.TrackOrEpisode = new() { Second = episodeItem! };
-                }
-                else
-                {
-                    r.TrackOrEpisode = new() { First = trackItem };
-                }
                 return default;
             });
+            //    var itemContent = s.TryGetTokenFromRawInput("item");
+            //    if (itemContent == default)
+            //        return default;
+            //    var serializer = JsonExtensionMethods.GetSnakeCaseNameingSerializer();
+
+            //    TrackObject? trackItem = default;
+            //    trackItem = itemContent.ToObject<TrackObject>(serializer);
+            //    if (trackItem == default)
+            //    {
+            //        var episodeItem = itemContent.ToObject<EpisodeObject>(serializer);
+            //        if (episodeItem != default)
+            //            r.TrackOrEpisode = new() { Second = episodeItem! };
+            //    }
+            //    else
+            //    {
+            //        r.TrackOrEpisode = new() { First = trackItem };
+            //    }
+            //    return default;
 
             if (success)
                 Response = data;

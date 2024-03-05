@@ -127,7 +127,7 @@ namespace PokerTracker3000.Spotify
             {
                 { "response_type", "code" },
                 { "client_id", clientId },
-                { "scope", $"{AccessScopeType.UserReadPrivate.GetCustomAttributeFromEnum<AccessScopeAttribute>().attr!.ScopeName} {AccessScopeType.UserReadEmail.GetCustomAttributeFromEnum<AccessScopeAttribute>().attr!.ScopeName}" },
+                { "scope", string.Join(' ', scopes.Select(x => x.ScopeName())) },
                 { "state", s_currentPkceState },
                 { "redirect_uri", listeningOnUrl.TrimEnd('/') },
                 { "code_challenge_method", "S256" },
@@ -198,6 +198,7 @@ namespace PokerTracker3000.Spotify
                 { "client_id", clientId }
             });
         #endregion
+
         private static string GetRandomString(int length)
         {
             var data = new byte[4 * length];

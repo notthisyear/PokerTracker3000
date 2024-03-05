@@ -51,7 +51,7 @@ namespace PokerTracker3000
             if (AuthenticationStatus == AuthenticationStatus.Authenticated)
                 return;
 
-            var success = await _client.TryAuthorize(Authorizer.AuthorizationFlowType.AuthorizationCodePkce, new Progress<string>(s => AuthenticationProgress = s), _pkceVerifierLength);
+            var success = await _client.TryGetTokenForScopes(Authorizer.AuthorizationFlowType.AuthorizationCodePkce, new Progress<string>(s => AuthenticationProgress = s), _pkceVerifierLength);
             AuthenticationStatus = success ? AuthenticationStatus.Authenticated : AuthenticationStatus.AuthenticationFailed;
         }
         #endregion

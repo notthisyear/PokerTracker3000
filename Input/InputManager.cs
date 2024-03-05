@@ -49,7 +49,7 @@ namespace PokerTracker3000.Input
 
             internal bool Matches(KeyEventArgs e)
                 => e.IsRepeat == AllowRepeat;
-            
+
             internal static UserInputEvent GetNavigationEvent(NavigationDirection direction, ButtonAction action, bool allowRepeat)
                 => new()
                 {
@@ -76,7 +76,7 @@ namespace PokerTracker3000.Input
 
         public void RegisterKeyboardEvent(Key keyboardKey, NavigationDirection direction, ButtonAction action = ButtonAction.Down, bool allowRepeat = false)
         {
-            AddKeyboardEvent(keyboardKey, GetNavigationEvent(direction, action, allowRepeat));            
+            AddKeyboardEvent(keyboardKey, GetNavigationEvent(direction, action, allowRepeat));
         }
 
         public void RegisterKeyboardEvent(Key keyboardKey, ButtonEventType button, ButtonAction action = ButtonAction.Down, bool allowRepeat = false)
