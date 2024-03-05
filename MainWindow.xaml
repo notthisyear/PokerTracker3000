@@ -4,13 +4,13 @@
         xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
         xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
         Title="PokerTracker3000"
-        AllowsTransparency="True"
         Background="Transparent"
         WindowStyle="None" 
         Width="1366"
         Height="768"
         WindowStartupLocation="Manual"
-        PreviewKeyDown="KeyDownInWindow"
+        PreviewKeyDown="KeyDownOrUpInWindow"
+        PreviewKeyUp="KeyDownOrUpInWindow"
         Left="0"
         Top="0">
 
@@ -22,8 +22,7 @@
     <Viewbox Stretch="Uniform"
              StretchDirection="Both"
              DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=.}">
-        <Border Background="{StaticResource MainBackgroundColor}"
-                Opacity="0.95">
+        <Border Background="{StaticResource MainBackgroundGradient}">
     
             <Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=ActualWidth}"
                   Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=ActualHeight}">
@@ -32,37 +31,69 @@
                     <Storyboard x:Key="animateOpacityToOne"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
-                            <LinearDoubleKeyFrame KeyTime="00:00:0.2" Value="1" />
+                            <EasingDoubleKeyFrame Value="1"
+                      KeyTime="0:0:0.4">
+                                <EasingDoubleKeyFrame.EasingFunction>
+                                    <QuarticEase EasingMode="EaseIn"/>
+                                </EasingDoubleKeyFrame.EasingFunction>
+                            </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
                     
                     <Storyboard x:Key="animateOpacityToZero"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
-                            <LinearDoubleKeyFrame KeyTime="00:00:0.2" Value="0" />
+                            <EasingDoubleKeyFrame Value="0"
+                      KeyTime="0:0:0.4">
+                                <EasingDoubleKeyFrame.EasingFunction>
+                                    <QuarticEase EasingMode="EaseOut"/>
+                                </EasingDoubleKeyFrame.EasingFunction>
+                            </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
 
                     <Storyboard x:Key="movePanelOutToLeft"
                                 PresentationOptions:Freeze="True">
-                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)"
-                                 From="0"
-                                 To="-300"
-                                 Duration="0:0:0.2" />
+                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
+                            <EasingDoubleKeyFrame Value="-300"
+                                                  KeyTime="0:0:0.3">
+                                <EasingDoubleKeyFrame.EasingFunction>
+                                    <QuarticEase EasingMode="EaseIn"/>
+                                </EasingDoubleKeyFrame.EasingFunction>
+                            </EasingDoubleKeyFrame>
+                        </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
-                    <Storyboard x:Key="movePanelInFromLeft"
+
+                    <Storyboard x:Key="movePanelOutToRight"
                                 PresentationOptions:Freeze="True">
-                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)"
-                                 From="-300"
-                                 To="0"
-                                 Duration="0:0:0.2" />
+                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
+                            <EasingDoubleKeyFrame Value="150"
+                              KeyTime="0:0:0.3">
+                                <EasingDoubleKeyFrame.EasingFunction>
+                                    <QuarticEase EasingMode="EaseIn"/>
+                                </EasingDoubleKeyFrame.EasingFunction>
+                            </EasingDoubleKeyFrame>
+                        </DoubleAnimationUsingKeyFrames>
+                    </Storyboard>
+
+
+                    <Storyboard x:Key="movePanelIn"
+                                PresentationOptions:Freeze="True">
+                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
+                            <EasingDoubleKeyFrame Value="0"
+                                                  KeyTime="0:0:0.6">
+                                <EasingDoubleKeyFrame.EasingFunction>
+                                    <QuarticEase EasingMode="EaseOut"/>
+                                </EasingDoubleKeyFrame.EasingFunction>
+                            </EasingDoubleKeyFrame>
+                        </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
                 </Grid.Resources>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="150" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="100" />
+                    <RowDefinition Height="50" />
                 </Grid.RowDefinitions>
 
                 <!-- Title bar -->
@@ -74,7 +105,20 @@
                                         ShowMaximizeButton="True"
                                         TitleBarButtonPressed="TitleBarButtonPressed"/>
 
-                <!-- Side menu-->
+            
+                <!-- Clock -->
+                <components:SessionOverview Grid.Row="1"
+                                            HorizontalAlignment="Center"
+                                            SessionManager="{Binding Path=ViewModel.SessionManager}" />
+
+                <!-- Players -->
+                <components:PokerTable Grid.Row="2"
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Stretch"
+                                       Margin="10"
+                                       ViewModel="{Binding Path=ViewModel.SessionManager}"/>
+
+                <!-- Side menu (left) -->
                 <Border Grid.Row="1"
                         Grid.RowSpan="2">
                     <Border.Style>
@@ -90,9 +134,9 @@
                                 </Setter.Value>
                             </Setter>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=SideMenuOpen}" Value="True">
+                                <DataTrigger Binding="{Binding Path=ViewModel.LeftSideMenuOpen}" Value="True">
                                     <DataTrigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelInFromLeft}" />
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelIn}" />
                                         <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
                                     </DataTrigger.EnterActions>
                                     <DataTrigger.ExitActions>
@@ -103,42 +147,50 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    
-                    <components:SideMenu VerticalAlignment="Center"
+
+                    <components:SideMenu x:Name="mainSideMenu"
+                                         VerticalAlignment="Center"
                                          HorizontalAlignment="Center"/>
                 </Border>
-                
-                <!-- Clock -->
-                <components:SessionOverview Grid.Row="1"
-                                            HorizontalAlignment="Center"
-                                            SessionManager="{Binding Path=ViewModel.SessionManager}" />
 
-                <!-- Players -->
-                <ItemsControl Grid.Row="2"
-                              HorizontalAlignment="Center"
-                              Margin="10"
-                              ItemsSource="{Binding Path=ViewModel.SessionManager.Players}"
-                              x:Name="playersOverview">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="4" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <components:Player PlayerData="{Binding Path=.}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
 
-                <!-- Bottom bar -->
-                <Border Grid.Row="3"
-                        Background="{StaticResource BackgroundColorDarkerShade}">
+                <!-- Side menu (right) -->
+                <Border Grid.Row="1"
+                        Grid.RowSpan="2">
+                    <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="Background" Value="{StaticResource BackgroundColorDarkerShadeWithOpacity}" />
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Setter Property="Width" Value="150" />
+                            <Setter Property="Opacity" Value="0" />
+                            <Setter Property="HorizontalAlignment" Value="Right" />
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform X="150" Y="0"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=ViewModel.RightSideMenuOpen}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelIn}" />
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelOutToRight}" />
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+
 
                     <!-- Poker chips -->
                     <StackPanel HorizontalAlignment="Center"
-                                Orientation="Horizontal">
-
+                                VerticalAlignment="Center"
+                                Orientation="Vertical">
+                        <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                   Text="Chip value" />
                         <components:PokerChip MainColor="GhostWhite"
                                               AccentColor="Black"
                                               ChipValue="1"
@@ -170,6 +222,7 @@
                                               Height="80"/>
                     </StackPanel>
                 </Border>
+
             </Grid>
         </Border>
     </Viewbox>

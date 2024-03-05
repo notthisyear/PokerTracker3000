@@ -42,8 +42,6 @@ namespace PokerTracker3000.Spotify
             if (token != default)
                 _currentAccessToken = token;
 
-            var call = new GetUserTopItems(GetUserTopItems.TopItemType.Artists);
-            _ = await SendSpotifyApiCall(call);
             return token != default;
         }
 
@@ -58,7 +56,7 @@ namespace PokerTracker3000.Spotify
                 return false;
             }
 
-            var request = call.GetHttpRequestMessage(_currentAccessToken);
+            var request = call.GetHttpRequestMessage(_currentAccessToken);  
             var response = await _client.SendHttpRequest(request);
             await call.SetHttpResponseMessage(response);
             return response != default;

@@ -1,0 +1,79 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.EditPlayerOptionBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:session="clr-namespace:PokerTracker3000.GameSession">
+
+    <UserControl.Resources>
+        <Style x:Key="optionBoxBase" TargetType="{x:Type Border}">
+            <Setter Property="Width" Value="120" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="BorderThickness" Value="3" />
+        </Style>
+
+        <Style x:Key="optionBoxDefault" TargetType="{x:Type Border}" BasedOn="{StaticResource optionBoxBase}">
+            <Setter Property="BorderBrush" Value="{StaticResource BackgroundColorDarkerShadeWithOpacity}" />
+            <Setter Property="Background" Value="{StaticResource BackgroundColorDarkerShadeWithOpacity}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=OptionModel.IsSelected}" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource MainTextMutedColor}" />
+                    <Setter Property="Background" Value="{StaticResource MainTextMutedColor}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="optionBoxSuccess" TargetType="{x:Type Border}" BasedOn="{StaticResource optionBoxBase}">
+            <Setter Property="BorderBrush" Value="{StaticResource MainSuccessColorMuted}" />
+            <Setter Property="Background" Value="{StaticResource MainSuccessColorMuted}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=OptionModel.IsSelected}" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource MainSuccessColor}" />
+                    <Setter Property="Background" Value="{StaticResource MainSuccessColor}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="optionBoxCancel" TargetType="{x:Type Border}" BasedOn="{StaticResource optionBoxBase}">
+            <Setter Property="BorderBrush" Value="{StaticResource MainErrorColorMuted}" />
+            <Setter Property="Background" Value="{StaticResource MainErrorColorMuted}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=OptionModel.IsSelected}" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource MainErrorColor}" />
+                    <Setter Property="Background" Value="{StaticResource MainErrorColor}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="optionBoxText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+            <Setter Property="Text" Value="{Binding Path=OptionModel.Name}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=OptionModel.IsSelected}" Value="True">
+                    <Setter Property="FontWeight" Value="Bold" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    
+    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
+        <Grid.Style>
+            <Style TargetType="{x:Type Grid}">
+                <Setter Property="Tag" Value="{StaticResource optionBoxDefault}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=OptionModel.Type}" Value="{x:Static session:PlayerEditOption+OptionType.Success}">
+                        <Setter Property="Tag" Value="{StaticResource optionBoxSuccess}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=OptionModel.Type}" Value="{x:Static session:PlayerEditOption+OptionType.Cancel}">
+                        <Setter Property="Tag" Value="{StaticResource optionBoxCancel}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+        <Border Style="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}, Path=Tag}">
+            <TextBlock Style="{StaticResource optionBoxText}" />
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using System.Collections.Generic;
+using System.Windows.Input;
+using static PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000.Input
 {
@@ -15,52 +17,92 @@ namespace PokerTracker3000.Input
                 Down
             }
 
-            public enum ButtonPressed
+            public enum ButtonEventType
             {
                 None,
                 Start,
                 Select,
-                Accept,
-                GoBack
+                GoBack,
+                InfoButton
             }
 
-            public bool IsButtonPressed { get; init; } = false;
+            public enum ButtonAction
+            {
+                None,
+                Down,
+                Up
+            };
 
-            public bool IsNavigation { get; init; } = false;
+            public bool IsButtonEvent { get; init; } = false;
 
-            public ButtonPressed Button { get; init; } = ButtonPressed.None;
+            public bool IsNavigationEvent { get; init; } = false;
+
+            public bool AllowRepeat { get; init; } = false;
+
+            public ButtonEventType Button { get; init; } = ButtonEventType.None;
+
+            public ButtonAction Action { get; init; } = ButtonAction.None;
 
             public NavigationDirection Direction { get; init; } = NavigationDirection.None;
 
-            public bool IsEmpty => IsButtonPressed == false && IsNavigation == false;
+            public bool IsEmpty => IsButtonEvent == false && IsNavigationEvent == false;
 
-            public static UserInputEvent GetNavigationEvent(NavigationDirection direction)
+            internal bool Matches(KeyEventArgs e)
+                => e.IsRepeat == AllowRepeat;
+            
+            internal static UserInputEvent GetNavigationEvent(NavigationDirection direction, ButtonAction action, bool allowRepeat)
                 => new()
                 {
-                    IsNavigation = true,
-                    Direction = direction
+                    IsNavigationEvent = true,
+                    Direction = direction,
+                    Action = action,
+                    AllowRepeat = allowRepeat
                 };
 
-            public static UserInputEvent GetStartButtonEvent()
+            internal static UserInputEvent GetButtonEvent(ButtonEventType button, ButtonAction action, bool allowRepeat)
                 => new()
                 {
-                    IsButtonPressed = true,
-                    Button = ButtonPressed.Start
+                    IsButtonEvent = true,
+                    Button = button,
+                    Action = action,
+                    AllowRepeat = allowRepeat
                 };
 
-            public static UserInputEvent GetEmptyEvent()
+            internal static UserInputEvent GetEmptyEvent()
                 => new();
         }
 
-        public static UserInputEvent GetUserInputEventFromKeyboard(KeyEventArgs e)
-            => e.Key switch
-            {
-                Key.Enter => UserInputEvent.GetStartButtonEvent(),
-                Key.Left => UserInputEvent.GetNavigationEvent(UserInputEvent.NavigationDirection.Left),
-                Key.Right => UserInputEvent.GetNavigationEvent(UserInputEvent.NavigationDirection.Right),
-                Key.Up => UserInputEvent.GetNavigationEvent(UserInputEvent.NavigationDirection.Up),
-                Key.Down => UserInputEvent.GetNavigationEvent(UserInputEvent.NavigationDirection.Down),
-                _ => UserInputEvent.GetEmptyEvent()
-            };
+        private readonly Dictionary<Key, Dictionary<ButtonAction, UserInputEvent>> _keyboardEvents = new();
+
+        public void RegisterKeyboardEvent(Key keyboardKey, NavigationDirection direction, ButtonAction action = ButtonAction.Down, bool allowRepeat = false)
+        {
+            AddKeyboardEvent(keyboardKey, GetNavigationEvent(direction, action, allowRepeat));            
+        }
+
+        public void RegisterKeyboardEvent(Key keyboardKey, ButtonEventType button, ButtonAction action = ButtonAction.Down, bool allowRepeat = false)
+        {
+            AddKeyboardEvent(keyboardKey, GetButtonEvent(button, action, allowRepeat));
+        }
+
+        public UserInputEvent GetUserInputEventFromKeyboard(KeyEventArgs keyEvent)
+        {
+            if (!_keyboardEvents.TryGetValue(keyEvent.Key, out var inputEvents))
+                return GetEmptyEvent();
+
+            var action = keyEvent.IsDown ? ButtonAction.Down : (keyEvent.IsUp ? ButtonAction.Up : ButtonAction.None);
+            if (inputEvents.TryGetValue(action, out var e) && e.Matches(keyEvent))
+                return e;
+
+            return GetEmptyEvent();
+        }
+
+        private void AddKeyboardEvent(Key keyboardKey, UserInputEvent newEvent)
+        {
+            if (!_keyboardEvents.ContainsKey(keyboardKey))
+                _keyboardEvents.Add(keyboardKey, new());
+
+            if (!_keyboardEvents[keyboardKey].ContainsKey(newEvent.Action))
+                _keyboardEvents[keyboardKey].Add(newEvent.Action, newEvent);
+        }
     }
 }

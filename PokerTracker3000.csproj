@@ -24,6 +24,7 @@
     <None Remove="Resources\Fonts\Lato-Regular.ttf" />
     <None Remove="Resources\Fonts\Lato-Thin.ttf" />
     <None Remove="Resources\Fonts\Lato-ThinItalic.ttf" />
+    <None Remove="Resources\Images\poker_table.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,9 +60,15 @@
     <Resource Include="Resources\Fonts\Lato-Regular.ttf" />
     <Resource Include="Resources\Fonts\Lato-Thin.ttf" />
     <Resource Include="Resources\Fonts\Lato-ThinItalic.ttf" />
+    <Resource Include="Resources\Images\poker_table.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   
   <ItemGroup>
+    <None Update="Resources\Images\default_player.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

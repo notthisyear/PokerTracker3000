@@ -8,43 +8,59 @@
 
         <FontFamily x:Key="CascadiaCode">pack://application:,,,/Resources/Fonts/#Cascadia Code</FontFamily>
         <FontFamily x:Key="Lato">pack://application:,,,/Resources/Fonts/#Lato</FontFamily>
+
+        <BitmapImage x:Key="pokerTable" UriSource="/PokerTracker3000;component/Resources/Images/poker_table.png"/>
         
         <!-- Converters -->
         <converters:BooleanToVisibleOrCollapsedConverter x:Key="booleanToVisibleOrCollapsedConverter" />
         
-        <!-- Background colors-->
+        <!-- Colors -->
+        <Color x:Key="NoColor" A="255" R="0" G="0" B="0" />
         <Color x:Key="MainBackgroundRaw" A="255" R="59" G="59" B="59" />
         <Color x:Key="BackgroundDarkerShadeRaw" A="255" R="34" G="34" B="34" />
-
-        <SolidColorBrush x:Key="MainBackgroundColor" Color="{StaticResource MainBackgroundRaw}" />
-        <SolidColorBrush x:Key="BackgroundColorDarkerShade" Color="{StaticResource BackgroundDarkerShadeRaw}" />
-        <SolidColorBrush x:Key="BackgroundColorDarkerShadeWithOpacity" Color="{StaticResource BackgroundDarkerShadeRaw}" Opacity="0.7"/>
-
-        <!-- Foreground colors-->
         <Color x:Key="PrimaryColorRaw" A="255" R="55" G="90" B="127" />
         <Color x:Key="PrimaryColorDisabledRaw" A="166" R="55" G="90" B="127" />
         <Color x:Key="MainTextColorRaw" A="255" R="255" G="255" B="255" />
         <Color x:Key="MainErrorColorRaw" A="255" R="231" G="76" B="60" />
+        <Color x:Key="MainSuccessColorRaw" A="255" R="31" G="223" B="41" />
         
+        <!-- Background brushes -->
+        <RadialGradientBrush x:Key="MainBackgroundGradient"
+                             GradientOrigin="0.5,0.5" 
+                             Center="0.5,0.5"
+                             RadiusX="0.5"
+                             RadiusY="0.5">
+            <RadialGradientBrush.GradientStops>
+                <GradientStop Color="{StaticResource PrimaryColorDisabledRaw}" Offset="0" />
+                <GradientStop Color="{StaticResource BackgroundDarkerShadeRaw}" Offset="1" />
+            </RadialGradientBrush.GradientStops>
+        </RadialGradientBrush>
+        
+        <SolidColorBrush x:Key="MainBackgroundColor" Color="{StaticResource MainBackgroundRaw}" />
+        <SolidColorBrush x:Key="BackgroundColorDarkerShade" Color="{StaticResource BackgroundDarkerShadeRaw}" />
+        <SolidColorBrush x:Key="BackgroundColorDarkerShadeWithOpacity" Color="{StaticResource BackgroundDarkerShadeRaw}" Opacity="0.7"/>
+
+        <!-- Foreground brushes -->
         <SolidColorBrush x:Key="PrimaryColor" Color="{StaticResource PrimaryColorRaw}"/>
         <SolidColorBrush x:Key="PrimaryColorDisabled" Color="{StaticResource PrimaryColorRaw}" Opacity="0.65"/>
         <SolidColorBrush x:Key="PrimaryColorHover" Color="#2B4764" />
 
         <SolidColorBrush x:Key="MainButtonPressedBorder" Color="#557392" Opacity="0.5" />
-        <SolidColorBrush x:Key="MainSuccessColor" Color="#1FDF29" />
+        <SolidColorBrush x:Key="MainSuccessColor" Color="{StaticResource MainSuccessColorRaw}" />
+        <SolidColorBrush x:Key="MainSuccessColorMuted" Color="{StaticResource MainSuccessColorRaw}" Opacity="0.35"/>
+        <SolidColorBrush x:Key="MainSuccessColorDisabled" Color="{StaticResource MainSuccessColorRaw}" Opacity="0.65"/>
         <SolidColorBrush x:Key="MainInfoColor" Color="#3498DB" />
         <SolidColorBrush x:Key="MainWarningColor" Color="#F39C12" />
         <SolidColorBrush x:Key="MainErrorColor" Color="{StaticResource MainErrorColorRaw}" />
+        <SolidColorBrush x:Key="MainErrorColorMuted" Color="{StaticResource MainErrorColorRaw}" Opacity="0.35"/>
         <SolidColorBrush x:Key="MainErrorColorDisabled" Color="{StaticResource MainErrorColorRaw}" Opacity="0.65"/>
-        
+
         <SolidColorBrush x:Key="MainTextColor" Color="{StaticResource MainTextColorRaw}" />
-        <SolidColorBrush x:Key="MainTextDisabledColor" Color="{StaticResource MainTextColorRaw}" Opacity="0.65"/>
-        <SolidColorBrush x:Key="MainTextColorTransparent" Color="{StaticResource MainTextColorRaw}" Opacity="0.7"/>
         <SolidColorBrush x:Key="MainTextMutedColor" Color="#888888" />
         <SolidColorBrush x:Key="MainHighlightColor" Color="#B9CC98" />
         <SolidColorBrush x:Key="MainMouseOverColor" Color="#4788C8" />
 
-
+        <!-- TextBlock styles-->
         <Style x:Key="TextBlockStyleBase" TargetType="{x:Type TextBlock}">
             <Setter Property="FontFamily" Value="{StaticResource CascadiaCode}" />
         </Style>
@@ -64,6 +80,136 @@
             <Setter Property="TextOptions.TextRenderingMode" Value="Aliased"  />
             <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
             <Setter Property="Focusable" Value="False"/>
+        </Style>
+
+        <!-- Button styles -->
+        <Style x:Key="ButtonPrimaryStyleBase" TargetType="{x:Type Button}">
+            <Setter Property="FontFamily" Value="{StaticResource CascadiaCode}" />
+            <Setter Property="OverridesDefaultStyle" Value="True" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+        </Style>
+        <Style x:Key="ButtonPrimaryStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonPrimaryStyleBase}">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+            <Setter Property="Width" Value="120" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="layoutRoot"
+                                CornerRadius="3"
+                                BorderThickness="3"
+                                BorderBrush="{StaticResource BackgroundColorDarkerShadeWithOpacity}"
+                                Background="{StaticResource BackgroundColorDarkerShadeWithOpacity}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource MainTextMutedColor}" />
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource MainTextMutedColor}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource MainTextMutedColor}" />
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource BackgroundColorDarkerShade}" />
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource BackgroundColorDarkerShade}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource MainButtonPressedBorder}"/>
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource MainButtonPressedBorder}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CancelButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonPrimaryStyleBase}">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource MainTextColor}" />
+            <Setter Property="Width" Value="120" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="layoutRoot"
+                        CornerRadius="3"
+                        BorderThickness="3"
+                        BorderBrush="{StaticResource MainErrorColorMuted}"
+                        Background="{StaticResource MainErrorColorMuted}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource MainErrorColor}" />
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource MainErrorColor}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource MainTextMutedColor}" />
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource MainErrorColorDisabled}" />
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource MainErrorColorDisabled}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource MainErrorColorMuted}"/>
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource MainErrorColorMuted}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SuccessButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonPrimaryStyleBase}">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource MainTextColor}" />
+            <Setter Property="Width" Value="120" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="layoutRoot"
+                                CornerRadius="3"
+                                BorderThickness="3"
+                                BorderBrush="{StaticResource MainSuccessColorMuted}"
+                                Background="{StaticResource MainSuccessColorMuted}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource MainSuccessColor}" />
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource MainSuccessColor}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource MainTextMutedColor}" />
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource MainSuccessColorDisabled}" />
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource MainSuccessColorDisabled}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                                <Setter TargetName="layoutRoot" Property="Background" Value="{StaticResource MainSuccessColorMuted}"/>
+                                <Setter TargetName="layoutRoot" Property="BorderBrush" Value="{StaticResource MainSuccessColorMuted}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Application.Resources>
 </Application>

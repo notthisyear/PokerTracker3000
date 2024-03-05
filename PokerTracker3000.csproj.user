@@ -10,13 +10,22 @@
     <Compile Update="WpfComponents\Player.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="WpfComponents\EditPlayerOptionBox.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WpfComponents\PokerChip.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\PokerTable.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="WpfComponents\SessionOverview.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="WpfComponents\SideMenu.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\SideMenuOption.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -27,13 +36,22 @@
     <Page Update="WpfComponents\Player.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="WpfComponents\EditPlayerOptionBox.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="WpfComponents\PokerChip.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="WpfComponents\PokerTable.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="WpfComponents\SessionOverview.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="WpfComponents\SideMenu.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="WpfComponents\SideMenuOption.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

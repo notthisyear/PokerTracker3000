@@ -25,6 +25,7 @@ namespace PokerTracker3000.Common
             if (e != default)
                 throw e;
 
+            app!.DefaultPlayerImagePath = GetFullPathToResource(app!.DefaultPlayerImagePath, subfolder: "Images");
             s_appSettings = app!;
             s_isInitialized = true;
         }
@@ -47,6 +48,6 @@ namespace PokerTracker3000.Common
 
         public int PkceAuthorizationVerifierLength { get; init; }
 
-        public string DefaultPlayerImagePath { get; init; } = string.Empty;
+        public string DefaultPlayerImagePath { get; set; } = string.Empty;
     }
 }

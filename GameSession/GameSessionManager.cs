@@ -62,6 +62,11 @@ namespace PokerTracker3000.GameSession
             {
                 Players.Add(PlayerModel.GetNewPlayer(_nextPlayerId++, _pathToDefaultPlayerImage));
                 Players.Add(PlayerModel.GetNewPlayer(_nextPlayerId++, _pathToDefaultPlayerImage));
+                Players.Add(PlayerModel.GetNewPlayer(_nextPlayerId++, _pathToDefaultPlayerImage));
+                Players.Add(PlayerModel.GetNewPlayer(_nextPlayerId++, _pathToDefaultPlayerImage));
+                Players.Add(PlayerModel.GetNewPlayer(_nextPlayerId++, _pathToDefaultPlayerImage));
+                Players.Add(PlayerModel.GetNewPlayer(_nextPlayerId++, _pathToDefaultPlayerImage));
+
             }
         }
     }

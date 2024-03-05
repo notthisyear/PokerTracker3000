@@ -37,6 +37,7 @@ namespace PokerTracker3000.GameSession
                 {
                     _tickClockTimer.Change(_timeLeftWhenTimerPausedMs, Timeout.Infinite);
                 }
+                _isRunning = value;
             }
         }
         #endregion

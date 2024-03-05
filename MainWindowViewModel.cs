@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common;
 using PokerTracker3000.GameSession;
-using PokerTracker3000.Input;
+
+using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000.ViewModels
 {
@@ -10,22 +11,27 @@ namespace PokerTracker3000.ViewModels
         #region Public properties
 
         #region Backing fields
-        public bool _showStartMenu = false;
+        public bool _leftSideMenuOpen = false;
+        public bool _rightSideMenuOpen = false;
         #endregion
 
-        public bool ShowStartMenu
+        public bool LeftSideMenuOpen
         {
-            get => _showStartMenu;
-            private set => SetProperty(ref _showStartMenu, value);
+            get => _leftSideMenuOpen;
+            private set => SetProperty(ref _leftSideMenuOpen, value);
+        }
+
+        public bool RightSideMenuOpen
+        {
+            get => _rightSideMenuOpen;
+            private set => SetProperty(ref _rightSideMenuOpen, value);
         }
 
         public string ProgramDescription { get; init; } = "hello";
 
         public GameSessionManager SessionManager { get; }
 
-        public InputManager InputManager { get; }
-
-        public SpotifyClientViewModel  SpotifyClientViewModel { get; init; }
+        public SpotifyClientViewModel SpotifyClientViewModel { get; init; }
         #endregion
 
         private readonly ApplicationSettings _settings;
@@ -33,11 +39,31 @@ namespace PokerTracker3000.ViewModels
         public MainWindowViewModel(ApplicationSettings settings)
         {
             _settings = settings;
-            InputManager = new();
+
             SessionManager = new(settings.DefaultPlayerImagePath);
 
             SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
-            //Task.Run(SpotifyClientViewModel.AuthorizeApplication);
+            //Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());
+        }
+
+        public void HandleInputEvent(InputEvent inputEvent)
+        {
+            if (inputEvent.IsButtonEvent)
+            {
+                if (inputEvent.Button == InputEvent.ButtonEventType.InfoButton)
+                { 
+                    RightSideMenuOpen = !RightSideMenuOpen;
+                }
+                else
+                {
+                    MainWindowFocusManager.HandleButtonPressedEvent(inputEvent.Button);
+                    LeftSideMenuOpen = MainWindowFocusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu;
+                }
+            }
+            else if (inputEvent.IsNavigationEvent)
+            {
+                MainWindowFocusManager.HandleNavigationEvent(inputEvent.Direction);
+            }
         }
 
         public void NotifyWindowClosed()

@@ -102,7 +102,7 @@ namespace PokerTracker3000.Spotify
             {
                 { "response_type", "code" },
                 { "client_id", clientId },
-                { "scope", $"{AccessScopeType.UserReadPrivate.GetCustomAttributeFromEnum<AccessScopeAttribute>().attr!.ScopeName} {AccessScopeType.UserReadEmail.GetCustomAttributeFromEnum<AccessScopeAttribute>().attr!.ScopeName}" },
+                { "scope", $"{AccessScopeType.Streaming.ScopeName()} {AccessScopeType.UserReadPrivate.ScopeName()} {AccessScopeType.UserReadEmail.ScopeName()}" },
                 { "state", s_currentPkceState },
                 { "redirect_uri", listeningOnUrl.TrimEnd('/') },
                 { "code_challenge_method", "S256" },

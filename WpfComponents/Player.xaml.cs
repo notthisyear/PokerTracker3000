@@ -6,16 +6,39 @@ namespace PokerTracker3000.WpfComponents
 {
     public partial class Player : UserControl
     {
-        public PlayerModel PlayerData
+        public enum SpotAlignment
         {
-            get => (PlayerModel)GetValue(PlayerDataProperty);
-            set => SetValue(PlayerDataProperty, value);
+            TopLeft,
+            TopCenter,
+            TopRight,
+            BottomLeft,
+            BottomCenter,
+            BottomRight,
+            Left,
+            Right
+        };
+
+        public PlayerSpot SpotData
+        {
+            get => (PlayerSpot)GetValue(SpotDataProperty);
+            set => SetValue(SpotDataProperty, value);
         }
-        public static readonly DependencyProperty PlayerDataProperty = DependencyProperty.Register(
-            nameof(PlayerData),
-            typeof(PlayerModel),
+        public static readonly DependencyProperty SpotDataProperty = DependencyProperty.Register(
+            nameof(SpotData),
+            typeof(PlayerSpot),
             typeof(Player),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public SpotAlignment Alignment
+        {
+            get => (SpotAlignment)GetValue(AlignmentProperty);
+            set => SetValue(AlignmentProperty, value);
+        }
+        public static readonly DependencyProperty AlignmentProperty = DependencyProperty.Register(
+            nameof(Alignment),
+            typeof(SpotAlignment),
+            typeof(Player),
+            new FrameworkPropertyMetadata(SpotAlignment.TopCenter, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public bool IsHighlighted
         {
