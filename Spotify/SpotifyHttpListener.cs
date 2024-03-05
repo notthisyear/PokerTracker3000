@@ -49,7 +49,7 @@ namespace PokerTracker3000.Spotify
                 {
                     context = _listener.GetContext();
                 }
-                catch (Exception e) when (e is HttpListenerException || e is InvalidOperationException || e is ObjectDisposedException) 
+                catch (Exception e) when (e is HttpListenerException || e is InvalidOperationException || e is ObjectDisposedException)
                 {
                     break;
                 }
@@ -66,7 +66,7 @@ namespace PokerTracker3000.Spotify
                     });
                 }
                 else
-                { 
+                {
                     response.Close();
                 }
             }

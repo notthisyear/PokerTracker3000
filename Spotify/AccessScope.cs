@@ -14,9 +14,15 @@ namespace PokerTracker3000.Spotify
         [AccessScope("user-read-private", "Read access to user’s subscription details (type of user account).", "Access your subscription details.")]
         UserReadPrivate,
 
-        [AccessScope("user-top-read", "Read access to a user's top artists and tracks.", "Read your top artists and content.")]
-        UserTopRead
-}
+        [AccessScope("user-read-playback-state", "Read access to a user’s player state.", "Read your currently playing content and Spotify Connect devices information.")]
+        UserReadPlaybackState,
+
+        [AccessScope("user-modify-playback-state", "Write access to a user’s playback state", "Control playback on your Spotify clients and Spotify Connect devices.")]
+        UserModifyPlaybackState,
+
+        [AccessScope("user-read-currently-playing", "Read access to a user’s currently playing content.", "Read your currently playing content.")]
+        UserReadCurrentlyPlaying
+    }
 
     [AttributeUsage(AttributeTargets.Field)]
     internal class AccessScopeAttribute : Attribute

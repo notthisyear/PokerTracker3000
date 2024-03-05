@@ -23,7 +23,7 @@ namespace PokerTracker3000.Spotify
             }
             return sb.ToString();
         }
-        
+
         public static Dictionary<string, string> ParseQueryUri(string uri)
         {
             var result = new Dictionary<string, string>();

@@ -25,6 +25,7 @@ namespace PokerTracker3000.Spotify
 
         public string? RefreshToken { get; init; }
 
+        private DateTime _expirationTime = DateTime.MinValue;
         public bool HasScope(AccessScopeType scope)
             => Scopes!.Contains(scope);
 
@@ -44,6 +45,13 @@ namespace PokerTracker3000.Spotify
                     throw new NotSupportedException($"Unknown access scope '{rawScope}'");
             }
         }
-        
+
+        public bool HasExpired()
+            => _expirationTime < DateTime.UtcNow;
+
+        public void SetExpiration(DateTime timestamp)
+        {
+            _expirationTime = timestamp.AddSeconds(ExpiresIn);
+        }
     }
 }
