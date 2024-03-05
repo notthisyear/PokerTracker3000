@@ -14,6 +14,7 @@ namespace PokerTracker3000.GameSession
         private PlayerModel? _playerData = default;
         private bool _isHighlighted = false;
         private bool _isSelected = false;
+        private bool _isEliminated = false;
         #endregion
 
         public PlayerModel? PlayerData
@@ -36,6 +37,28 @@ namespace PokerTracker3000.GameSession
             set => SetProperty(ref _isSelected, value);
         }
 
+        public bool IsEliminated
+        {
+            get => _isEliminated;
+            set
+            {
+                if (value != _isEliminated)
+                {
+                    if (value)
+                    {
+                        SpotOptions.First(x => x.Option == PlayerEditOption.EditOption.Eliminate).ChangeEditOption(PlayerEditOption.EditOption.Remove);
+                        SpotOptions.First(x => x.Option == PlayerEditOption.EditOption.AddOn).ChangeEditOption(PlayerEditOption.EditOption.BuyIn);
+                    }
+                    else
+                    {
+                        SpotOptions.First(x => x.Option == PlayerEditOption.EditOption.Remove).ChangeEditOption(PlayerEditOption.EditOption.Eliminate);
+                        SpotOptions.First(x => x.Option == PlayerEditOption.EditOption.BuyIn).ChangeEditOption(PlayerEditOption.EditOption.AddOn);
+                    }
+                }
+                SetProperty(ref _isEliminated, value);
+            }
+        }
+
         public int SpotIndex { get; init; }
 
         public bool HasPlayerData { get => _playerData != null; }
@@ -44,10 +67,10 @@ namespace PokerTracker3000.GameSession
         {
             SpotOptions = new()
             {
-                new() { Name = "Change name", IsSelected = true },
-                new() { Name = "Change image" },
-                new() { Name = "Buy-in", Type = PlayerEditOption.OptionType.Success },
-                new() { Name = "Remove", Type = PlayerEditOption.OptionType.Cancel },
+                new(PlayerEditOption.EditOption.ChangeName, isSelected: true),
+                new(PlayerEditOption.EditOption.ChangeImage),
+                new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success),
+                new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel),
             };
         }
 

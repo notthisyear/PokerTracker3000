@@ -22,7 +22,7 @@
         <Color x:Key="PrimaryColorDisabledRaw" A="166" R="55" G="90" B="127" />
         <Color x:Key="MainTextColorRaw" A="255" R="255" G="255" B="255" />
         <Color x:Key="MainErrorColorRaw" A="255" R="231" G="76" B="60" />
-        <Color x:Key="MainSuccessColorRaw" A="255" R="31" G="223" B="41" />
+        <Color x:Key="MainSuccessColorRaw" A="255" R="47" G="194" B="55" />
         
         <!-- Background brushes -->
         <RadialGradientBrush x:Key="MainBackgroundGradient"
