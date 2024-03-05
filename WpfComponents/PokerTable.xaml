@@ -300,31 +300,37 @@
 
             <!-- Top row-->
             <components:Player Grid.Row="0"
-                   Grid.Column="1"
-                   SpotData="{Binding Path=Spot1}"
-                   Alignment="{x:Static components:Player+SpotAlignment.TopLeft}"/>
+                               Grid.Column="1"
+                               SpotData="{Binding Path=Spot1}"
+                               Alignment="{x:Static components:Player+SpotAlignment.TopLeft}"
+                               AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="0"
-                   Grid.Column="3"
-                   SpotData="{Binding Path=Spot2}"
-                   Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"/>
+                               Grid.Column="3"
+                               SpotData="{Binding Path=Spot2}"
+                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="0"
-                   Grid.Column="5"
-                   SpotData="{Binding Path=Spot3}"
-                   Alignment="{x:Static components:Player+SpotAlignment.TopRight}"/>
+                               Grid.Column="5"
+                               SpotData="{Binding Path=Spot3}"
+                               Alignment="{x:Static components:Player+SpotAlignment.TopRight}"
+                               AlwaysShowPlayerImage="True" />
 
             <!-- Bottom row-->
             <components:Player Grid.Row="2"
-                   Grid.Column="1"
-                   SpotData="{Binding Path=Spot4}"
-                   Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"/>
+                               Grid.Column="1"
+                               SpotData="{Binding Path=Spot4}"
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"
+                               AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="2"
-                                Grid.Column="3"
-                                SpotData="{Binding Path=Spot5}"
-                                Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"/>
+                               Grid.Column="3"
+                               SpotData="{Binding Path=Spot5}"
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="2"
-                                Grid.Column="5"
-                                SpotData="{Binding Path=Spot6}"
-                                Alignment="{x:Static components:Player+SpotAlignment.BottomRight}"/>
+                               Grid.Column="5"
+                               SpotData="{Binding Path=Spot6}"
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomRight}"
+                               AlwaysShowPlayerImage="True" />
         </Grid>
 
         <!-- Player slots (4 players) -->
@@ -357,21 +363,25 @@
             <components:Player Grid.Row="0"
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot1}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"/>
+                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="0"
                                Grid.Column="3"
                                SpotData="{Binding Path=Spot2}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"/>
+                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               AlwaysShowPlayerImage="True" />
 
             <!-- Bottom row-->
             <components:Player Grid.Row="2"
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot3}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"/>
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="2"
                                Grid.Column="3"
                                SpotData="{Binding Path=Spot4}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"/>
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               AlwaysShowPlayerImage="True" />
         </Grid>
 
         <!-- Player slots (2 players) -->
@@ -402,13 +412,15 @@
             <components:Player Grid.Row="0"
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot1}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"/>
+                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               AlwaysShowPlayerImage="True" />
 
             <!-- Bottom row-->
             <components:Player Grid.Row="2"
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot2}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"/>
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               AlwaysShowPlayerImage="True" />
         </Grid>
     </Grid>
 </UserControl>

@@ -40,27 +40,16 @@ namespace PokerTracker3000.WpfComponents
             typeof(Player),
             new FrameworkPropertyMetadata(SpotAlignment.TopCenter, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public bool IsHighlighted
+        public bool AlwaysShowPlayerImage
         {
-            get => (bool)GetValue(IsHighlightedProperty);
-            set => SetValue(IsHighlightedProperty, value);
+            get => (bool)GetValue(AlwaysShowPlayerImageProperty);
+            set => SetValue(AlwaysShowPlayerImageProperty, value);
         }
-        public static readonly DependencyProperty IsHighlightedProperty = DependencyProperty.Register(
-            nameof(IsHighlighted),
+        public static readonly DependencyProperty AlwaysShowPlayerImageProperty = DependencyProperty.Register(
+            nameof(AlwaysShowPlayerImage),
             typeof(bool),
             typeof(Player),
-            new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
-
-        public bool IsSelected
-        {
-            get => (bool)GetValue(IsSelectedProperty);
-            set => SetValue(IsSelectedProperty, value);
-        }
-        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
-            nameof(IsSelected),
-            typeof(bool),
-            typeof(Player),
-            new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public Player()
         {
