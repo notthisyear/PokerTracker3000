@@ -185,7 +185,6 @@
         </RadialGradientBrush>
 
         <Style x:Key="imageBorderBase" TargetType="{x:Type Border}">
-            <Setter Property="Height" Value="140" />
             <Setter Property="Visibility" Value="Collapsed" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
@@ -194,6 +193,11 @@
                     <TranslateTransform X="0" Y="0" />
                 </Setter.Value>
             </Setter>
+            <Setter Property="Height"
+                    Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
+                                Path=ActualHeight,
+                                Converter={StaticResource scaleNumberConverter},
+                                ConverterParameter=*0.75}" />
         </Style>
 
         <Style x:Key="imageBorderAboveText" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBorderBase}">
