@@ -123,7 +123,6 @@ namespace PokerTracker3000.WpfComponents
         #region Private fields
         private bool _isRunningInitialCheckOnNumberOfPlayers = false;
         private static readonly List<PlayerSpot> s_playerSpots = new();
-        
         #endregion
 
         public PokerTable()
@@ -142,8 +141,8 @@ namespace PokerTracker3000.WpfComponents
 
             foreach (var player in ViewModel.Players)
                 AddPlayerToSpot(player);
-            
-            _isRunningInitialCheckOnNumberOfPlayers = false; 
+
+            _isRunningInitialCheckOnNumberOfPlayers = false;
         }
 
         private void InitializeSpotList()
@@ -171,26 +170,26 @@ namespace PokerTracker3000.WpfComponents
                         return currentSpotIdx == 0 ? 1 : 0;
 
                     case TableLayout.FourPlayers:
-                    { 
-                        var onTopRow = currentSpotIdx == 0 || currentSpotIdx == 1;
-                        return direction switch
                         {
-                            InputEvent.NavigationDirection.Right or InputEvent.NavigationDirection.Left => ((currentSpotIdx + 1) % 2) + (onTopRow ? 0 : 2),
-                            InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 2) % 4,
-                            _ => currentSpotIdx
-                        };
-                    }
+                            var onTopRow = currentSpotIdx == 0 || currentSpotIdx == 1;
+                            return direction switch
+                            {
+                                InputEvent.NavigationDirection.Right or InputEvent.NavigationDirection.Left => ((currentSpotIdx + 1) % 2) + (onTopRow ? 0 : 2),
+                                InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 2) % 4,
+                                _ => currentSpotIdx
+                            };
+                        }
                     case TableLayout.SixPlayers:
-                    { 
-                        var onTopRow = currentSpotIdx == 0 || currentSpotIdx == 1 || currentSpotIdx == 2;
-                        return direction switch
                         {
-                            InputEvent.NavigationDirection.Right => ((currentSpotIdx + 1) % 3) + (onTopRow ? 0 : 3),
-                            InputEvent.NavigationDirection.Left => onTopRow ? (currentSpotIdx == 0 ? 2 : currentSpotIdx - 1) : (currentSpotIdx == 3 ? 5 : currentSpotIdx - 1),
-                            InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 3) % 6,
-                            _ => currentSpotIdx
-                        };
-                    }
+                            var onTopRow = currentSpotIdx == 0 || currentSpotIdx == 1 || currentSpotIdx == 2;
+                            return direction switch
+                            {
+                                InputEvent.NavigationDirection.Right => ((currentSpotIdx + 1) % 3) + (onTopRow ? 0 : 3),
+                                InputEvent.NavigationDirection.Left => onTopRow ? (currentSpotIdx == 0 ? 2 : currentSpotIdx - 1) : (currentSpotIdx == 3 ? 5 : currentSpotIdx - 1),
+                                InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 3) % 6,
+                                _ => currentSpotIdx
+                            };
+                        }
                     default:
                         return currentSpotIdx;
                 }
@@ -239,11 +238,11 @@ namespace PokerTracker3000.WpfComponents
 
             CurrentTableLayout = ViewModel.Players.Count switch
             {
-                >10 => TableLayout.TwelvePlayers,
-                >8 => TableLayout.TenPlayers,
-                >6 => TableLayout.EightPlayers,
-                >4 => TableLayout.SixPlayers,
-                >2 => TableLayout.FourPlayers,
+                > 10 => TableLayout.TwelvePlayers,
+                > 8 => TableLayout.TenPlayers,
+                > 6 => TableLayout.EightPlayers,
+                > 4 => TableLayout.SixPlayers,
+                > 2 => TableLayout.FourPlayers,
                 _ => TableLayout.TwoPlayers,
             };
         }
@@ -253,7 +252,7 @@ namespace PokerTracker3000.WpfComponents
             foreach (var spot in s_playerSpots)
             {
                 if (spot != default && !spot.HasPlayerData)
-                { 
+                {
                     spot.PlayerData = player;
                     break;
                 }
