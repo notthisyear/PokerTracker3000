@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common;
 using PokerTracker3000.Common.FileUtilities;
@@ -8,7 +7,7 @@ namespace PokerTracker3000.GameSession
 {
     public class PlayerModel
     {
-        public class PlayerInformation : ObservableValidator
+        public class PlayerInformation : ObservableObject
         {
             #region Public propertoes
 
@@ -18,8 +17,6 @@ namespace PokerTracker3000.GameSession
             private decimal _moneyInThePot = decimal.Zero;
             #endregion
 
-            [MinLength(1)]
-            [MaxLength(20)]
             public string Name
             {
                 get => _name;
@@ -29,13 +26,13 @@ namespace PokerTracker3000.GameSession
             public string PathToImage
             {
                 get => _pathToImage;
-                private set => SetProperty(ref _pathToImage, value);
+                set => SetProperty(ref _pathToImage, value);
             }
 
             public decimal MoneyInThePot
             {
                 get => _moneyInThePot;
-                private set => SetProperty(ref _moneyInThePot, value);
+                set => SetProperty(ref _moneyInThePot, value);
             }
             #endregion
 

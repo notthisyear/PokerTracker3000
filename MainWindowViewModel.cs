@@ -51,7 +51,7 @@ namespace PokerTracker3000.ViewModels
             if (inputEvent.IsButtonEvent)
             {
                 if (inputEvent.Button == InputEvent.ButtonEventType.InfoButton)
-                { 
+                {
                     RightSideMenuOpen = !RightSideMenuOpen;
                 }
                 else

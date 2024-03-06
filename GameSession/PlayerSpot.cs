@@ -76,7 +76,7 @@ namespace PokerTracker3000.GameSession
 
         public void ChangeSelectedOption(InputEvent.NavigationDirection direction)
         {
-            var currentOption = SpotOptions.First(x => x.IsSelected);
+            var currentOption = GetSelectedOption();
             var currentOptionIndex = SpotOptions.IndexOf(currentOption);
 
             var onTopRow = currentOptionIndex < 2;
@@ -92,6 +92,9 @@ namespace PokerTracker3000.GameSession
             currentOption.IsSelected = false;
             SpotOptions[newOptionIndex].IsSelected = true;
         }
+
+        public PlayerEditOption GetSelectedOption()
+            => SpotOptions.First(x => x.IsSelected);
         #endregion
 
         public bool IsPlayer(int id)

@@ -45,6 +45,18 @@ namespace PokerTracker3000.WpfComponents
             new FrameworkPropertyMetadata(TableLayout.TwoPlayers, FrameworkPropertyMetadataOptions.AffectsArrange));
         private static readonly DependencyProperty s_currentTableLayoutProperty = s_currentTableLayoutPropertyKey.DependencyProperty;
 
+        public PlayerSpot? SelectedSpot
+        {
+            get => (PlayerSpot?)GetValue(s_selectedSpotProperty);
+            private set => SetValue(s_selectedSpotPropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_selectedSpotPropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(SelectedSpot),
+            typeof(PlayerSpot),
+            typeof(PokerTable),
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_selectedSpotProperty = s_selectedSpotPropertyKey.DependencyProperty;
+
         public PlayerSpot? Spot1
         {
             get => (PlayerSpot?)GetValue(s_spot1Property);
@@ -195,6 +207,32 @@ namespace PokerTracker3000.WpfComponents
                 }
             });
             MainWindowFocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) => activeSpot.ChangeSelectedOption(direction));
+            MainWindowFocusManager.RegisterPlayerInfoBoxSelectCallback((PlayerSpot activeSpot) =>
+            {
+                switch (activeSpot.GetSelectedOption().Option)
+                {
+                    case PlayerEditOption.EditOption.ChangeName:
+                        SelectedSpot = activeSpot;
+                        changeNameBox.Focus();
+                        changeNameBox.Select(changeNameBox.Text.Length, 0);
+                        return MainWindowFocusManager.FocusArea.EditNameBox;
+
+                    case PlayerEditOption.EditOption.ChangeImage:
+                    case PlayerEditOption.EditOption.AddOn:
+                    case PlayerEditOption.EditOption.BuyIn:
+                    case PlayerEditOption.EditOption.Eliminate:
+                    case PlayerEditOption.EditOption.Remove:
+                    default:
+                        // TODO
+                        break;
+                };
+                return MainWindowFocusManager.FocusArea.None;
+            });
+            MainWindowFocusManager.RegisterEditMenuLostFocusCallback(() =>
+            {
+                Application.Current.MainWindow.Focus();
+                SelectedSpot = default;
+            });
         }
 
         private void NumberOfPlayersChanged(object? sender, NotifyCollectionChangedEventArgs e)

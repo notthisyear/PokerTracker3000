@@ -69,7 +69,7 @@ namespace PokerTracker3000
         {
             _inputManager.RegisterKeyboardEvent(Key.Escape, InputEvent.ButtonEventType.Start);
             _inputManager.RegisterKeyboardEvent(Key.Enter, InputEvent.ButtonEventType.Select);
-            _inputManager.RegisterKeyboardEvent(Key.Back, InputEvent.ButtonEventType.GoBack);
+            _inputManager.RegisterKeyboardEvent(Key.RightShift, InputEvent.ButtonEventType.GoBack);
             _inputManager.RegisterKeyboardEvent(Key.Left, InputEvent.NavigationDirection.Left);
             _inputManager.RegisterKeyboardEvent(Key.Right, InputEvent.NavigationDirection.Right);
             _inputManager.RegisterKeyboardEvent(Key.Down, InputEvent.NavigationDirection.Down);

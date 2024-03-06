@@ -1,7 +1,8 @@
 ﻿<UserControl x:Class="PokerTracker3000.WpfComponents.PokerTable"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents">
+             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+             xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules">
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
           HorizontalAlignment="Center"
@@ -422,5 +423,72 @@
                                Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
                                AlwaysShowPlayerImage="True" />
         </Grid>
+
+        <!-- Edit name box -->
+        <StackPanel Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+            <StackPanel.Style>
+                <Style TargetType="{x:Type StackPanel}">
+                    <Setter Property="Opacity" Value="1" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=SelectedSpot}" Value="{x:Null}">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZeroGlobal}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOneGlobal}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+
+            <!-- Text over edit box -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                           Text="SET NAME FOR PLAYER "
+                           FontWeight="Bold"/>
+                <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                           Text="{Binding Path=SelectedSpot.SpotIndex,
+                                          Converter={StaticResource scaleNumberConverter},
+                                          ConverterParameter=+1}"
+                           FontWeight="Bold"/>
+            </StackPanel>
+
+            <!-- Change name box -->
+            <TextBox x:Name="changeNameBox"
+                     Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
+                            Path=ActualHeight,
+                            Converter={StaticResource scaleNumberConverter},
+                            ConverterParameter=*0.1}"
+                    Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
+                            Path=ActualWidth,
+                            Converter={StaticResource scaleNumberConverter},
+                            ConverterParameter=*0.5}"
+                     HorizontalContentAlignment="Center"
+                     VerticalContentAlignment="Center"
+                     FontSize="38">
+                <TextBox.Text>
+                    <Binding Path="SelectedSpot.PlayerData.Information.Name"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <validation:TextLengthValidationRule Min="1" Max="20" FieldName="Name"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+                <TextBox.Style>
+                    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource MainTextBoxStyle}">
+                        <Style.Triggers>
+                            <Trigger Property="Validation.HasError" Value="true">
+                                <Setter Property="ToolTip" Value="{Binding (Validation.Errors)/ErrorContent, RelativeSource={x:Static RelativeSource.Self}}"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
+        </StackPanel>
     </Grid>
 </UserControl>
