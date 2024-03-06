@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using PokerTracker3000.GameSession;
@@ -218,15 +219,19 @@ namespace PokerTracker3000.WpfComponents
                         return MainWindowFocusManager.FocusArea.EditNameBox;
 
                     case PlayerEditOption.EditOption.ChangeImage:
+                        var currentSpot = s_playerSpots.FirstOrDefault(x => x.IsSelected);
+                        if (currentSpot != default)
+                            currentSpot.ChangeImage();
+                        // TODO: When there's a nice image picker dialog, this line
+                        //       will have to change
+                        return MainWindowFocusManager.FocusArea.PlayerInfo;
                     case PlayerEditOption.EditOption.AddOn:
                     case PlayerEditOption.EditOption.BuyIn:
                     case PlayerEditOption.EditOption.Eliminate:
                     case PlayerEditOption.EditOption.Remove:
                     default:
-                        // TODO
-                        break;
+                        return MainWindowFocusManager.FocusArea.None;
                 };
-                return MainWindowFocusManager.FocusArea.None;
             });
             MainWindowFocusManager.RegisterEditMenuLostFocusCallback(() =>
             {

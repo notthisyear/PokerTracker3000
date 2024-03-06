@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Ookii.Dialogs.Wpf;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
@@ -15,6 +16,12 @@ namespace PokerTracker3000.GameSession
         private bool _isHighlighted = false;
         private bool _isSelected = false;
         private bool _isEliminated = false;
+        private static readonly VistaOpenFileDialog s_loadImageDialog = new()
+        {
+            Title = "Select player image",
+            Multiselect = false,
+            Filter = "Image files (*.png, *.jpg, *.jpeg, *.bmp)|*.png;*.jpg;*.jpeg;*.bmp|All files (*.*)|*.*"
+        };
         #endregion
 
         public PlayerModel? PlayerData
@@ -62,6 +69,7 @@ namespace PokerTracker3000.GameSession
         public int SpotIndex { get; init; }
 
         public bool HasPlayerData { get => _playerData != null; }
+        #endregion
 
         public PlayerSpot()
         {
@@ -74,6 +82,7 @@ namespace PokerTracker3000.GameSession
             };
         }
 
+        #region Public methods
         public void ChangeSelectedOption(InputEvent.NavigationDirection direction)
         {
             var currentOption = GetSelectedOption();
@@ -95,9 +104,18 @@ namespace PokerTracker3000.GameSession
 
         public PlayerEditOption GetSelectedOption()
             => SpotOptions.First(x => x.IsSelected);
-        #endregion
 
         public bool IsPlayer(int id)
             => PlayerData != default && PlayerData.PlayerId == id;
+
+        public void ChangeImage()
+        {
+            if (PlayerData != default && s_loadImageDialog.ShowDialog() == true)
+            {
+                // TODO: Make a nice image loader dialog that supports cropping the selected image
+                PlayerData.Information.PathToImage = s_loadImageDialog.FileName;
+            }
+        }
+        #endregion
     }
 }
