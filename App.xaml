@@ -17,13 +17,19 @@
         <converters:ScaleNumberConverter x:Key="scaleNumberConverter" />
 
         <!-- Animation -->
-        <Storyboard x:Key="animateOpacityToOneGlobal"
+        <Storyboard x:Key="animateOpacityToOne"
                     PresentationOptions:Freeze="True">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                 <LinearDoubleKeyFrame KeyTime="00:00:0.3" Value="1.0" />
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
-        <Storyboard x:Key="animateOpacityToZeroGlobal"
+        <Storyboard x:Key="animateOpacityToPointSix"
+                    PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
+                <LinearDoubleKeyFrame KeyTime="00:00:0.3" Value="0.6" />
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="animateOpacityToZero"
             PresentationOptions:Freeze="True">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
                 <LinearDoubleKeyFrame KeyTime="00:00:0.3" Value="0.0" />

@@ -28,30 +28,6 @@
                   Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=ActualHeight}">
 
                 <Grid.Resources>
-                    <Storyboard x:Key="animateOpacityToOne"
-                                PresentationOptions:Freeze="True">
-                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
-                            <EasingDoubleKeyFrame Value="1"
-                      KeyTime="0:0:0.4">
-                                <EasingDoubleKeyFrame.EasingFunction>
-                                    <QuarticEase EasingMode="EaseIn"/>
-                                </EasingDoubleKeyFrame.EasingFunction>
-                            </EasingDoubleKeyFrame>
-                        </DoubleAnimationUsingKeyFrames>
-                    </Storyboard>
-                    
-                    <Storyboard x:Key="animateOpacityToZero"
-                                PresentationOptions:Freeze="True">
-                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity">
-                            <EasingDoubleKeyFrame Value="0"
-                      KeyTime="0:0:0.4">
-                                <EasingDoubleKeyFrame.EasingFunction>
-                                    <QuarticEase EasingMode="EaseOut"/>
-                                </EasingDoubleKeyFrame.EasingFunction>
-                            </EasingDoubleKeyFrame>
-                        </DoubleAnimationUsingKeyFrames>
-                    </Storyboard>
-
                     <Storyboard x:Key="movePanelOutToLeft"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
@@ -75,7 +51,6 @@
                             </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
-
 
                     <Storyboard x:Key="movePanelIn"
                                 PresentationOptions:Freeze="True">

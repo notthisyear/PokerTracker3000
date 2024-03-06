@@ -434,10 +434,10 @@
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Path=SelectedSpot}" Value="{x:Null}">
                             <DataTrigger.EnterActions>
-                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZeroGlobal}" />
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
                             </DataTrigger.EnterActions>
                             <DataTrigger.ExitActions>
-                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOneGlobal}" />
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
                             </DataTrigger.ExitActions>
                         </DataTrigger>
                     </Style.Triggers>
