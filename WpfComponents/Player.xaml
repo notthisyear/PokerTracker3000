@@ -318,6 +318,7 @@
 
         <Border.Style>
             <Style TargetType="{x:Type Border}">
+                <Setter Property="Visibility" Value="Visible" />
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
                 <Setter Property="RenderTransform">
@@ -333,6 +334,9 @@
                         <DataTrigger.ExitActions>
                             <BeginStoryboard Storyboard="{StaticResource scaleDown}" />
                         </DataTrigger.ExitActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=SpotData.PlayerData}" Value="{x:Null}">
+                        <Setter Property="Visibility" Value="Collapsed" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>

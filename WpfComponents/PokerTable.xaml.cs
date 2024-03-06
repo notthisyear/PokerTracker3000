@@ -219,20 +219,29 @@ namespace PokerTracker3000.WpfComponents
                         return MainWindowFocusManager.FocusArea.EditNameBox;
 
                     case PlayerEditOption.EditOption.ChangeImage:
-                        var currentSpot = s_playerSpots.FirstOrDefault(x => x.IsSelected);
-                        if (currentSpot != default)
-                            currentSpot.ChangeImage();
+                        activeSpot.ChangeImage();
                         // TODO: When there's a nice image picker dialog, this line
                         //       will have to change
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
-                    case PlayerEditOption.EditOption.AddOn:
-                    case PlayerEditOption.EditOption.BuyIn:
                     case PlayerEditOption.EditOption.Eliminate:
                         activeSpot.IsEliminated = true;
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
                     case PlayerEditOption.EditOption.Remove:
+                        if (!activeSpot.CanBeRemoved)
+                            return MainWindowFocusManager.FocusArea.PlayerInfo;
+
+                        activeSpot.Remove();
+                        var newSpotIdx = activeSpot.SpotIndex + 1;
+                        var newSpotToFocus = activeSpot;
+                        while (!newSpotToFocus.HasPlayerData)
+                            newSpotToFocus = s_playerSpots[newSpotIdx++ % s_playerSpots.Count];
+                        newSpotToFocus.IsSelected = true;
+                        return MainWindowFocusManager.FocusArea.Players;
+
+                    case PlayerEditOption.EditOption.AddOn:
+                    case PlayerEditOption.EditOption.BuyIn:
                     default:
                         return MainWindowFocusManager.FocusArea.None;
                 };

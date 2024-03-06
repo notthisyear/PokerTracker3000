@@ -24,7 +24,7 @@ namespace PokerTracker3000
         #region Private fields
         private static FocusArea s_lastFocusArea = FocusArea.None;
         private static int s_currentFocusedPlayerSpotIndex = -1;
-        private static int s_lastFocusedPlayerSpot = -1;
+        private static int s_lastFocusedPlayerSpotIndex = -1;
         private static List<PlayerSpot>? s_playerSpots;
         private static Func<int, InputEvent.NavigationDirection, int>? s_spotNavigationCallback;
         private static Action<PlayerSpot, InputEvent.NavigationDirection>? s_playerOptionsNavigationCallback;
@@ -169,7 +169,7 @@ namespace PokerTracker3000
             if (s_playerSpots == default)
                 return;
 
-            s_lastFocusedPlayerSpot = s_lastFocusedPlayerSpot == -1 ? 0 : s_lastFocusedPlayerSpot;
+            s_lastFocusedPlayerSpotIndex = s_lastFocusedPlayerSpotIndex == -1 ? 0 : s_lastFocusedPlayerSpotIndex;
             SetNewFocusArea(FocusArea.Players);
         }
 
@@ -180,7 +180,7 @@ namespace PokerTracker3000
             PlayerSpot? activeSpot = default;
             if (newFocusArea == FocusArea.Players || newFocusArea == FocusArea.PlayerInfo || newFocusArea == FocusArea.EditNameBox)
             {
-                if (!TryGetMatchingSpot(x => x.SpotIndex == s_lastFocusedPlayerSpot, out activeSpot))
+                if (!TryGetMatchingSpot(x => x.SpotIndex == s_lastFocusedPlayerSpotIndex, out activeSpot))
                     return;
             }
             s_lastFocusArea = CurrentFocusArea;
@@ -197,7 +197,10 @@ namespace PokerTracker3000
                         if (newFocusArea == FocusArea.PlayerInfo || newFocusArea == FocusArea.EditNameBox)
                             activeSpot.IsSelected = true;
                         s_currentFocusedPlayerSpotIndex = activeSpot.SpotIndex;
-                        s_lastFocusedPlayerSpot = -1;
+                        s_lastFocusedPlayerSpotIndex = -1;
+
+                        if (newFocusArea == FocusArea.PlayerInfo && s_playerSpots != default)
+                            activeSpot.CanBeRemoved = s_playerSpots.Where(x => x.HasPlayerData).Count() > 1;
                     }
                     break;
                 case FocusArea.LeftSideMenu:
@@ -210,14 +213,22 @@ namespace PokerTracker3000
             if (s_spotNavigationCallback == default)
                 return;
 
-            var newFocusIndex = s_spotNavigationCallback.Invoke(s_currentFocusedPlayerSpotIndex, direction);
-            if (TryGetMatchingSpot(x => x.SpotIndex == newFocusIndex, out var spotToFocus))
+            var newFocusIndex = s_currentFocusedPlayerSpotIndex;
+            PlayerSpot? spotToFocus = default;
+
+            // If the spot we navigated has no player data (meaning that the player is removed),
+            // we navigate in the same direction until we find a spot with player data
+            while (true)
             {
-                if (TryGetMatchingSpot(x => x.SpotIndex == s_currentFocusedPlayerSpotIndex, out var oldFocusedSpot))
-                    oldFocusedSpot!.IsHighlighted = false;
-                spotToFocus!.IsHighlighted = true;
-                s_currentFocusedPlayerSpotIndex = newFocusIndex;
+                newFocusIndex = s_spotNavigationCallback.Invoke(newFocusIndex, direction);
+                if (TryGetMatchingSpot(x => x.SpotIndex == newFocusIndex, out spotToFocus) && spotToFocus!.HasPlayerData)
+                    break;
             }
+
+            if (TryGetMatchingSpot(x => x.SpotIndex == s_currentFocusedPlayerSpotIndex, out var oldFocusedSpot))
+                oldFocusedSpot!.IsHighlighted = false;
+            spotToFocus!.IsHighlighted = true;
+            s_currentFocusedPlayerSpotIndex = newFocusIndex;
         }
 
         private static void ClearFocusFromCurrentlyFocusedArea()
@@ -230,7 +241,7 @@ namespace PokerTracker3000
                     if (!TryGetMatchingSpot(x => CurrentFocusArea == FocusArea.Players ? x.IsHighlighted : x.IsSelected, out var focusedSpot))
                         return;
 
-                    s_lastFocusedPlayerSpot = focusedSpot!.SpotIndex;
+                    s_lastFocusedPlayerSpotIndex = focusedSpot!.SpotIndex;
                     s_currentFocusedPlayerSpotIndex = -1;
                     if (CurrentFocusArea == FocusArea.PlayerInfo)
                         focusedSpot.IsSelected = false;

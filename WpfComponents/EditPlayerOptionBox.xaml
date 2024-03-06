@@ -51,8 +51,18 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontWeight" Value="Normal" />
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=OptionModel.IsSelected}" Value="True">
-                    <Setter Property="FontWeight" Value="Bold" />
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=OptionModel.IsSelected}" Value="True" />
+                        <Condition Binding="{Binding Path=OptionModel.IsAvailable}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="FontWeight" Value="Bold" />
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+
+                <DataTrigger Binding="{Binding Path=OptionModel.IsAvailable}" Value="False">
+                    <Setter Property="Foreground" Value="{StaticResource MainTextMutedColor}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>

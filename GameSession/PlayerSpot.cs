@@ -15,6 +15,7 @@ namespace PokerTracker3000.GameSession
         private PlayerModel? _playerData = default;
         private bool _isHighlighted = false;
         private bool _isSelected = false;
+        private bool _canBeRemoved = false;
         private bool _isEliminated = false;
         private static readonly VistaOpenFileDialog s_loadImageDialog = new()
         {
@@ -66,6 +67,18 @@ namespace PokerTracker3000.GameSession
             }
         }
 
+        public bool CanBeRemoved
+        {
+            get => _canBeRemoved;
+            set
+            {
+                var removeOption = SpotOptions.FirstOrDefault(x => x.Option == PlayerEditOption.EditOption.Remove);
+                if (removeOption != default)
+                    removeOption.IsAvailable = value;
+                SetProperty(ref _canBeRemoved, value);
+            }
+        }
+
         public int SpotIndex { get; init; }
 
         public bool HasPlayerData { get => _playerData != null; }
@@ -114,6 +127,18 @@ namespace PokerTracker3000.GameSession
             {
                 // TODO: Make a nice image loader dialog that supports cropping the selected image
                 PlayerData.Information.PathToImage = s_loadImageDialog.FileName;
+            }
+        }
+
+        public void Remove()
+        {
+            if (CanBeRemoved)
+            {
+                IsHighlighted = false;
+                IsSelected = false;
+                IsEliminated = false;
+                CanBeRemoved = false;
+                PlayerData = default;
             }
         }
         #endregion

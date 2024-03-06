@@ -43,6 +43,7 @@ namespace PokerTracker3000.GameSession
         private EditOption _option = EditOption.None;
         private string _name = string.Empty;
         private bool _isSelected = false;
+        private bool _isAvailable = true;
         #endregion
 
         public EditOption Option
@@ -61,6 +62,12 @@ namespace PokerTracker3000.GameSession
         {
             get => _isSelected;
             set => SetProperty(ref _isSelected, value);
+        }
+
+        public bool IsAvailable
+        {
+            get => _isAvailable;
+            set => SetProperty(ref _isAvailable, value);
         }
 
         public OptionType Type { get; init; }
