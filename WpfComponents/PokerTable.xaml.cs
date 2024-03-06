@@ -225,9 +225,13 @@ namespace PokerTracker3000.WpfComponents
                         // TODO: When there's a nice image picker dialog, this line
                         //       will have to change
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
+
                     case PlayerEditOption.EditOption.AddOn:
                     case PlayerEditOption.EditOption.BuyIn:
                     case PlayerEditOption.EditOption.Eliminate:
+                        activeSpot.IsEliminated = true;
+                        return MainWindowFocusManager.FocusArea.PlayerInfo;
+
                     case PlayerEditOption.EditOption.Remove:
                     default:
                         return MainWindowFocusManager.FocusArea.None;

@@ -120,6 +120,9 @@
                     </DataTrigger.ExitActions>
                 </DataTrigger>
 
+                <DataTrigger Binding="{Binding Path=SpotData.IsEliminated}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
+                </DataTrigger>
                 <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static components:Player+SpotAlignment.TopLeft}">
                     <Setter Property="HorizontalAlignment" Value="Left"/>
                 </DataTrigger>
@@ -260,12 +263,13 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="playerImage" TargetType="{x:Type Image}">
+        <Style x:Key="playerImage" TargetType="{x:Type components:GreyableImage}">
             <Setter Property="Source" Value="{Binding Path=SpotData.PlayerData.Information.PathToImage}" />
             <Setter Property="OpacityMask" Value="{StaticResource radialImageMask}" />
             <Setter Property="Opacity" Value="{Binding Path=AlwaysShowPlayerImage,
                 Converter={StaticResource boolToZeroOrNumberConverter},
                 ConverterParameter=0.6}" />
+            <Setter Property="IsEnabled" Value="True" />
             <Style.Triggers>
                 <MultiDataTrigger>
                     <MultiDataTrigger.Conditions>
@@ -292,6 +296,41 @@
                         <BeginStoryboard Storyboard="{StaticResource animateOpacityToPointSix}" />
                     </MultiDataTrigger.ExitActions>
                 </MultiDataTrigger>
+
+                <DataTrigger Binding="{Binding Path=SpotData.IsEliminated}" Value="True">
+                    <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="crossedOutMark" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SymbolButtonStyle}">
+            <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
+            <Setter Property="Text" Value="&#xE711;" />
+            <Setter Property="FontSize" Value="150" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=SpotData.IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding Path=AlwaysShowPlayerImage}" Value="False" />
+                        <Condition Binding="{Binding Path=SpotData.IsEliminated}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Visibility" Value="Visible" />
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=SpotData.IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding Path=AlwaysShowPlayerImage}" Value="True" />
+                        <Condition Binding="{Binding Path=SpotData.IsEliminated}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Visibility" Value="Visible" />
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
@@ -326,7 +365,10 @@
 
                 <!-- Image above -->
                 <Border Style="{StaticResource imageBorderAboveText}">
-                    <Image Style="{StaticResource playerImage}" />
+                    <Grid>
+                        <components:GreyableImage Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
                 </Border>
 
                 <!-- Name and money in the pot -->
@@ -353,7 +395,10 @@
 
                 <!-- Image below-->
                 <Border Style="{StaticResource imageBorderBelowText}">
-                    <Image Style="{StaticResource playerImage}" />
+                    <Grid>
+                    <components:GreyableImage Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
                 </Border>
             </StackPanel>
 

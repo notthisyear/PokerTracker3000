@@ -200,7 +200,6 @@ namespace PokerTracker3000
                         s_lastFocusedPlayerSpot = -1;
                     }
                     break;
-
                 case FocusArea.LeftSideMenu:
                     break;
             }
