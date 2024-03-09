@@ -31,18 +31,22 @@ namespace PokerTracker3000.ViewModels
 
         public GameSessionManager SessionManager { get; }
 
-        public SpotifyClientViewModel SpotifyClientViewModel { get; init; }
+        // public SpotifyClientViewModel SpotifyClientViewModel { get; init; }
         #endregion
 
+        #region Private fields
         private readonly ApplicationSettings _settings;
+        private readonly MainWindowFocusManager _focusManager;
+        #endregion
 
-        public MainWindowViewModel(ApplicationSettings settings)
+        public MainWindowViewModel(ApplicationSettings settings, MainWindowFocusManager focusManager)
         {
             _settings = settings;
+            _focusManager = focusManager;
 
-            SessionManager = new(settings.DefaultPlayerImagePath);
+            SessionManager = new(settings.DefaultPlayerImagePath, _focusManager);
 
-            SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
+            // SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
             //Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());
         }
 
@@ -56,18 +60,19 @@ namespace PokerTracker3000.ViewModels
                 }
                 else
                 {
-                    MainWindowFocusManager.HandleButtonPressedEvent(inputEvent.Button);
-                    LeftSideMenuOpen = MainWindowFocusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu;
+                    _focusManager.HandleButtonPressedEvent(inputEvent.Button);
+                    LeftSideMenuOpen = _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu;
                 }
             }
             else if (inputEvent.IsNavigationEvent)
             {
-                MainWindowFocusManager.HandleNavigationEvent(inputEvent.Direction);
+                _focusManager.HandleNavigationEvent(inputEvent.Direction);
             }
         }
 
         public void NotifyWindowClosed()
         {
+            // TODO: Close Spotify connection if open
         }
     }
 }

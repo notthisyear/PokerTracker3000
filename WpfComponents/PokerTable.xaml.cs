@@ -1,26 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using PokerTracker3000.GameSession;
-
-using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000.WpfComponents
 {
     public partial class PokerTable : UserControl
     {
-        public enum TableLayout
-        {
-            TwoPlayers,
-            FourPlayers,
-            SixPlayers,
-            EightPlayers,
-            TenPlayers,
-            TwelvePlayers
-        };
-
         #region Dependency properties
         public GameSessionManager ViewModel
         {
@@ -45,18 +31,6 @@ namespace PokerTracker3000.WpfComponents
             typeof(PokerTable),
             new FrameworkPropertyMetadata(TableLayout.TwoPlayers, FrameworkPropertyMetadataOptions.AffectsArrange));
         private static readonly DependencyProperty s_currentTableLayoutProperty = s_currentTableLayoutPropertyKey.DependencyProperty;
-
-        public PlayerSpot? SelectedSpot
-        {
-            get => (PlayerSpot?)GetValue(s_selectedSpotProperty);
-            private set => SetValue(s_selectedSpotPropertyKey, value);
-        }
-        private static readonly DependencyPropertyKey s_selectedSpotPropertyKey = DependencyProperty.RegisterReadOnly(
-            nameof(SelectedSpot),
-            typeof(PlayerSpot),
-            typeof(PokerTable),
-            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
-        private static readonly DependencyProperty s_selectedSpotProperty = s_selectedSpotPropertyKey.DependencyProperty;
 
         public PlayerSpot? Spot1
         {
@@ -153,13 +127,56 @@ namespace PokerTracker3000.WpfComponents
             typeof(PokerTable),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
         private static readonly DependencyProperty s_spot8Property = s_spot8PropertyKey.DependencyProperty;
+
+        public PlayerSpot? Spot9
+        {
+            get => (PlayerSpot?)GetValue(s_spot9Property);
+            private set => SetValue(s_spot9PropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_spot9PropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(Spot9),
+            typeof(PlayerSpot),
+            typeof(PokerTable),
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_spot9Property = s_spot9PropertyKey.DependencyProperty;
+
+        public PlayerSpot? Spot10
+        {
+            get => (PlayerSpot?)GetValue(s_spot10Property);
+            private set => SetValue(s_spot10PropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_spot10PropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(Spot10),
+            typeof(PlayerSpot),
+            typeof(PokerTable),
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_spot10Property = s_spot10PropertyKey.DependencyProperty;
+
+        public PlayerSpot? Spot11
+        {
+            get => (PlayerSpot?)GetValue(s_spot11Property);
+            private set => SetValue(s_spot11PropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_spot11PropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(Spot11),
+            typeof(PlayerSpot),
+            typeof(PokerTable),
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_spot11Property = s_spot11PropertyKey.DependencyProperty;
+
+        public PlayerSpot? Spot12
+        {
+            get => (PlayerSpot?)GetValue(s_spot12Property);
+            private set => SetValue(s_spot12PropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_spot12PropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(Spot12),
+            typeof(PlayerSpot),
+            typeof(PokerTable),
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_spot12Property = s_spot12PropertyKey.DependencyProperty;
         #endregion
 
-        #endregion
-
-        #region Private fields
-        private bool _isRunningInitialCheckOnNumberOfPlayers = false;
-        private static readonly List<PlayerSpot> s_playerSpots = new();
         #endregion
 
         public PokerTable()
@@ -171,198 +188,45 @@ namespace PokerTracker3000.WpfComponents
         private void PokerTableLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= PokerTableLoaded;
-            _isRunningInitialCheckOnNumberOfPlayers = true;
             InitializeSpotList();
-            ViewModel.Players.CollectionChanged += NumberOfPlayersChanged;
-            SetCurrentTableLayout();
-
-            foreach (var player in ViewModel.Players)
-                AddPlayerToSpot(player);
-
-            _isRunningInitialCheckOnNumberOfPlayers = false;
         }
 
         private void InitializeSpotList()
         {
-            Spot1 = new() { SpotIndex = 0 };
-            Spot2 = new() { SpotIndex = 1 };
-            Spot3 = new() { SpotIndex = 2 };
-            Spot4 = new() { SpotIndex = 3 };
-            Spot5 = new() { SpotIndex = 4 };
-            Spot6 = new() { SpotIndex = 5 };
-            Spot7 = new() { SpotIndex = 6 };
-            Spot8 = new() { SpotIndex = 7 };
-
-            s_playerSpots.Add(Spot1);
-            s_playerSpots.Add(Spot2);
-            s_playerSpots.Add(Spot3);
-            s_playerSpots.Add(Spot4);
-            s_playerSpots.Add(Spot5);
-            s_playerSpots.Add(Spot6);
-            s_playerSpots.Add(Spot7);
-            s_playerSpots.Add(Spot8);
-
-            MainWindowFocusManager.RegisterPlayerSpots(s_playerSpots);
-            MainWindowFocusManager.RegisterSpotNavigationCallback((int currentSpotIdx, InputEvent.NavigationDirection direction) =>
-            {
-                switch (CurrentTableLayout)
-                {
-                    case TableLayout.TwoPlayers:
-                        return currentSpotIdx == 0 ? 1 : 0;
-
-                    case TableLayout.FourPlayers:
-                        {
-                            var onTopRow = currentSpotIdx == 0 || currentSpotIdx == 1;
-                            return direction switch
-                            {
-                                InputEvent.NavigationDirection.Right or InputEvent.NavigationDirection.Left => ((currentSpotIdx + 1) % 2) + (onTopRow ? 0 : 2),
-                                InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 2) % 4,
-                                _ => currentSpotIdx
-                            };
-                        }
-                    case TableLayout.SixPlayers:
-                        {
-                            var onTopRow = currentSpotIdx == 0 || currentSpotIdx == 1 || currentSpotIdx == 2;
-                            return direction switch
-                            {
-                                InputEvent.NavigationDirection.Right => ((currentSpotIdx + 1) % 3) + (onTopRow ? 0 : 3),
-                                InputEvent.NavigationDirection.Left => onTopRow ? (currentSpotIdx == 0 ? 2 : currentSpotIdx - 1) : (currentSpotIdx == 3 ? 5 : currentSpotIdx - 1),
-                                InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 3) % 6,
-                                _ => currentSpotIdx
-                            };
-                        }
-                    case TableLayout.EightPlayers:
-                        {
-                            switch (direction)
-                            {
-                                case InputEvent.NavigationDirection.Right:
-                                    return currentSpotIdx switch
-                                    {
-                                        < 3 => currentSpotIdx + 1,
-                                        3 => 7,
-                                        > 3 => currentSpotIdx - 1
-                                    };
-                                case InputEvent.NavigationDirection.Left:
-                                    return currentSpotIdx switch
-                                    {
-                                        0 => 7,
-                                        < 4 => currentSpotIdx - 1,
-                                        >= 4 and < 7 => currentSpotIdx + 1,
-                                        7 => 3,
-                                        _ => currentSpotIdx
-                                    };
-
-                                case InputEvent.NavigationDirection.Up:
-                                    return currentSpotIdx switch
-                                    {
-                                        (>= 0 and < 3) or 5 => 6 - currentSpotIdx,
-                                        3 or 4 => currentSpotIdx - 1,
-                                        6 or 7 => (currentSpotIdx + 1) % 8,
-                                        _ => currentSpotIdx
-                                    };
-                                case InputEvent.NavigationDirection.Down:
-                                    return currentSpotIdx switch
-                                    {
-                                        0 => 7,
-                                        7 => 6,
-                                        (>= 4 and <= 6) or 1 => 6 - currentSpotIdx,
-                                        2 or 3 => currentSpotIdx + 1,
-                                        _ => currentSpotIdx
-                                    };
-                            }
-
-                            return currentSpotIdx;
-                        }
-                    default:
-                        return currentSpotIdx;
-                }
-            });
-            MainWindowFocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) => activeSpot.ChangeSelectedOption(direction));
-            MainWindowFocusManager.RegisterPlayerInfoBoxSelectCallback((PlayerSpot activeSpot) =>
-            {
-                switch (activeSpot.GetSelectedOption().Option)
-                {
-                    case PlayerEditOption.EditOption.ChangeName:
-                        SelectedSpot = activeSpot;
-                        changeNameBox.Focus();
-                        changeNameBox.Select(changeNameBox.Text.Length, 0);
-                        return MainWindowFocusManager.FocusArea.EditNameBox;
-
-                    case PlayerEditOption.EditOption.ChangeImage:
-                        activeSpot.ChangeImage();
-                        // TODO: When there's a nice image picker dialog, this line
-                        //       will have to change
-                        return MainWindowFocusManager.FocusArea.PlayerInfo;
-
-                    case PlayerEditOption.EditOption.Eliminate:
-                        activeSpot.IsEliminated = true;
-                        return MainWindowFocusManager.FocusArea.PlayerInfo;
-
-                    case PlayerEditOption.EditOption.Remove:
-                        if (!activeSpot.CanBeRemoved)
-                            return MainWindowFocusManager.FocusArea.PlayerInfo;
-
-                        activeSpot.Remove();
-                        var newSpotIdx = activeSpot.SpotIndex + 1;
-                        var newSpotToFocus = activeSpot;
-                        while (!newSpotToFocus.HasPlayerData)
-                            newSpotToFocus = s_playerSpots[newSpotIdx++ % s_playerSpots.Count];
-                        newSpotToFocus.IsSelected = true;
-                        return MainWindowFocusManager.FocusArea.Players;
-
-                    case PlayerEditOption.EditOption.AddOn:
-                    case PlayerEditOption.EditOption.BuyIn:
-                    default:
-                        return MainWindowFocusManager.FocusArea.None;
-                };
-            });
-            MainWindowFocusManager.RegisterEditMenuLostFocusCallback(() =>
-            {
-                Application.Current.MainWindow.Focus();
-                SelectedSpot = default;
-            });
-        }
-
-        private void NumberOfPlayersChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (_isRunningInitialCheckOnNumberOfPlayers)
-                return;
-
-            SetCurrentTableLayout();
-            if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != default)
-            {
-                foreach (var item in e.NewItems)
-                {
-                    if (item is PlayerModel p)
-                        AddPlayerToSpot(p);
-                }
-            }
-
-            if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems != default)
-            {
-                foreach (var item in e.OldItems)
-                {
-                    if (item is not PlayerModel p)
-                        continue;
-
-                    foreach (var spot in s_playerSpots)
-                    {
-                        if (spot != default && spot.IsPlayer(p.PlayerId))
-                        {
-                            spot.PlayerData = default;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        private void SetCurrentTableLayout()
-        {
             if (ViewModel == default)
                 return;
 
-            CurrentTableLayout = ViewModel.Players.Count switch
+            Spot1 = ViewModel.PlayerSpots[0];
+            Spot2 = ViewModel.PlayerSpots[1];
+            Spot3 = ViewModel.PlayerSpots[2];
+            Spot4 = ViewModel.PlayerSpots[3];
+            Spot5 = ViewModel.PlayerSpots[4];
+            Spot6 = ViewModel.PlayerSpots[5];
+            Spot7 = ViewModel.PlayerSpots[6];
+            Spot8 = ViewModel.PlayerSpots[7];
+            Spot9 = ViewModel.PlayerSpots[8];
+            Spot10 = ViewModel.PlayerSpots[9];
+            Spot11 = ViewModel.PlayerSpots[10];
+            Spot12 = ViewModel.PlayerSpots[11];
+
+            CalculateLayout(ViewModel.NumberOfActivePlayers);
+            ViewModel.PlayerSpotsUpdatedEvent += (s, e) => CalculateLayout(e);
+            ViewModel.FocusManager.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName?.Equals(nameof(ViewModel.FocusManager.CurrentFocusArea), StringComparison.InvariantCulture) ?? false)
+                {
+                    if (ViewModel.FocusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.EditNameBox)
+                    {
+                        changeNameBox.Focus();
+                        changeNameBox.Select(changeNameBox.Text.Length, 0);
+                    }
+                }
+            };
+        }
+
+        private void CalculateLayout(int numberOfActivePlayers)
+        {
+            CurrentTableLayout = numberOfActivePlayers switch
             {
                 > 10 => TableLayout.TwelvePlayers,
                 > 8 => TableLayout.TenPlayers,
@@ -371,18 +235,9 @@ namespace PokerTracker3000.WpfComponents
                 > 2 => TableLayout.FourPlayers,
                 _ => TableLayout.TwoPlayers,
             };
-        }
 
-        private static void AddPlayerToSpot(PlayerModel player)
-        {
-            foreach (var spot in s_playerSpots)
-            {
-                if (spot != default && !spot.HasPlayerData)
-                {
-                    spot.PlayerData = player;
-                    break;
-                }
-            }
+            if (ViewModel != default)
+                ViewModel.SetTableLayout(CurrentTableLayout);
         }
     }
 }

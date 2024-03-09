@@ -44,7 +44,7 @@ namespace PokerTracker3000.Common
     {
         public string ClientId { get; init; } = string.Empty;
 
-        public int LocalHttpListenerPort  { get; init; }
+        public int LocalHttpListenerPort { get; init; }
 
         public int PkceAuthorizationVerifierLength { get; init; }
 

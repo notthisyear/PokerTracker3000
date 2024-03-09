@@ -3,6 +3,7 @@ using System.Windows.Input;
 using PokerTracker3000.Common;
 using PokerTracker3000.ViewModels;
 using PokerTracker3000.WpfComponents;
+
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 using InputManager = PokerTracker3000.Input.InputManager;
 
@@ -33,7 +34,7 @@ namespace PokerTracker3000
             _inputManager = new();
             InitializeKeyboardMappings();
 
-            ViewModel = new(Settings.App);
+            ViewModel = new(Settings.App, new());
 
             MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
             MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;

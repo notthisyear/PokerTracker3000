@@ -53,6 +53,9 @@ namespace PokerTracker3000.GameSession
         public static PlayerModel GetNewPlayer(int playerId, string pathToImage)
             => new(playerId, new("<NEW PLAYER>", pathToImage));
 
+        public static PlayerModel GetPlayer(string pathToPlayerFile)
+            => throw new NotImplementedException();
+
         public static Exception? TryLoadPlayerFromFile(string pathToFile, int playerId, out PlayerModel? player)
         {
             player = default;

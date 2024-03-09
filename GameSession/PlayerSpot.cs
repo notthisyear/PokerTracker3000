@@ -28,7 +28,7 @@ namespace PokerTracker3000.GameSession
         public PlayerModel? PlayerData
         {
             get => _playerData;
-            set => SetProperty(ref _playerData, value);
+            private set => SetProperty(ref _playerData, value);
         }
 
         public List<PlayerEditOption> SpotOptions { get; init; }
@@ -96,6 +96,28 @@ namespace PokerTracker3000.GameSession
         }
 
         #region Public methods
+        public void AddPlayer(int playerId, string pathToImage)
+        {
+            PlayerData = PlayerModel.GetNewPlayer(playerId, pathToImage);
+        }
+
+        public void AddPlayer(string pathToPlayerFile)
+        {
+            PlayerData = PlayerModel.GetPlayer(pathToPlayerFile);
+        }
+
+        public void RemovePlayer()
+        {
+            if (CanBeRemoved)
+            {
+                IsHighlighted = false;
+                IsSelected = false;
+                IsEliminated = false;
+                CanBeRemoved = false;
+                PlayerData = default;
+            }
+        }
+
         public void ChangeSelectedOption(InputEvent.NavigationDirection direction)
         {
             var currentOption = GetSelectedOption();
@@ -127,18 +149,6 @@ namespace PokerTracker3000.GameSession
             {
                 // TODO: Make a nice image loader dialog that supports cropping the selected image
                 PlayerData.Information.PathToImage = s_loadImageDialog.FileName;
-            }
-        }
-
-        public void Remove()
-        {
-            if (CanBeRemoved)
-            {
-                IsHighlighted = false;
-                IsSelected = false;
-                IsEliminated = false;
-                CanBeRemoved = false;
-                PlayerData = default;
             }
         }
         #endregion
