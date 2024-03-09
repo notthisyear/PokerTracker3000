@@ -217,7 +217,9 @@ namespace PokerTracker3000
             PlayerSpot? spotToFocus = default;
 
             // If the spot we navigated has no player data (meaning that the player is removed),
-            // we navigate in the same direction until we find a spot with player data
+            // we navigate in the same direction until we find a spot with player data.
+            // Worst case, we should always loop around to where we started, which would
+            // mean that there is no valid way to navigate in the request direction
             while (true)
             {
                 newFocusIndex = s_spotNavigationCallback.Invoke(newFocusIndex, direction);

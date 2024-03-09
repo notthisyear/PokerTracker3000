@@ -129,6 +129,30 @@ namespace PokerTracker3000.WpfComponents
             typeof(PokerTable),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
         private static readonly DependencyProperty s_spot6Property = s_spot6PropertyKey.DependencyProperty;
+
+        public PlayerSpot? Spot7
+        {
+            get => (PlayerSpot?)GetValue(s_spot7Property);
+            private set => SetValue(s_spot7PropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_spot7PropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(Spot7),
+            typeof(PlayerSpot),
+            typeof(PokerTable),
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_spot7Property = s_spot7PropertyKey.DependencyProperty;
+
+        public PlayerSpot? Spot8
+        {
+            get => (PlayerSpot?)GetValue(s_spot8Property);
+            private set => SetValue(s_spot8PropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_spot8PropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(Spot8),
+            typeof(PlayerSpot),
+            typeof(PokerTable),
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_spot8Property = s_spot8PropertyKey.DependencyProperty;
         #endregion
 
         #endregion
@@ -166,6 +190,8 @@ namespace PokerTracker3000.WpfComponents
             Spot4 = new() { SpotIndex = 3 };
             Spot5 = new() { SpotIndex = 4 };
             Spot6 = new() { SpotIndex = 5 };
+            Spot7 = new() { SpotIndex = 6 };
+            Spot8 = new() { SpotIndex = 7 };
 
             s_playerSpots.Add(Spot1);
             s_playerSpots.Add(Spot2);
@@ -173,6 +199,8 @@ namespace PokerTracker3000.WpfComponents
             s_playerSpots.Add(Spot4);
             s_playerSpots.Add(Spot5);
             s_playerSpots.Add(Spot6);
+            s_playerSpots.Add(Spot7);
+            s_playerSpots.Add(Spot8);
 
             MainWindowFocusManager.RegisterPlayerSpots(s_playerSpots);
             MainWindowFocusManager.RegisterSpotNavigationCallback((int currentSpotIdx, InputEvent.NavigationDirection direction) =>
@@ -202,6 +230,48 @@ namespace PokerTracker3000.WpfComponents
                                 InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 3) % 6,
                                 _ => currentSpotIdx
                             };
+                        }
+                    case TableLayout.EightPlayers:
+                        {
+                            switch (direction)
+                            {
+                                case InputEvent.NavigationDirection.Right:
+                                    return currentSpotIdx switch
+                                    {
+                                        < 3 => currentSpotIdx + 1,
+                                        3 => 7,
+                                        > 3 => currentSpotIdx - 1
+                                    };
+                                case InputEvent.NavigationDirection.Left:
+                                    return currentSpotIdx switch
+                                    {
+                                        0 => 7,
+                                        < 4 => currentSpotIdx - 1,
+                                        >= 4 and < 7 => currentSpotIdx + 1,
+                                        7 => 3,
+                                        _ => currentSpotIdx
+                                    };
+
+                                case InputEvent.NavigationDirection.Up:
+                                    return currentSpotIdx switch
+                                    {
+                                        (>= 0 and < 3) or 5 => 6 - currentSpotIdx,
+                                        3 or 4 => currentSpotIdx - 1,
+                                        6 or 7 => (currentSpotIdx + 1) % 8,
+                                        _ => currentSpotIdx
+                                    };
+                                case InputEvent.NavigationDirection.Down:
+                                    return currentSpotIdx switch
+                                    {
+                                        0 => 7,
+                                        7 => 6,
+                                        (>= 4 and <= 6) or 1 => 6 - currentSpotIdx,
+                                        2 or 3 => currentSpotIdx + 1,
+                                        _ => currentSpotIdx
+                                    };
+                            }
+
+                            return currentSpotIdx;
                         }
                     default:
                         return currentSpotIdx;

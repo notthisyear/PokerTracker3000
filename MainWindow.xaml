@@ -68,7 +68,6 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="150" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="50" />
                 </Grid.RowDefinitions>
 
                 <!-- Title bar -->
@@ -90,7 +89,7 @@
                 <components:PokerTable Grid.Row="2"
                                        HorizontalAlignment="Stretch"
                                        VerticalAlignment="Stretch"
-                                       Margin="10"
+                                       Margin="0,10,0,20"
                                        ViewModel="{Binding Path=ViewModel.SessionManager}"/>
 
                 <!-- Side menu (left) -->
