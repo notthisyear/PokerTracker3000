@@ -287,7 +287,6 @@
             <!-- Left column -->
             <components:Player Grid.Row="2"
                                Grid.Column="0"
-                               Grid.ColumnSpan="2"
                                SpotData="{Binding Path=Spot8}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"
                                AlwaysShowPlayerImage="True" />
