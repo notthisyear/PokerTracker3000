@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using PokerTracker3000.GameComponents;
 using PokerTracker3000.GameSession;
 
 namespace PokerTracker3000.WpfComponents
@@ -50,6 +51,17 @@ namespace PokerTracker3000.WpfComponents
             typeof(bool),
             typeof(Player),
             new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public CurrencyType CurrentCurrency
+        {
+            get => (CurrencyType)GetValue(CurrentCurrencyProperty);
+            set => SetValue(CurrentCurrencyProperty, value);
+        }
+        public static readonly DependencyProperty CurrentCurrencyProperty = DependencyProperty.Register(
+            nameof(CurrentCurrency),
+            typeof(CurrencyType),
+            typeof(Player),
+            new FrameworkPropertyMetadata(CurrencyType.SwedishKrona, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public Player()
         {

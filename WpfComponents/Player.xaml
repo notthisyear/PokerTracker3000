@@ -7,6 +7,7 @@
 
     <UserControl.Resources>
         <converters:BoolToZeroOrNumberConverter x:Key="boolToZeroOrNumberConverter" />
+        <converters:ValueDisplayConverter x:Key="valueDisplayConverter" />
 
         <Storyboard x:Key="scaleUp"
                     PresentationOptions:Freeze="True">
@@ -464,40 +465,41 @@
 
             </Style.Triggers>
         </Style>
+
+        <Style x:Key="playerBeingMovedMarker" TargetType="{x:Type Border}">
+            <Setter Property="BorderBrush" Value="{StaticResource MainSuccessColorDisabled}" />
+            <Setter Property="OpacityMask" Value="{StaticResource crossOpacityMask}" />
+            <Setter Property="BorderThickness" Value="4" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Opacity" Value="0.8" />
+            <Setter Property="Visibility" Value="{Binding Path=SpotData.IsBeingMoved, Converter={StaticResource booleanToVisibleOrCollapsedConverter}}" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=SpotData.IsHighlighted}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard Name="scaleAnimation"
+                                 Storyboard="{StaticResource bouncingScalingAnimation}" />
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="scaleAnimation" />
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Border DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
             Style="{StaticResource mainPlayerCardBorder}">
 
         <Grid>
-            <Border BorderBrush="{StaticResource MainSuccessColorDisabled}"
-                    OpacityMask="{StaticResource crossOpacityMask}"
-                    BorderThickness="4"
-                    CornerRadius="10"
-                    Opacity="0.8"
-                    Visibility="{Binding Path=SpotData.IsBeingMoved, Converter={StaticResource booleanToVisibleOrCollapsedConverter}}">
-                <Border.Style>
-                    <Style TargetType="{x:Type Border}">
-                        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
-                        <Setter Property="RenderTransform">
-                            <Setter.Value>
-                                <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=SpotData.IsHighlighted}" Value="True">
-                                <DataTrigger.EnterActions>
-                                    <BeginStoryboard Name="scaleAnimation"
-                                                     Storyboard="{StaticResource bouncingScalingAnimation}" />
-                                </DataTrigger.EnterActions>
-                                <DataTrigger.ExitActions>
-                                    <StopStoryboard BeginStoryboardName="scaleAnimation" />
-                                </DataTrigger.ExitActions>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-            </Border>
+
+            <!-- Is being moved marker -->
+            <Border Style="{StaticResource playerBeingMovedMarker}" />
 
             <!-- Vertically oriented spot info -->
             <StackPanel Orientation="Vertical">
@@ -540,8 +542,14 @@
                                     VerticalAlignment="Bottom"
                                     Margin="0,0,0,3"/>
                         <TextBlock  Style="{StaticResource playerNameStyle}"
-                                    FontSize="16"
-                                    Text="{Binding Path=SpotData.PlayerData.Information.MoneyInThePot}" />
+                                    FontSize="16">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                    <Binding Path="SpotData.PlayerData.Information.MoneyInThePot" />
+                                    <Binding Path="CurrentCurrency" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
                     </StackPanel>
                 </StackPanel>
 

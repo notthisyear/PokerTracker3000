@@ -248,16 +248,19 @@
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot1}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopLeft}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="0"
                                Grid.Column="3"
                                SpotData="{Binding Path=Spot2}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="0"
                                Grid.Column="5"
                                SpotData="{Binding Path=Spot3}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopRight}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
 
             <!-- Right column -->
@@ -265,6 +268,7 @@
                                Grid.Column="6"
                                SpotData="{Binding Path=Spot4}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomRight}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
 
             <!-- Bottom row-->
@@ -272,16 +276,19 @@
                                Grid.Column="5"
                                SpotData="{Binding Path=Spot5}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomRight}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="4"
                                Grid.Column="3"
                                SpotData="{Binding Path=Spot6}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="4"
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot7}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
 
             <!-- Left column -->
@@ -289,6 +296,7 @@
                                Grid.Column="0"
                                SpotData="{Binding Path=Spot8}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
         </Grid>
 
@@ -325,16 +333,19 @@
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot1}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopLeft}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="0"
                                Grid.Column="3"
                                SpotData="{Binding Path=Spot2}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="0"
                                Grid.Column="5"
                                SpotData="{Binding Path=Spot3}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopRight}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
 
             <!-- Bottom row-->
@@ -342,16 +353,19 @@
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot4}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="2"
                                Grid.Column="3"
                                SpotData="{Binding Path=Spot5}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="2"
                                Grid.Column="5"
                                SpotData="{Binding Path=Spot6}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomRight}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
         </Grid>
 
@@ -386,11 +400,13 @@
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot1}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="0"
                                Grid.Column="3"
                                SpotData="{Binding Path=Spot2}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
 
             <!-- Bottom row-->
@@ -398,11 +414,13 @@
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot3}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
             <components:Player Grid.Row="2"
                                Grid.Column="3"
                                SpotData="{Binding Path=Spot4}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
         </Grid>
 
@@ -435,6 +453,7 @@
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot1}"
                                Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
 
             <!-- Bottom row-->
@@ -442,6 +461,7 @@
                                Grid.Column="1"
                                SpotData="{Binding Path=Spot2}"
                                Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
                                AlwaysShowPlayerImage="True" />
         </Grid>
 

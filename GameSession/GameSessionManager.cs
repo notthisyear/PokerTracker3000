@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PokerTracker3000.GameComponents;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
@@ -23,7 +24,9 @@ namespace PokerTracker3000.GameSession
 
         #region Backing fields
         private PlayerSpot? _selectedSpot;
+        private CurrencyType _currencyType = CurrencyType.SwedishKrona;
         #endregion
+
         public List<PlayerSpot> PlayerSpots { get; } = new();
 
         public int NumberOfActivePlayers { get; private set; } = 0;
@@ -33,6 +36,13 @@ namespace PokerTracker3000.GameSession
             get => _selectedSpot;
             private set => SetProperty(ref _selectedSpot, value);
         }
+
+        public CurrencyType CurrencyType
+        {
+            get => _currencyType;
+            private set => SetProperty(ref _currencyType, value);
+        }
+
         public GameClock Clock { get; } = new();
 
         public MainWindowFocusManager FocusManager { get; }
