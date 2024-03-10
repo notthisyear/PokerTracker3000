@@ -133,13 +133,20 @@ namespace PokerTracker3000.GameSession
             var currentOptionIndex = SpotOptions.IndexOf(currentOption);
 
             var onTopRow = currentOptionIndex < 2;
-            var onBottomRow = currentOptionIndex >= (SpotOptions.Count - 2);
+            var numberOfOptionsEven = (SpotOptions.Count % 2) == 0;
+            var onBottomRow = currentOptionIndex >= (SpotOptions.Count - (numberOfOptionsEven ? 2 : 1));
+            var isOnLastSingleOption = onBottomRow && !numberOfOptionsEven;
 
             var newOptionIndex = direction switch
             {
-                InputEvent.NavigationDirection.Left or InputEvent.NavigationDirection.Right => (currentOptionIndex % 2 == 0) ? currentOptionIndex + 1 : currentOptionIndex - 1,
-                InputEvent.NavigationDirection.Down => onBottomRow ? currentOptionIndex % 2 : currentOptionIndex + 2,
-                InputEvent.NavigationDirection.Up => onTopRow ? SpotOptions.Count - 2 + currentOptionIndex : currentOptionIndex - 2,
+                InputEvent.NavigationDirection.Left or
+                InputEvent.NavigationDirection.Right =>
+                (isOnLastSingleOption ? currentOptionIndex - 1 :
+                (currentOptionIndex % 2 == 0) ? currentOptionIndex + 1 : currentOptionIndex - 1),
+                InputEvent.NavigationDirection.Down => onBottomRow ?
+                (currentOptionIndex % 2) : Math.Min(currentOptionIndex + 2, SpotOptions.Count - 1),
+                InputEvent.NavigationDirection.Up => onTopRow ?
+                (SpotOptions.Count - (numberOfOptionsEven ? (2 - currentOptionIndex) : (1 + currentOptionIndex))) : (currentOptionIndex - 2),
                 _ => currentOptionIndex
             };
             currentOption.IsSelected = false;
