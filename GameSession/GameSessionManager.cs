@@ -80,24 +80,20 @@ namespace PokerTracker3000.GameSession
             FocusManager.RegisterPlayerSpots(PlayerSpots);
             FocusManager.RegisterSpotNavigationCallback((int currentSpotIdx, InputEvent.NavigationDirection direction) =>
             {
-                (MainWindowFocusManager.NavigationCallback navigationCallback,
-                Func<int, int, InputEvent.NavigationDirection, MainWindowFocusManager.NavigationCallback, int>? navigationFailureHandler) navigationResult
+                MainWindowFocusManager.NavigationCallback navigationCallback
                 = _currentTableLayout switch
                 {
-                    TableLayout.TwoPlayers => (NavigateTwoPlayer, default),
-                    TableLayout.FourPlayers => (NavigateFourPlayer, default),
-                    TableLayout.SixPlayers => (NavigateSixPlayer, NavigateTheSameDirectionAgain),
-                    TableLayout.EightPlayers => (NavigateEightPlayers, default),
-                    _ => ((i, d) => i, default)
+                    TableLayout.TwoPlayers => NavigateTwoPlayer,
+                    TableLayout.FourPlayers => NavigateFourPlayer,
+                    TableLayout.SixPlayers => NavigateSixPlayer,
+                    TableLayout.EightPlayers => NavigateEightPlayers,
+                    _ => (i, d) => i
                 };
 
-                var newSpotIndex = navigationResult.navigationCallback(currentSpotIdx, direction);
-                // Note: The failure handler should be set-up in such a way that we'll
-                //       eventually come back to where we started, meaning that no valid
-                //       navigation for the current direction exists.
-                while (!PlayerSpots[newSpotIndex].HasPlayerData && navigationResult.navigationFailureHandler != default)
-                    newSpotIndex = navigationResult.navigationFailureHandler(currentSpotIdx, newSpotIndex, direction, navigationResult.navigationCallback);
-
+                // Note: The navigation is set-up in such a way that if no
+                //       available spot is found in the requested navigation
+                //       direction, the current spot index is returned
+                var newSpotIndex = navigationCallback(currentSpotIdx, direction);
                 if (_moveInProgress)
                 {
                     var currentSpot = PlayerSpots.First(x => x.SpotIndex == currentSpotIdx);
@@ -160,28 +156,91 @@ namespace PokerTracker3000.GameSession
         }
 
         private int NavigateTwoPlayer(int currentSpotIdx, InputEvent.NavigationDirection _)
+            /* Layout:
+             *
+             *   0
+             *
+             *   1
+             */
             => FindFirstOccupiedSpot(currentSpotIdx, currentSpotIdx + 1 % 2);
 
         private int NavigateFourPlayer(int currentSpotIdx, InputEvent.NavigationDirection direction)
         {
-            // 0:  -> 2, 3 [up, down]     1:  -> 3, 2 [up, down]
-            //     -> 1, 3 [left, right]      -> 0, 2 [left, right]
-            //
-            // 2:  -> 0, 1 [up, down]     3:  -> 0, 0 [up, down]
-            //     -> 3, 1 [left, right]      -> 2, 0 [left, right]
+            /* Layout:
+             *
+             *   0  1
+             *
+             *   2  3
+             *   
+             * 0:  -> 2, 3 [up, down]     1:  -> 3, 2 [up, down]
+             *     -> 1, 3 [left, right]      -> 0, 2 [left, right]
+             *
+             * 2:  -> 0, 1 [up, down]     3:  -> 0, 0 [up, down]
+             *     -> 3, 1 [left, right]      -> 2, 0 [left, right]
+            */
             if (direction == InputEvent.NavigationDirection.Up || direction == InputEvent.NavigationDirection.Down)
                 return FindFirstOccupiedSpot(currentSpotIdx, (currentSpotIdx + 2) % 4, 3 - currentSpotIdx);
             return FindFirstOccupiedSpot(currentSpotIdx, currentSpotIdx + ((currentSpotIdx % 2 == 0) ? 1 : -1), 3 - currentSpotIdx);
         }
 
-        private static int NavigateSixPlayer(int currentSpotIdx, InputEvent.NavigationDirection direction)
+        private int NavigateSixPlayer(int currentSpotIdx, InputEvent.NavigationDirection direction)
         {
-            var onTopRow = currentSpotIdx == 0 || currentSpotIdx == 1 || currentSpotIdx == 2;
-            return direction switch
+            /* Layout:
+             *
+             *   0  1  2
+             *
+             *   3  4  5
+             */
+            return currentSpotIdx switch
             {
-                InputEvent.NavigationDirection.Right => ((currentSpotIdx + 1) % 3) + (onTopRow ? 0 : 3),
-                InputEvent.NavigationDirection.Left => onTopRow ? (currentSpotIdx == 0 ? 2 : currentSpotIdx - 1) : (currentSpotIdx == 3 ? 5 : currentSpotIdx - 1),
-                InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 3) % 6,
+                0 => direction switch
+                {
+                    InputEvent.NavigationDirection.Up or
+                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(0, 3, 4, 5),
+                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(0, 2, 5, 1, 4),
+                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(0, 1, 4, 2, 5),
+                    _ => currentSpotIdx
+                },
+                1 => direction switch
+                {
+                    InputEvent.NavigationDirection.Up or
+                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(1, 4, 3, 5),
+                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(1, 0, 3, 5, 2),
+                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(1, 2, 5, 0, 3),
+                    _ => currentSpotIdx
+                },
+                2 => direction switch
+                {
+                    InputEvent.NavigationDirection.Up or
+                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(2, 5, 4, 3),
+                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(2, 1, 4, 0, 3),
+                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(2, 0, 3, 1, 4),
+                    _ => currentSpotIdx
+                },
+                3 => direction switch
+                {
+                    InputEvent.NavigationDirection.Up or
+                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(3, 0, 1, 2),
+                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(3, 5, 2, 4, 1),
+                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(3, 4, 1, 2, 5),
+                    _ => currentSpotIdx
+                },
+                4 => direction switch
+                {
+                    InputEvent.NavigationDirection.Up or
+                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(4, 1, 0, 2),
+                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(4, 3, 0, 5, 2),
+                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(4, 5, 2, 3, 0),
+                    _ => currentSpotIdx
+                },
+                5 => direction switch
+                {
+                    InputEvent.NavigationDirection.Up or
+                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(5, 2, 1, 0),
+                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(5, 4, 1, 3, 0),
+                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(5, 3, 0, 4, 1),
+                    _ => currentSpotIdx
+                },
                 _ => currentSpotIdx
             };
         }
@@ -263,9 +322,6 @@ namespace PokerTracker3000.GameSession
                 _ => currentSpotIdx,
             };
         }
-
-        private int NavigateTheSameDirectionAgain(int _, int failedSpotIdx, InputEvent.NavigationDirection direction, MainWindowFocusManager.NavigationCallback callback)
-            => callback(failedSpotIdx, direction);
 
         private int FindFirstOccupiedSpot(int fallback, params int[] indicesToCheck)
         {
