@@ -33,6 +33,9 @@ namespace PokerTracker3000.WpfComponents
 
         private ImageSource? CalculateGrayScaleImage()
         {
+            if (Source == default)
+                return default;
+
             var converter = TypeDescriptor.GetConverter(Source);
             var sourceAsString = converter.ConvertTo(Source, typeof(string)) as string;
             if (Uri.TryCreate(sourceAsString, UriKind.Absolute, out var uri))

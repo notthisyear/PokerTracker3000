@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Ookii.Dialogs.Wpf;
@@ -15,6 +16,7 @@ namespace PokerTracker3000.GameSession
         private PlayerModel? _playerData = default;
         private bool _isHighlighted = false;
         private bool _isSelected = false;
+        private bool _isBeingMoved = false;
         private bool _canBeRemoved = false;
         private bool _isEliminated = false;
         private static readonly VistaOpenFileDialog s_loadImageDialog = new()
@@ -43,6 +45,12 @@ namespace PokerTracker3000.GameSession
         {
             get => _isSelected;
             set => SetProperty(ref _isSelected, value);
+        }
+
+        public bool IsBeingMoved
+        {
+            get => _isBeingMoved;
+            set => SetProperty(ref _isBeingMoved, value);
         }
 
         public bool IsEliminated
@@ -90,6 +98,7 @@ namespace PokerTracker3000.GameSession
             {
                 new(PlayerEditOption.EditOption.ChangeName, isSelected: true),
                 new(PlayerEditOption.EditOption.ChangeImage),
+                new(PlayerEditOption.EditOption.Move),
                 new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success),
                 new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel),
             };
@@ -150,6 +159,19 @@ namespace PokerTracker3000.GameSession
                 // TODO: Make a nice image loader dialog that supports cropping the selected image
                 PlayerData.Information.PathToImage = s_loadImageDialog.FileName;
             }
+        }
+
+        public void Swap(PlayerSpot other)
+        {
+            var thisPlayerData = PlayerData;
+            var thisIsEliminated = IsEliminated;
+            PlayerData = other.PlayerData;
+            IsEliminated = other.IsEliminated;
+            IsBeingMoved = true;
+
+            other.PlayerData = thisPlayerData;
+            other.IsEliminated = thisIsEliminated;
+            other.IsBeingMoved = false;
         }
         #endregion
     }

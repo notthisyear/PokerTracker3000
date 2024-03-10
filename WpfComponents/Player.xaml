@@ -48,6 +48,25 @@
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
 
+        <Storyboard x:Key="bouncingScalingAnimation"
+             PresentationOptions:Freeze="True"
+                    RepeatBehavior="Forever"
+                    AutoReverse="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame Value="1.15"
+                               KeyTime="0:0:0.7">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuadraticEase EasingMode="EaseOut" />
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
+                <EasingDoubleKeyFrame Value="1.15"
+                                      KeyTime="0:0:0.7">
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
         <Storyboard x:Key="moveToZero"
                     PresentationOptions:Freeze="True">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">
@@ -245,6 +264,16 @@
             </RadialGradientBrush.GradientStops>
         </RadialGradientBrush>
 
+        <LinearGradientBrush x:Key="crossOpacityMask"
+                      StartPoint="0,0.5" EndPoint="1,0.5">
+            <LinearGradientBrush.GradientStops>
+                <GradientStop Offset="0" Color="Black" />
+                <GradientStop Offset="0.1" Color="Transparent" />
+                <GradientStop Offset="0.9" Color="Transparent" />
+                <GradientStop Offset="1" Color="Black" />
+            </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+
         <Style x:Key="imageBorderBase" TargetType="{x:Type Border}">
             <Setter Property="Visibility" Value="Collapsed" />
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -441,6 +470,35 @@
             Style="{StaticResource mainPlayerCardBorder}">
 
         <Grid>
+            <Border BorderBrush="{StaticResource MainSuccessColorDisabled}"
+                    OpacityMask="{StaticResource crossOpacityMask}"
+                    BorderThickness="4"
+                    CornerRadius="10"
+                    Opacity="0.8"
+                    Visibility="{Binding Path=SpotData.IsBeingMoved, Converter={StaticResource booleanToVisibleOrCollapsedConverter}}">
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                        <Setter Property="RenderTransform">
+                            <Setter.Value>
+                                <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=SpotData.IsHighlighted}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Name="scaleAnimation"
+                                                     Storyboard="{StaticResource bouncingScalingAnimation}" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <StopStoryboard BeginStoryboardName="scaleAnimation" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+            </Border>
+
             <!-- Vertically oriented spot info -->
             <StackPanel Orientation="Vertical">
                 <StackPanel.Style>

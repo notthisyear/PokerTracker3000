@@ -46,7 +46,7 @@ namespace PokerTracker3000.GameSession
         private const int NumberOfPlayerSpots = 12;
         private readonly string _pathToDefaultPlayerImage;
         private int _nextPlayerId = 0;
-
+        private bool _moveInProgress = false;
         private TableLayout _currentTableLayout;
         #endregion
 
@@ -97,6 +97,12 @@ namespace PokerTracker3000.GameSession
                 //       navigation for the current direction exists.
                 while (!PlayerSpots[newSpotIndex].HasPlayerData && navigationResult.navigationFailureHandler != default)
                     newSpotIndex = navigationResult.navigationFailureHandler(currentSpotIdx, newSpotIndex, direction, navigationResult.navigationCallback);
+
+                if (_moveInProgress)
+                {
+                    var currentSpot = PlayerSpots.First(x => x.SpotIndex == currentSpotIdx);
+                    PlayerSpots.First(x => x.SpotIndex == newSpotIndex).Swap(currentSpot);
+                }
                 return newSpotIndex;
             });
             FocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) => activeSpot.ChangeSelectedOption(direction));
@@ -130,8 +136,14 @@ namespace PokerTracker3000.GameSession
                         newSpotToFocus.IsSelected = true;
                         return MainWindowFocusManager.FocusArea.Players;
 
+                    case PlayerEditOption.EditOption.Move:
+                        _moveInProgress = true;
+                        activeSpot.IsBeingMoved = true;
+                        return MainWindowFocusManager.FocusArea.MovementInProgress;
+
                     case PlayerEditOption.EditOption.AddOn:
                     case PlayerEditOption.EditOption.BuyIn:
+
                     default:
                         return MainWindowFocusManager.FocusArea.None;
                 };
@@ -139,6 +151,11 @@ namespace PokerTracker3000.GameSession
             FocusManager.RegisterEditMenuLostFocusCallback(() =>
             {
                 SelectedSpot = default;
+            });
+            FocusManager.RegisterMovementDoneCallback((PlayerSpot spot) =>
+            {
+                _moveInProgress = false;
+                spot.IsBeingMoved = false;
             });
         }
 
@@ -264,6 +281,9 @@ namespace PokerTracker3000.GameSession
 
         private int FindFirstOccupiedSpot(int fallback, params int[] indicesToCheck)
         {
+            if (_moveInProgress)
+                return indicesToCheck.First();
+
             foreach (var i in indicesToCheck)
             {
                 if (PlayerSpots.First(x => x.SpotIndex == i).HasPlayerData != default)

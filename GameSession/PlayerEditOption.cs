@@ -17,6 +17,15 @@ namespace PokerTracker3000.GameSession
             [Description("Change image")]
             ChangeImage,
 
+            [Description("Move player")]
+            Move,
+
+            [Description("Save player")]
+            Save,
+
+            [Description("Load player")]
+            Load,
+
             [Description("Add-on")]
             AddOn,
 

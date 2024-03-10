@@ -17,7 +17,8 @@ namespace PokerTracker3000
             Players,
             PlayerInfo,
             EditNameBox,
-            ConfirmationDialog
+            ConfirmationDialog,
+            MovementInProgress
         }
 
         #region Public properties
@@ -38,6 +39,7 @@ namespace PokerTracker3000
         public delegate void PlayerOptionNavigationCallback(PlayerSpot spot, InputEvent.NavigationDirection direction);
         public delegate FocusArea PlayerOptionSelectCallback(PlayerSpot spot);
         public delegate void EditMenuLostFocusCallback();
+        public delegate void PlayerMovementDoneCallback(PlayerSpot spot);
         #endregion
 
         #region Private fields
@@ -49,6 +51,7 @@ namespace PokerTracker3000
         private PlayerOptionNavigationCallback? _playerOptionsNavigationCallback;
         private PlayerOptionSelectCallback? _playerOptionsSelectCallback;
         private EditMenuLostFocusCallback? _editMenuLostFocusCallback;
+        private PlayerMovementDoneCallback? _playerMovementDoneCallback;
 
         private readonly Dictionary<InputEvent.ButtonEventType, Action> _buttonPressedHandlers;
         #endregion
@@ -89,6 +92,11 @@ namespace PokerTracker3000
         {
             _editMenuLostFocusCallback = callback;
         }
+
+        public void RegisterMovementDoneCallback(PlayerMovementDoneCallback callback)
+        {
+            _playerMovementDoneCallback = callback;
+        }
         #endregion
 
         public void HandleButtonPressedEvent(InputEvent.ButtonEventType button)
@@ -112,6 +120,7 @@ namespace PokerTracker3000
                     break;
 
                 case FocusArea.Players:
+                case FocusArea.MovementInProgress:
                     HandlePlayersAreaNavigationEvent(direction);
                     break;
 
@@ -147,6 +156,14 @@ namespace PokerTracker3000
                 case FocusArea.EditNameBox:
                     SetNewFocusArea(FocusArea.PlayerInfo);
                     break;
+
+                case FocusArea.MovementInProgress:
+                    {
+                        if (_playerMovementDoneCallback != default && TryGetMatchingSpot(x => x.IsBeingMoved, out var spot))
+                            _playerMovementDoneCallback.Invoke(spot!);
+                    }
+                    SetNewFocusArea(FocusArea.Players);
+                    break;
             }
         }
 
@@ -159,15 +176,25 @@ namespace PokerTracker3000
                     break;
 
                 case FocusArea.PlayerInfo:
-                    if (_playerOptionsSelectCallback != default && TryGetMatchingSpot(x => x.IsSelected, out var spot))
                     {
-                        var newFocusArea = _playerOptionsSelectCallback.Invoke(spot!);
-                        SetNewFocusArea(newFocusArea);
+                        if (_playerOptionsSelectCallback != default && TryGetMatchingSpot(x => x.IsSelected, out var spot))
+                        {
+                            var newFocusArea = _playerOptionsSelectCallback.Invoke(spot!);
+                            SetNewFocusArea(newFocusArea);
+                        }
                     }
                     break;
 
                 case FocusArea.EditNameBox:
                     SetNewFocusArea(FocusArea.PlayerInfo);
+                    break;
+
+                case FocusArea.MovementInProgress:
+                    {
+                        if (_playerMovementDoneCallback != default && TryGetMatchingSpot(x => x.IsBeingMoved, out var spot))
+                            _playerMovementDoneCallback.Invoke(spot!);
+                    }
+                    SetNewFocusArea(FocusArea.Players);
                     break;
             }
         }
@@ -198,7 +225,10 @@ namespace PokerTracker3000
             ClearFocusFromCurrentlyFocusedArea();
 
             PlayerSpot? activeSpot = default;
-            if (newFocusArea == FocusArea.Players || newFocusArea == FocusArea.PlayerInfo || newFocusArea == FocusArea.EditNameBox)
+            if (newFocusArea == FocusArea.Players ||
+                newFocusArea == FocusArea.PlayerInfo ||
+                newFocusArea == FocusArea.EditNameBox ||
+                newFocusArea == FocusArea.MovementInProgress)
             {
                 if (!TryGetMatchingSpot(x => x.SpotIndex == _lastFocusedPlayerSpotIndex, out activeSpot))
                     return;
@@ -211,6 +241,7 @@ namespace PokerTracker3000
                 case FocusArea.Players:
                 case FocusArea.PlayerInfo:
                 case FocusArea.EditNameBox:
+                case FocusArea.MovementInProgress:
                     if (activeSpot != default)
                     {
                         activeSpot.IsHighlighted = true;
@@ -251,7 +282,12 @@ namespace PokerTracker3000
                 case FocusArea.Players:
                 case FocusArea.PlayerInfo:
                 case FocusArea.EditNameBox:
-                    if (!TryGetMatchingSpot(x => CurrentFocusArea == FocusArea.Players ? x.IsHighlighted : x.IsSelected, out var focusedSpot))
+                case FocusArea.MovementInProgress:
+                    Predicate<PlayerSpot> propertyToCheck =
+                        (CurrentFocusArea == FocusArea.Players || CurrentFocusArea == FocusArea.MovementInProgress) ?
+                        (x => x.IsHighlighted) : (x => x.IsSelected);
+
+                    if (!TryGetMatchingSpot(propertyToCheck, out var focusedSpot))
                         return;
 
                     _lastFocusedPlayerSpotIndex = focusedSpot!.SpotIndex;
