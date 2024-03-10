@@ -50,7 +50,7 @@ namespace PokerTracker3000.WpfComponents
             nameof(AlwaysShowPlayerImage),
             typeof(bool),
             typeof(Player),
-            new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public CurrencyType CurrentCurrency
         {

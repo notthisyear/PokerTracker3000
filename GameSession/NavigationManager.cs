@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using static PokerTracker3000.MainWindowFocusManager;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
@@ -9,199 +9,227 @@ namespace PokerTracker3000.GameSession
 {
     internal class NavigationManager
     {
+        private readonly struct Distance
+        {
+            public float XDifference { get; init; }
+
+            public float YDifference { get; init; }
+
+            public int StartSpotId { get; init; }
+
+            public int EndSpotId { get; init; }
+
+            public readonly double Total => Math.Sqrt(XDifference * XDifference + YDifference * YDifference);
+        }
+
+        private readonly struct SpotCoordinate
+        {
+            public int Id { get; init; }
+
+            public float X { get; init; }
+
+            public float Y { get; init; }
+
+            private readonly Dictionary<InputEvent.NavigationDirection, List<int>> _navigationOrderForDirection;
+
+            public SpotCoordinate()
+            {
+                _navigationOrderForDirection = [];
+            }
+
+            public void Init(ReadOnlyCollection<SpotCoordinate> allSpots)
+            {
+                List<Distance> distanceToOtherSpots = [];
+                foreach (var spot in allSpots)
+                {
+                    if (spot.Id == Id)
+                        continue;
+
+                    distanceToOtherSpots.Add(new()
+                    {
+                        XDifference = spot.X - X,
+                        YDifference = spot.Y - Y,
+                        StartSpotId = Id,
+                        EndSpotId = spot.Id
+                    });
+                }
+
+                distanceToOtherSpots.Sort((x, y) => x.Total < y.Total ? -1 : 1);
+
+                foreach (InputEvent.NavigationDirection direction in Enum.GetValues(typeof(InputEvent.NavigationDirection)))
+                {
+                    List<int> navigationOrder = direction switch
+                    {
+                        InputEvent.NavigationDirection.Left =>
+                                [.. distanceToOtherSpots.Where(x => x.XDifference < 0).Select(x => x.EndSpotId),
+                                .. distanceToOtherSpots.Where(x => x.XDifference > 0).Select(x => x.EndSpotId).Reverse()],
+                        InputEvent.NavigationDirection.Right =>
+                                [.. distanceToOtherSpots.Where(x => x.XDifference > 0).Select(x => x.EndSpotId),
+                                .. distanceToOtherSpots.Where(x => x.XDifference < 0).Select(x => x.EndSpotId).Reverse()],
+                        InputEvent.NavigationDirection.Up =>
+                                [.. distanceToOtherSpots.Where(x => x.YDifference < 0).Select(x => x.EndSpotId),
+                                .. distanceToOtherSpots.Where(x => x.YDifference > 0).Select(x => x.EndSpotId)],
+                        InputEvent.NavigationDirection.Down =>
+                                [.. distanceToOtherSpots.Where(x => x.YDifference > 0).Select(x => x.EndSpotId),
+                                .. distanceToOtherSpots.Where(x => x.YDifference < 0).Select(x => x.EndSpotId)],
+                        _ => []
+                    };
+
+                    if (navigationOrder.Count > 0)
+                        _navigationOrderForDirection.Add(direction, navigationOrder);
+                }
+            }
+            public bool TryGetValidMovementsInDirection(InputEvent.NavigationDirection direction, out List<int>? navigationOrder)
+                => _navigationOrderForDirection.TryGetValue(direction, out navigationOrder);
+        }
+
         #region Private fields
         private readonly ReadOnlyCollection<PlayerSpot> _spots;
-        private readonly Dictionary<TableLayout, NavigationCallback> _layoutNavigation;
+        private readonly Dictionary<TableLayout, List<SpotCoordinate>> _spotCoordinates;
         private bool _moveInProgress;
         #endregion
 
         public NavigationManager(ReadOnlyCollection<PlayerSpot> spots)
         {
             _spots = spots;
-            _layoutNavigation = new()
-            {
-                { TableLayout.TwoPlayers, NavigateTwoPlayerLayout },
-                { TableLayout.FourPlayers, NavigateFourPlayerLayout },
-                { TableLayout.SixPlayers, NavigateSixPlayerLayout },
-                { TableLayout.EightPlayers, NavigateEightPlayersLayout }
-            };
+            _spotCoordinates = [];
+            SetupNavigationInformation();
         }
 
         public int Navigate(TableLayout layout, int currentSpotIdx, InputEvent.NavigationDirection direction, bool moveInProgress)
         {
             _moveInProgress = moveInProgress;
-            if (_layoutNavigation.TryGetValue(layout, out var navigationCallback))
-                return navigationCallback(currentSpotIdx, direction);
+            if (_spotCoordinates.TryGetValue(layout, out var spotCoordinates))
+            {
+                var matchingCoordinates = spotCoordinates.Where(x => x.Id == currentSpotIdx);
+                if (matchingCoordinates.Count() == 1 &&
+                    matchingCoordinates.First().TryGetValidMovementsInDirection(direction, out var navigationOrder))
+                {
+                    return FindFirstOccupiedSpot(currentSpotIdx, [.. navigationOrder!]);
+                }
+            }
             return currentSpotIdx;
         }
 
         #region Private methods
-        private int NavigateTwoPlayerLayout(int currentSpotIdx, InputEvent.NavigationDirection _)
-           /* Layout:
+        private void SetupNavigationInformation()
+        {
+            /* Layout:
             *
             *   0
             *
             *   1
             */
-           => FindFirstOccupiedSpot(currentSpotIdx, currentSpotIdx + 1 % 2);
+            _spotCoordinates.Add(TableLayout.TwoPlayers,
+                new()
+                    {
+                        { new() { Id = 0, X = 0, Y = 0 } },
+                        { new() { Id = 1, X = 0, Y = 1 } },
+                    });
 
-        private int NavigateFourPlayerLayout(int currentSpotIdx, InputEvent.NavigationDirection direction)
-        {
             /* Layout:
-             *
-             *   0  1
-             *
-             *   2  3
-             *   
-             * 0:  -> 2, 3 [up, down]     1:  -> 3, 2 [up, down]
-             *     -> 1, 3 [left, right]      -> 0, 2 [left, right]
-             *
-             * 2:  -> 0, 1 [up, down]     3:  -> 0, 0 [up, down]
-             *     -> 3, 1 [left, right]      -> 2, 0 [left, right]
+            *
+            *   0  1
+            *
+            *   3  2
             */
-            if (direction == InputEvent.NavigationDirection.Up || direction == InputEvent.NavigationDirection.Down)
-                return FindFirstOccupiedSpot(currentSpotIdx, (currentSpotIdx + 2) % 4, 3 - currentSpotIdx);
-            return FindFirstOccupiedSpot(currentSpotIdx, currentSpotIdx + ((currentSpotIdx % 2 == 0) ? 1 : -1), 3 - currentSpotIdx);
-        }
+            _spotCoordinates.Add(TableLayout.FourPlayers,
+                new()
+                {
+                    { new() { Id = 0, X = 0, Y = 0 } },
+                    { new() { Id = 1, X = 1, Y = 0 } },
+                    { new() { Id = 2, X = 1, Y = 1 } },
+                    { new() { Id = 3, X = 0, Y = 1 } },
+                });
 
-        private int NavigateSixPlayerLayout(int currentSpotIdx, InputEvent.NavigationDirection direction)
-        {
             /* Layout:
-             *
-             *   0  1  2
-             *
-             *   3  4  5
-             */
-            return currentSpotIdx switch
-            {
-                0 => direction switch
+            *
+            *   0  1  2
+            *
+            *   5  4  3
+            */
+            _spotCoordinates.Add(TableLayout.SixPlayers,
+                new()
                 {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(0, 3, 4, 5),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(0, 2, 5, 1, 4),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(0, 1, 4, 2, 5),
-                    _ => currentSpotIdx
-                },
-                1 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(1, 4, 3, 5),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(1, 0, 3, 5, 2),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(1, 2, 5, 0, 3),
-                    _ => currentSpotIdx
-                },
-                2 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(2, 5, 4, 3),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(2, 1, 4, 0, 3),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(2, 0, 3, 1, 4),
-                    _ => currentSpotIdx
-                },
-                3 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(3, 0, 1, 2),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(3, 5, 2, 4, 1),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(3, 4, 1, 2, 5),
-                    _ => currentSpotIdx
-                },
-                4 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(4, 1, 0, 2),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(4, 3, 0, 5, 2),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(4, 5, 2, 3, 0),
-                    _ => currentSpotIdx
-                },
-                5 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(5, 2, 1, 0),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(5, 4, 1, 3, 0),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(5, 3, 0, 4, 1),
-                    _ => currentSpotIdx
-                },
-                _ => currentSpotIdx
-            };
-        }
+                    { new() { Id = 0, X = 0, Y = 0 } },
+                    { new() { Id = 1, X = 1, Y = 0 } },
+                    { new() { Id = 2, X = 2, Y = 0 } },
+                    { new() { Id = 3, X = 0, Y = 1 } },
+                    { new() { Id = 4, X = 1, Y = 1 } },
+                    { new() { Id = 5, X = 2, Y = 1 } },
+                });
 
-        private int NavigateEightPlayersLayout(int currentSpotIdx, InputEvent.NavigationDirection direction)
-        {
             /* Layout:
-             *
-             *   0  1  2
-             * 7         3
-             *   6  5  4
-             */
-            return currentSpotIdx switch
+            *
+            *   0  1  2
+            * 7         3
+            *   6  5  4
+            */
+            _spotCoordinates.Add(TableLayout.EightPlayers,
+                new()
+                {
+                    { new() { Id = 0, X = 1, Y = 0 } },
+                    { new() { Id = 1, X = 2, Y = 0 } },
+                    { new() { Id = 2, X = 3, Y = 0 } },
+                    { new() { Id = 3, X = 4, Y = 0.5F } },
+                    { new() { Id = 4, X = 3, Y = 1 } },
+                    { new() { Id = 5, X = 2, Y = 1 } },
+                    { new() { Id = 6, X = 1, Y = 1 } },
+                    { new() { Id = 7, X = 0, Y = 0.5F } },
+                });
+
+            /* Layout:
+                *
+                *   0  1  2
+                * 9         3
+                * 8         4
+                *   7  6  5
+                */
+            _spotCoordinates.Add(TableLayout.TenPlayers,
+                new()
+                {
+                    { new() { Id = 0, X = 1, Y = 0 } },
+                    { new() { Id = 1, X = 2, Y = 0 } },
+                    { new() { Id = 2, X = 3, Y = 0 } },
+                    { new() { Id = 3, X = 4, Y = 0.33F } },
+                    { new() { Id = 4, X = 4, Y = 0.66F } },
+                    { new() { Id = 5, X = 3, Y = 1 } },
+                    { new() { Id = 6, X = 2, Y = 1 } },
+                    { new() { Id = 7, X = 1, Y = 1 } },
+                    { new() { Id = 8, X = 0, Y = 0.33F } },
+                    { new() { Id = 9, X = 0, Y = 0.66F } },
+                });
+
+            /* Layout:
+            *
+            *   0  1  2
+            * 11        3
+            * 10        4
+            * 9         5
+            *   8  7  6
+            */
+            _spotCoordinates.Add(TableLayout.TwelvePlayers,
+                new()
+                {
+                    { new() { Id = 0, X = 1, Y = 0 } },
+                    { new() { Id = 1, X = 2, Y = 0 } },
+                    { new() { Id = 2, X = 3, Y = 0 } },
+                    { new() { Id = 3, X = 4, Y = 0.25F } },
+                    { new() { Id = 4, X = 4, Y = 0.5F } },
+                    { new() { Id = 5, X = 4, Y = 0.75F } },
+                    { new() { Id = 6, X = 3, Y = 1 } },
+                    { new() { Id = 7, X = 2, Y = 1 } },
+                    { new() { Id = 8, X = 1, Y = 1 } },
+                    { new() { Id = 9, X = 0, Y = 0.75F } },
+                    { new() { Id = 10, X = 0, Y = 0.5F } },
+                    { new() { Id = 11, X = 0, Y = 0.25F } },
+                });
+
+            foreach (var layout in _spotCoordinates)
             {
-                0 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(0, 6, 7, 5, 4, 3),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(0, 7, 3, 2, 4, 1, 5),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(0, 1, 5, 2, 4, 3, 7),
-                    _ => currentSpotIdx
-                },
-                1 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(1, 5, 6, 4, 7, 3),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(1, 0, 6, 7, 3, 2, 4),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(1, 2, 4, 3, 7, 0, 6),
-                    _ => currentSpotIdx
-                },
-                2 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(2, 4, 3, 5, 6, 7),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(2, 1, 5, 0, 6, 7, 3),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(2, 3, 7, 0, 6, 1, 5),
-                    _ => currentSpotIdx
-                },
-                3 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up => FindFirstOccupiedSpot(3, 2, 4, 1, 5, 0, 6),
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(3, 4, 2, 5, 1, 6, 0),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(3, 2, 4, 1, 5, 0, 6, 7),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(3, 7, 0, 6, 1, 5, 2, 4),
-                    _ => currentSpotIdx
-                },
-                4 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(4, 2, 3, 1, 0, 7),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(4, 5, 1, 6, 0, 7, 3),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(4, 3, 7, 0, 6, 1, 5),
-                    _ => currentSpotIdx
-                },
-                5 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(5, 1, 0, 2, 7, 3),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(5, 6, 0, 7, 3, 4, 2),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(5, 4, 2, 3, 7, 6, 0),
-                    _ => currentSpotIdx
-                },
-                6 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up or
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(6, 0, 7, 1, 2, 3),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(6, 7, 3, 4, 2, 5, 1),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(6, 5, 1, 4, 2, 3, 7),
-                    _ => currentSpotIdx
-                },
-                7 => direction switch
-                {
-                    InputEvent.NavigationDirection.Up => FindFirstOccupiedSpot(7, 0, 6, 1, 5, 2, 4),
-                    InputEvent.NavigationDirection.Down => FindFirstOccupiedSpot(7, 6, 0, 5, 1, 4, 2),
-                    InputEvent.NavigationDirection.Left => FindFirstOccupiedSpot(7, 3, 2, 4, 1, 5, 0, 6),
-                    InputEvent.NavigationDirection.Right => FindFirstOccupiedSpot(7, 0, 6, 1, 5, 2, 4, 3),
-                    _ => currentSpotIdx
-                },
-                _ => currentSpotIdx,
-            };
+                foreach (var spot in _spotCoordinates[layout.Key])
+                    spot.Init(_spotCoordinates[layout.Key].AsReadOnly());
+            }
         }
 
         private int FindFirstOccupiedSpot(int fallback, params int[] indicesToCheck)

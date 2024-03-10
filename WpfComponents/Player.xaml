@@ -606,8 +606,14 @@
                                     VerticalAlignment="Bottom"
                                     Margin="0,0,0,3"/>
                         <TextBlock  Style="{StaticResource playerNameStyle}"
-                                    FontSize="16"
-                                    Text="{Binding Path=SpotData.PlayerData.Information.MoneyInThePot}" />
+                                    FontSize="16">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                    <Binding Path="SpotData.PlayerData.Information.MoneyInThePot" />
+                                    <Binding Path="CurrentCurrency" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
                     </StackPanel>
                 </StackPanel>
 
