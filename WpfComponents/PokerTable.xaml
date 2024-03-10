@@ -29,10 +29,13 @@
                 </Style>
             </Grid.Style>
             <Grid.RowDefinitions>
+                <RowDefinition Height="8*" />
+                <RowDefinition Height="8*" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="8*" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="8*" />
+                <RowDefinition Height="8*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -51,72 +54,95 @@
             </Grid.ColumnDefinitions>
 
             <!-- Top row-->
-            <Border Grid.Row="0"
-                    Grid.Column="3"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="5,0,5,0"/>
-            <Border Grid.Row="0"
-                    Grid.Column="5"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="5,0,5,0"/>
-            <Border Grid.Row="0"
-                    Grid.Column="7"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="5,0,5,0"/>
-
-            <!-- Left column -->
-            <Border Grid.Row="1"
-                    Grid.Column="1"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="0,5,0,5" />
-            <Border Grid.Row="2"
-                    Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="0,5,0,5"/>
-            <Border Grid.Row="3"
-                    Grid.Column="1"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="0,5,0,5"/>
-
+            <components:Player Grid.Row="0"
+                               Grid.Column="3"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot1}"
+                               Alignment="{x:Static components:Player+SpotAlignment.TopLeft}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+            <components:Player Grid.Row="0"
+                               Grid.Column="5"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot2}"
+                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+            <components:Player Grid.Row="0"
+                               Grid.Column="7"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot3}"
+                               Alignment="{x:Static components:Player+SpotAlignment.TopRight}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
             <!-- Right column -->
-            <Border Grid.Row="1"
-                    Grid.Column="9"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="0,5,0,5"/>
-            <Border Grid.Row="2"
-                    Grid.Column="10"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="0,5,0,5"/>
-            <Border Grid.Row="3"
-                    Grid.Column="9"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="0,5,0,5"/>
+            <components:Player Grid.Row="1"
+                               Grid.Column="9"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot4}"
+                               Alignment="{x:Static components:Player+SpotAlignment.Right}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+            <components:Player Grid.Row="3"
+                               Grid.Column="10"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot5}"
+                               Alignment="{x:Static components:Player+SpotAlignment.Right}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+            <components:Player Grid.Row="5"
+                               Grid.Column="9"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot6}"
+                               Alignment="{x:Static components:Player+SpotAlignment.Right}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
 
             <!-- Bottom row-->
-            <Border Grid.Row="4"
-                    Grid.Column="3"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="5,0,5,0"/>
-            <Border Grid.Row="4"
-                    Grid.Column="5"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="5,0,5,0"/>
-            <Border Grid.Row="4"
-                    Grid.Column="7"
-                    Grid.ColumnSpan="2"
-                    Background="Black"
-                    Margin="5,0,5,0"/>
+            <components:Player Grid.Row="6"
+                               Grid.Column="7"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot7}"
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomRight}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+            <components:Player Grid.Row="6"
+                               Grid.Column="5"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot8}"
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+            <components:Player Grid.Row="6"
+                               Grid.Column="3"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot9}"
+                               Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+
+            <!-- Left column -->
+            <components:Player Grid.Row="5"
+                               Grid.Column="1"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot10}"
+                               Alignment="{x:Static components:Player+SpotAlignment.Left}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+            <components:Player Grid.Row="3"
+                               Grid.Column="0"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot11}"
+                               Alignment="{x:Static components:Player+SpotAlignment.Left}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
+            <components:Player Grid.Row="1"
+                               Grid.Column="1"
+                               Grid.ColumnSpan="2"
+                               SpotData="{Binding Path=Spot12}"
+                               Alignment="{x:Static components:Player+SpotAlignment.Left}"
+                               CurrentCurrency="{Binding Path=ViewModel.CurrencyType}"
+                               AlwaysShowPlayerImage="False"/>
         </Grid>
 
         <!-- Player slots (10 players) -->

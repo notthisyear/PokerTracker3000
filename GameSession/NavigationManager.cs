@@ -37,7 +37,7 @@ namespace PokerTracker3000.GameSession
                 _navigationOrderForDirection = [];
             }
 
-            public void Init(ReadOnlyCollection<SpotCoordinate> allSpots)
+            public void Initialize(ReadOnlyCollection<SpotCoordinate> allSpots)
             {
                 List<Distance> distanceToOtherSpots = [];
                 foreach (var spot in allSpots)
@@ -79,13 +79,14 @@ namespace PokerTracker3000.GameSession
                         _navigationOrderForDirection.Add(direction, navigationOrder);
                 }
             }
+
             public bool TryGetValidMovementsInDirection(InputEvent.NavigationDirection direction, out List<int>? navigationOrder)
                 => _navigationOrderForDirection.TryGetValue(direction, out navigationOrder);
         }
 
         #region Private fields
         private readonly ReadOnlyCollection<PlayerSpot> _spots;
-        private readonly Dictionary<TableLayout, List<SpotCoordinate>> _spotCoordinates;
+        private readonly Dictionary<TableLayout, Dictionary<int, SpotCoordinate>> _spotCoordinates;
         private bool _moveInProgress;
         #endregion
 
@@ -99,14 +100,11 @@ namespace PokerTracker3000.GameSession
         public int Navigate(TableLayout layout, int currentSpotIdx, InputEvent.NavigationDirection direction, bool moveInProgress)
         {
             _moveInProgress = moveInProgress;
-            if (_spotCoordinates.TryGetValue(layout, out var spotCoordinates))
+            if (_spotCoordinates.TryGetValue(layout, out var spotCoordinates) &&
+                spotCoordinates.TryGetValue(currentSpotIdx, out var coordinate) &&
+                coordinate.TryGetValidMovementsInDirection(direction, out var navigationOrder))
             {
-                var matchingCoordinates = spotCoordinates.Where(x => x.Id == currentSpotIdx);
-                if (matchingCoordinates.Count() == 1 &&
-                    matchingCoordinates.First().TryGetValidMovementsInDirection(direction, out var navigationOrder))
-                {
-                    return FindFirstOccupiedSpot(currentSpotIdx, [.. navigationOrder!]);
-                }
+                return FindFirstOccupiedSpot(currentSpotIdx, [.. navigationOrder!]);
             }
             return currentSpotIdx;
         }
@@ -123,8 +121,8 @@ namespace PokerTracker3000.GameSession
             _spotCoordinates.Add(TableLayout.TwoPlayers,
                 new()
                     {
-                        { new() { Id = 0, X = 0, Y = 0 } },
-                        { new() { Id = 1, X = 0, Y = 1 } },
+                        { 0, new() { Id = 0, X = 0, Y = 0 } },
+                        { 1, new() { Id = 1, X = 0, Y = 1 } },
                     });
 
             /* Layout:
@@ -136,10 +134,10 @@ namespace PokerTracker3000.GameSession
             _spotCoordinates.Add(TableLayout.FourPlayers,
                 new()
                 {
-                    { new() { Id = 0, X = 0, Y = 0 } },
-                    { new() { Id = 1, X = 1, Y = 0 } },
-                    { new() { Id = 2, X = 1, Y = 1 } },
-                    { new() { Id = 3, X = 0, Y = 1 } },
+                    { 0, new() { Id = 0, X = 0, Y = 0 } },
+                    { 1, new() { Id = 1, X = 1, Y = 0 } },
+                    { 2, new() { Id = 2, X = 1, Y = 1 } },
+                    { 3, new() { Id = 3, X = 0, Y = 1 } },
                 });
 
             /* Layout:
@@ -151,12 +149,12 @@ namespace PokerTracker3000.GameSession
             _spotCoordinates.Add(TableLayout.SixPlayers,
                 new()
                 {
-                    { new() { Id = 0, X = 0, Y = 0 } },
-                    { new() { Id = 1, X = 1, Y = 0 } },
-                    { new() { Id = 2, X = 2, Y = 0 } },
-                    { new() { Id = 3, X = 0, Y = 1 } },
-                    { new() { Id = 4, X = 1, Y = 1 } },
-                    { new() { Id = 5, X = 2, Y = 1 } },
+                    { 0, new() { Id = 0, X = 0, Y = 0 } },
+                    { 1, new() { Id = 1, X = 1, Y = 0 } },
+                    { 2, new() { Id = 2, X = 2, Y = 0 } },
+                    { 3, new() { Id = 3, X = 0, Y = 1 } },
+                    { 4, new() { Id = 4, X = 1, Y = 1 } },
+                    { 5, new() { Id = 5, X = 2, Y = 1 } },
                 });
 
             /* Layout:
@@ -168,14 +166,14 @@ namespace PokerTracker3000.GameSession
             _spotCoordinates.Add(TableLayout.EightPlayers,
                 new()
                 {
-                    { new() { Id = 0, X = 1, Y = 0 } },
-                    { new() { Id = 1, X = 2, Y = 0 } },
-                    { new() { Id = 2, X = 3, Y = 0 } },
-                    { new() { Id = 3, X = 4, Y = 0.5F } },
-                    { new() { Id = 4, X = 3, Y = 1 } },
-                    { new() { Id = 5, X = 2, Y = 1 } },
-                    { new() { Id = 6, X = 1, Y = 1 } },
-                    { new() { Id = 7, X = 0, Y = 0.5F } },
+                    { 0, new() { Id = 0, X = 1, Y = 0 } },
+                    { 1, new() { Id = 1, X = 2, Y = 0 } },
+                    { 2, new() { Id = 2, X = 3, Y = 0 } },
+                    { 3, new() { Id = 3, X = 4, Y = 0.5F } },
+                    { 4, new() { Id = 4, X = 3, Y = 1 } },
+                    { 5, new() { Id = 5, X = 2, Y = 1 } },
+                    { 6, new() { Id = 6, X = 1, Y = 1 } },
+                    { 7, new() { Id = 7, X = 0, Y = 0.5F } },
                 });
 
             /* Layout:
@@ -188,47 +186,47 @@ namespace PokerTracker3000.GameSession
             _spotCoordinates.Add(TableLayout.TenPlayers,
                 new()
                 {
-                    { new() { Id = 0, X = 1, Y = 0 } },
-                    { new() { Id = 1, X = 2, Y = 0 } },
-                    { new() { Id = 2, X = 3, Y = 0 } },
-                    { new() { Id = 3, X = 4, Y = 0.33F } },
-                    { new() { Id = 4, X = 4, Y = 0.66F } },
-                    { new() { Id = 5, X = 3, Y = 1 } },
-                    { new() { Id = 6, X = 2, Y = 1 } },
-                    { new() { Id = 7, X = 1, Y = 1 } },
-                    { new() { Id = 8, X = 0, Y = 0.33F } },
-                    { new() { Id = 9, X = 0, Y = 0.66F } },
+                    { 0, new() { Id = 0, X = 1, Y = 0 } },
+                    { 1, new() { Id = 1, X = 2, Y = 0 } },
+                    { 2, new() { Id = 2, X = 3, Y = 0 } },
+                    { 3, new() { Id = 3, X = 4, Y = 0.33F } },
+                    { 4, new() { Id = 4, X = 4, Y = 0.66F } },
+                    { 5, new() { Id = 5, X = 3, Y = 1 } },
+                    { 6, new() { Id = 6, X = 2, Y = 1 } },
+                    { 7, new() { Id = 7, X = 1, Y = 1 } },
+                    { 8, new() { Id = 8, X = 0, Y = 0.33F } },
+                    { 9, new() { Id = 9, X = 0, Y = 0.66F } },
                 });
 
             /* Layout:
             *
-            *   0  1  2
-            * 11        3
-            * 10        4
-            * 9         5
-            *   8  7  6
+            *    0  1  2
+            *  11        3
+            * 10          4
+            *  9         5
+            *    8  7  6
             */
             _spotCoordinates.Add(TableLayout.TwelvePlayers,
                 new()
                 {
-                    { new() { Id = 0, X = 1, Y = 0 } },
-                    { new() { Id = 1, X = 2, Y = 0 } },
-                    { new() { Id = 2, X = 3, Y = 0 } },
-                    { new() { Id = 3, X = 4, Y = 0.25F } },
-                    { new() { Id = 4, X = 4, Y = 0.5F } },
-                    { new() { Id = 5, X = 4, Y = 0.75F } },
-                    { new() { Id = 6, X = 3, Y = 1 } },
-                    { new() { Id = 7, X = 2, Y = 1 } },
-                    { new() { Id = 8, X = 1, Y = 1 } },
-                    { new() { Id = 9, X = 0, Y = 0.75F } },
-                    { new() { Id = 10, X = 0, Y = 0.5F } },
-                    { new() { Id = 11, X = 0, Y = 0.25F } },
+                    { 0, new() { Id = 0, X = 1, Y = 0 } },
+                    { 1, new() { Id = 1, X = 2, Y = 0 } },
+                    { 2, new() { Id = 2, X = 3, Y = 0 } },
+                    { 3, new() { Id = 3, X = 3.75F, Y = 0.25F } },
+                    { 4, new() { Id = 4, X = 4.5F, Y = 0.5F } },
+                    { 5, new() { Id = 5, X = 3.75F, Y = 0.75F } },
+                    { 6, new() { Id = 6, X = 3, Y = 1 } },
+                    { 7, new() { Id = 7, X = 2, Y = 1 } },
+                    { 8, new() { Id = 8, X = 1, Y = 1 } },
+                    { 9, new() { Id = 9, X = 0.25F, Y = 0.75F } },
+                    { 10, new() { Id = 10, X = -0.5F, Y = 0.5F } },
+                    { 11, new() { Id = 11, X = 0.25F, Y = 0.25F } },
                 });
 
             foreach (var layout in _spotCoordinates)
             {
-                foreach (var spot in _spotCoordinates[layout.Key])
-                    spot.Init(_spotCoordinates[layout.Key].AsReadOnly());
+                foreach (var spot in _spotCoordinates[layout.Key].Values)
+                    spot.Initialize(_spotCoordinates[layout.Key].Values.ToList().AsReadOnly());
             }
         }
 

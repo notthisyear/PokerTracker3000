@@ -36,11 +36,7 @@ namespace PokerTracker3000
 
             ViewModel = new(Settings.App, new());
 
-            MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
             MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;
-
-            var verticalMargin = MaxHeight - Height;
-            Top = verticalMargin / 4;
         }
 
         private void TitleBarButtonPressed(object sender, RoutedEventArgs e)

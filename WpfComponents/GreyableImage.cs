@@ -26,21 +26,24 @@ namespace PokerTracker3000.WpfComponents
                      !ReferenceEquals(Source, _sourceGreyscale))
             {
                 _sourceColor = Source;
-                _sourceGreyscale = CalculateGrayScaleImage() ?? _sourceColor;
+                _sourceGreyscale = CalculateGrayScaleImage ?? _sourceColor;
             }
             base.OnPropertyChanged(e);
         }
 
-        private ImageSource? CalculateGrayScaleImage()
+        private ImageSource? CalculateGrayScaleImage
         {
-            if (Source == default)
-                return default;
+            get
+            {
+                if (Source == default)
+                    return default;
 
-            var converter = TypeDescriptor.GetConverter(Source);
-            var sourceAsString = converter.ConvertTo(Source, typeof(string)) as string;
-            if (Uri.TryCreate(sourceAsString, UriKind.Absolute, out var uri))
-                return new FormatConvertedBitmap(new BitmapImage(uri), PixelFormats.Gray8, null, 0);
-            return default;
+                var converter = TypeDescriptor.GetConverter(Source);
+                var sourceAsString = converter.ConvertTo(Source, typeof(string)) as string;
+                if (Uri.TryCreate(sourceAsString, UriKind.Absolute, out var uri))
+                    return new FormatConvertedBitmap(new BitmapImage(uri), PixelFormats.Gray8, null, 0);
+                return default;
+            }
         }
     }
 }
