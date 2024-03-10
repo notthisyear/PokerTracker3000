@@ -85,7 +85,7 @@ namespace PokerTracker3000.GameSession
                 = _currentTableLayout switch
                 {
                     TableLayout.TwoPlayers => (NavigateTwoPlayer, default),
-                    TableLayout.FourPlayers => (NavigateFourPlayer, NavigateTheSameDirectionAgain),
+                    TableLayout.FourPlayers => (NavigateFourPlayer, default),
                     TableLayout.SixPlayers => (NavigateSixPlayer, NavigateTheSameDirectionAgain),
                     TableLayout.EightPlayers => (NavigateEightPlayers, default),
                     _ => ((i, d) => i, default)
@@ -162,15 +162,16 @@ namespace PokerTracker3000.GameSession
         private int NavigateTwoPlayer(int currentSpotIdx, InputEvent.NavigationDirection _)
             => FindFirstOccupiedSpot(currentSpotIdx, currentSpotIdx + 1 % 2);
 
-        private static int NavigateFourPlayer(int currentSpotIdx, InputEvent.NavigationDirection direction)
+        private int NavigateFourPlayer(int currentSpotIdx, InputEvent.NavigationDirection direction)
         {
-            var onTopRow = currentSpotIdx == 0 || currentSpotIdx == 1;
-            return direction switch
-            {
-                InputEvent.NavigationDirection.Right or InputEvent.NavigationDirection.Left => ((currentSpotIdx + 1) % 2) + (onTopRow ? 0 : 2),
-                InputEvent.NavigationDirection.Up or InputEvent.NavigationDirection.Down => (currentSpotIdx + 2) % 4,
-                _ => currentSpotIdx
-            };
+            // 0:  -> 2, 3 [up, down]     1:  -> 3, 2 [up, down]
+            //     -> 1, 3 [left, right]      -> 0, 2 [left, right]
+            //
+            // 2:  -> 0, 1 [up, down]     3:  -> 0, 0 [up, down]
+            //     -> 3, 1 [left, right]      -> 2, 0 [left, right]
+            if (direction == InputEvent.NavigationDirection.Up || direction == InputEvent.NavigationDirection.Down)
+                return FindFirstOccupiedSpot(currentSpotIdx, (currentSpotIdx + 2) % 4, 3 - currentSpotIdx);
+            return FindFirstOccupiedSpot(currentSpotIdx, currentSpotIdx + ((currentSpotIdx % 2 == 0) ? 1 : -1), 3 - currentSpotIdx);
         }
 
         private static int NavigateSixPlayer(int currentSpotIdx, InputEvent.NavigationDirection direction)
