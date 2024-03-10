@@ -84,7 +84,7 @@ namespace PokerTracker3000.GameSession
                 Func<int, int, InputEvent.NavigationDirection, MainWindowFocusManager.NavigationCallback, int>? navigationFailureHandler) navigationResult
                 = _currentTableLayout switch
                 {
-                    TableLayout.TwoPlayers => (NavigateTwoPlayer, NavigateTheSameDirectionAgain),
+                    TableLayout.TwoPlayers => (NavigateTwoPlayer, default),
                     TableLayout.FourPlayers => (NavigateFourPlayer, NavigateTheSameDirectionAgain),
                     TableLayout.SixPlayers => (NavigateSixPlayer, NavigateTheSameDirectionAgain),
                     TableLayout.EightPlayers => (NavigateEightPlayers, default),
@@ -142,8 +142,8 @@ namespace PokerTracker3000.GameSession
             });
         }
 
-        private static int NavigateTwoPlayer(int currentSpotIdx, InputEvent.NavigationDirection _)
-            => currentSpotIdx == 0 ? 1 : 0;
+        private int NavigateTwoPlayer(int currentSpotIdx, InputEvent.NavigationDirection _)
+            => FindFirstOccupiedSpot(currentSpotIdx, currentSpotIdx + 1 % 2);
 
         private static int NavigateFourPlayer(int currentSpotIdx, InputEvent.NavigationDirection direction)
         {
