@@ -211,7 +211,7 @@ namespace PokerTracker3000.WpfComponents
             Spot12 = ViewModel.PlayerSpots[11];
 
             CalculateLayout(ViewModel.PlayerSpots.Where(x => x.HasPlayerData).Count());
-            ViewModel.PlayerSpotsUpdatedEvent += (s, e) => CalculateLayout(e);
+            ViewModel.LayoutMightHaveChangedEvent += (s, e) => CalculateLayout(e);
             ViewModel.FocusManager.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName?.Equals(nameof(ViewModel.FocusManager.CurrentFocusArea), StringComparison.InvariantCulture) ?? false)

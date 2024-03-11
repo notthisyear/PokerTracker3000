@@ -9,7 +9,6 @@
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontStyle" Value="Normal" />
             <Setter Property="Text" Value="{Binding Path=OptionModel.OptionText}" />
-
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Path=OptionModel.IsSubOption}" Value="True">
                     <Setter Property="FontSize" Value="14" />
@@ -18,7 +17,7 @@
                     <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=OptionModel.IsAvailable}" Value="False">
-                    <Setter Property="Foreground" Value="{StaticResource MainErrorColorMuted}" />
+                    <Setter Property="Foreground" Value="{StaticResource MainTextMutedColor}" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=OptionModel.IsSelected}" Value="True">
                     <Setter Property="FontWeight" Value="Bold" />
@@ -41,6 +40,10 @@
                     <DataTrigger.ExitActions>
                         <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
                     </DataTrigger.ExitActions>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=OptionModel.IsAvailable}" Value="False">
+                    <Setter Property="Text" Value="{Binding Path=OptionModel.UnavaliableDescriptionText}" />
+                    <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>

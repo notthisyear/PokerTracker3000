@@ -54,7 +54,7 @@ namespace PokerTracker3000.GameSession
         #endregion
 
         #region Events
-        public event EventHandler<int>? PlayerSpotsUpdatedEvent;
+        public event EventHandler<int>? LayoutMightHaveChangedEvent;
         #endregion
 
         #region Private fields
@@ -92,8 +92,29 @@ namespace PokerTracker3000.GameSession
                 return;
 
             targetSpot.AddPlayer(_nextPlayerId++, _pathToDefaultPlayerImage);
-            PlayerSpotsUpdatedEvent?.Invoke(this, NumberOfPlayerSpots);
-            TableFull = !PlayerSpots.Where(x => !x.HasPlayerData).Any();
+            var numberOfActivePlayers = PlayerSpots.Where(x => x.HasPlayerData).Count();
+            LayoutMightHaveChangedEvent?.Invoke(this, numberOfActivePlayers);
+            TableFull = numberOfActivePlayers == NumberOfPlayerSpots;
+        }
+
+        public void ConsolidateLayout()
+        {
+            for (var i = 0; i < NumberOfPlayerSpots; i++)
+            {
+                if (PlayerSpots[i].HasPlayerData)
+                    continue;
+
+                for (var j = i + 1; j < NumberOfPlayerSpots; j++)
+                {
+                    if (PlayerSpots[j].HasPlayerData)
+                    {
+                        PlayerSpots[i].Swap(PlayerSpots[j], moveInAction: false);
+                        break;
+                    }
+                }
+            }
+
+            LayoutMightHaveChangedEvent?.Invoke(this, PlayerSpots.Where(x => x.HasPlayerData).Count());
         }
 
         #region Private methods

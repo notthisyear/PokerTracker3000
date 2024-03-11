@@ -168,13 +168,13 @@ namespace PokerTracker3000.GameSession
             }
         }
 
-        public void Swap(PlayerSpot other)
+        public void Swap(PlayerSpot other, bool moveInAction = true)
         {
             var thisPlayerData = PlayerData;
             var thisIsEliminated = IsEliminated;
             PlayerData = other.PlayerData;
             IsEliminated = other.IsEliminated;
-            IsBeingMoved = true;
+            IsBeingMoved = moveInAction;
 
             other.PlayerData = thisPlayerData;
             other.IsEliminated = thisIsEliminated;

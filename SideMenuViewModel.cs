@@ -154,6 +154,14 @@ namespace PokerTracker3000
             SideMenuOptions.Add(new()
             {
                 Id = 3,
+                OptionText = "Remove empty spots",
+                DescriptionText = "Removes all empty slots",
+                OptionAction = (_) => _sessionManager.ConsolidateLayout(),
+            });
+
+            SideMenuOptions.Add(new()
+            {
+                Id = 4,
                 OptionText = "Game settings...",
                 DescriptionText = "Change settings for the current game",
                 HasSubOptions = true,
@@ -169,7 +177,7 @@ namespace PokerTracker3000
             });
             SideMenuOptions.Add(new()
             {
-                Id = 4,
+                Id = 5,
                 OptionText = "Program settings...",
                 DescriptionText = "Change program settings",
                 HasSubOptions = true,
@@ -180,9 +188,9 @@ namespace PokerTracker3000
             });
             SideMenuOptions.Add(new()
             {
-                Id = 5,
+                Id = 6,
                 OptionText = "Quit",
-                DescriptionText = "Quit PokerTracker3000"
+                DescriptionText = "Quit PokerTracker3000",
             });
         }
 
