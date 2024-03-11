@@ -22,7 +22,7 @@ namespace PokerTracker3000.GameSession
             public readonly double Total => Math.Sqrt(XDifference * XDifference + YDifference * YDifference);
         }
 
-        private readonly struct SpotCoordinate
+        private readonly struct ItemCoordinate
         {
             public int Id { get; init; }
 
@@ -32,12 +32,12 @@ namespace PokerTracker3000.GameSession
 
             private readonly Dictionary<InputEvent.NavigationDirection, List<int>> _navigationOrderForDirection;
 
-            public SpotCoordinate()
+            public ItemCoordinate()
             {
                 _navigationOrderForDirection = [];
             }
 
-            public void Initialize(ReadOnlyCollection<SpotCoordinate> allSpots)
+            public void Initialize(ReadOnlyCollection<ItemCoordinate> allSpots)
             {
                 List<Distance> distanceToOtherSpots = [];
                 foreach (var spot in allSpots)
@@ -86,7 +86,7 @@ namespace PokerTracker3000.GameSession
 
         #region Private fields
         private readonly ReadOnlyCollection<PlayerSpot> _spots;
-        private readonly Dictionary<TableLayout, Dictionary<int, SpotCoordinate>> _spotCoordinates;
+        private readonly Dictionary<TableLayout, Dictionary<int, ItemCoordinate>> _spotCoordinates;
         private bool _moveInProgress;
         #endregion
 

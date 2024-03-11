@@ -11,10 +11,12 @@
         <FontFamily x:Key="Lato">pack://application:,,,/Resources/Fonts/#Lato</FontFamily>
 
         <BitmapImage x:Key="pokerTable" UriSource="/PokerTracker3000;component/Resources/Images/poker_table.png"/>
-        
+
         <!-- Converters -->
         <converters:BooleanToVisibleOrCollapsedConverter x:Key="booleanToVisibleOrCollapsedConverter" />
         <converters:ScaleNumberConverter x:Key="scaleNumberConverter" />
+        <converters:IsNullConverter x:Key="isNullConverter" />
+        <converters:ValueDisplayConverter x:Key="valueDisplayConverter" />
 
         <!-- Animation -->
         <Storyboard x:Key="animateOpacityToOne"

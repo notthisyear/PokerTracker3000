@@ -17,8 +17,9 @@ namespace PokerTracker3000.GameSession
         private bool _isHighlighted = false;
         private bool _isSelected = false;
         private bool _isBeingMoved = false;
-        private bool _canBeRemoved = false;
         private bool _isEliminated = false;
+        private bool _canBeRemoved = false;
+        private decimal _buyInOrAddOnAmount = 0;
         private static readonly VistaOpenFileDialog s_loadImageDialog = new()
         {
             Title = "Select player image",
@@ -75,6 +76,12 @@ namespace PokerTracker3000.GameSession
             }
         }
 
+        public decimal BuyInOrAddOnAmount
+        {
+            get => _buyInOrAddOnAmount;
+            set => SetProperty(ref _buyInOrAddOnAmount, value);
+        }
+
         public bool CanBeRemoved
         {
             get => _canBeRemoved;
@@ -94,14 +101,14 @@ namespace PokerTracker3000.GameSession
 
         public PlayerSpot()
         {
-            SpotOptions = new()
-            {
+            SpotOptions =
+            [
                 new(PlayerEditOption.EditOption.ChangeName, isSelected: true),
                 new(PlayerEditOption.EditOption.ChangeImage),
                 new(PlayerEditOption.EditOption.Move),
                 new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success),
                 new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel),
-            };
+            ];
         }
 
         #region Public methods

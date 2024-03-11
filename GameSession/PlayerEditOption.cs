@@ -36,7 +36,31 @@ namespace PokerTracker3000.GameSession
             Eliminate,
 
             [Description("Remove")]
-            Remove
+            Remove,
+
+            [Description("+1000")]
+            Add1000,
+
+            [Description("+100")]
+            Add100,
+
+            [Description("+10")]
+            Add10,
+
+            [Description("+1")]
+            Add1,
+
+            [Description("-1000")]
+            Remove1000,
+
+            [Description("-100")]
+            Remove100,
+
+            [Description("-10")]
+            Remove10,
+
+            [Description("-1")]
+            Remove1,
         }
 
         public enum OptionType

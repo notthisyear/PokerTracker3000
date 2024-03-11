@@ -7,7 +7,6 @@
 
     <UserControl.Resources>
         <converters:BoolToZeroOrNumberConverter x:Key="boolToZeroOrNumberConverter" />
-        <converters:ValueDisplayConverter x:Key="valueDisplayConverter" />
 
         <Storyboard x:Key="scaleUp"
                     PresentationOptions:Freeze="True">

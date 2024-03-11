@@ -26,9 +26,24 @@ namespace PokerTracker3000.GameSession
         private PlayerSpot? _selectedSpot;
         private CurrencyType _currencyType = CurrencyType.SwedishKrona;
         private bool _tableFull = false;
+        private decimal _totalAmountInPot = 0;
+        private decimal _defaultBuyInAmount = 500;
+        private decimal _defaultAddOnAmount = 500;
         #endregion
 
         public List<PlayerSpot> PlayerSpots { get; } = [];
+
+        public List<PlayerEditOption> AddOnOrBuyInOptions { get; } =
+        [
+            new(PlayerEditOption.EditOption.Add1000, type: PlayerEditOption.OptionType.Success, isSelected: true),
+            new(PlayerEditOption.EditOption.Add100, type: PlayerEditOption.OptionType.Success),
+            new(PlayerEditOption.EditOption.Add10, type: PlayerEditOption.OptionType.Success),
+            new(PlayerEditOption.EditOption.Add1, type: PlayerEditOption.OptionType.Success),
+            new(PlayerEditOption.EditOption.Remove1000, type: PlayerEditOption.OptionType.Cancel),
+            new(PlayerEditOption.EditOption.Remove100, type: PlayerEditOption.OptionType.Cancel),
+            new(PlayerEditOption.EditOption.Remove10, type: PlayerEditOption.OptionType.Cancel),
+            new(PlayerEditOption.EditOption.Remove1, type: PlayerEditOption.OptionType.Cancel)
+        ];
 
         public PlayerSpot? SelectedSpot
         {
@@ -40,6 +55,24 @@ namespace PokerTracker3000.GameSession
         {
             get => _currencyType;
             private set => SetProperty(ref _currencyType, value);
+        }
+
+        public decimal TotalAmountInPot
+        {
+            get => _totalAmountInPot;
+            private set => SetProperty(ref _totalAmountInPot, value);
+        }
+
+        public decimal DefaultBuyInAmount
+        {
+            get => _defaultBuyInAmount;
+            private set => SetProperty(ref _defaultBuyInAmount, value);
+        }
+
+        public decimal DefaultAddOnAmount
+        {
+            get => _defaultAddOnAmount;
+            private set => SetProperty(ref _defaultAddOnAmount, value);
         }
 
         public bool TableFull
@@ -182,6 +215,8 @@ namespace PokerTracker3000.GameSession
 
                     case PlayerEditOption.EditOption.AddOn:
                     case PlayerEditOption.EditOption.BuyIn:
+                        SelectedSpot = activeSpot;
+                        return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
 
                     default:
                         return MainWindowFocusManager.FocusArea.None;

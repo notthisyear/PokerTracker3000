@@ -17,6 +17,7 @@ namespace PokerTracker3000
             Players,
             PlayerInfo,
             EditNameBox,
+            AddOnOrBuyInBox,
             ConfirmationDialog,
             MovementInProgress
         }
@@ -177,6 +178,7 @@ namespace PokerTracker3000
                     break;
 
                 case FocusArea.EditNameBox:
+                case FocusArea.AddOnOrBuyInBox:
                     SetNewFocusArea(FocusArea.PlayerInfo);
                     break;
 
@@ -318,6 +320,7 @@ namespace PokerTracker3000
                 case FocusArea.Players:
                 case FocusArea.PlayerInfo:
                 case FocusArea.EditNameBox:
+                case FocusArea.AddOnOrBuyInBox:
                 case FocusArea.MovementInProgress:
                     Predicate<PlayerSpot> propertyToCheck =
                         (CurrentFocusArea == FocusArea.Players || CurrentFocusArea == FocusArea.MovementInProgress) ?
@@ -332,8 +335,9 @@ namespace PokerTracker3000
                         focusedSpot.IsSelected = false;
                     focusedSpot.IsHighlighted = false;
 
-                    if (CurrentFocusArea == FocusArea.EditNameBox && _editMenuLostFocusCallback != default)
-                        _editMenuLostFocusCallback.Invoke();
+                    var inEditArea = CurrentFocusArea == FocusArea.EditNameBox || CurrentFocusArea == FocusArea.AddOnOrBuyInBox;
+                    if (inEditArea)
+                        _editMenuLostFocusCallback?.Invoke();
                     break;
             }
         }
