@@ -545,7 +545,7 @@
                             <TextBlock.Text>
                                 <MultiBinding Converter="{StaticResource valueDisplayConverter}">
                                     <Binding Path="SpotData.PlayerData.Information.MoneyInThePot" />
-                                    <Binding Path="CurrentCurrency" />
+                                    <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type components:PokerTable}}" Path="ViewModel.CurrencyType" />
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
@@ -609,7 +609,7 @@
                             <TextBlock.Text>
                                 <MultiBinding Converter="{StaticResource valueDisplayConverter}">
                                     <Binding Path="SpotData.PlayerData.Information.MoneyInThePot" />
-                                    <Binding Path="CurrentCurrency" />
+                                    <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type components:PokerTable}}" Path="ViewModel.CurrencyType" />
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
@@ -646,7 +646,7 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <ItemsControl ItemsSource="{Binding Path=SpotData.SpotOptions}">
+                <ItemsControl ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type components:PokerTable}}, Path=ViewModel.SpotOptions}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <UniformGrid Columns="2" />

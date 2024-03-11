@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Ookii.Dialogs.Wpf;
-
-using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000.GameSession
 {
@@ -18,7 +13,6 @@ namespace PokerTracker3000.GameSession
         private bool _isSelected = false;
         private bool _isBeingMoved = false;
         private bool _isEliminated = false;
-        private bool _canBeRemoved = false;
         private decimal _buyInOrAddOnAmount = 0;
         private static readonly VistaOpenFileDialog s_loadImageDialog = new()
         {
@@ -33,8 +27,6 @@ namespace PokerTracker3000.GameSession
             get => _playerData;
             private set => SetProperty(ref _playerData, value);
         }
-
-        public List<PlayerEditOption> SpotOptions { get; init; }
 
         public bool IsHighlighted
         {
@@ -57,23 +49,7 @@ namespace PokerTracker3000.GameSession
         public bool IsEliminated
         {
             get => _isEliminated;
-            set
-            {
-                if (value != _isEliminated)
-                {
-                    if (value)
-                    {
-                        SpotOptions.First(x => x.Option == PlayerEditOption.EditOption.Eliminate).ChangeEditOption(PlayerEditOption.EditOption.Remove);
-                        SpotOptions.First(x => x.Option == PlayerEditOption.EditOption.AddOn).ChangeEditOption(PlayerEditOption.EditOption.BuyIn);
-                    }
-                    else
-                    {
-                        SpotOptions.First(x => x.Option == PlayerEditOption.EditOption.Remove).ChangeEditOption(PlayerEditOption.EditOption.Eliminate);
-                        SpotOptions.First(x => x.Option == PlayerEditOption.EditOption.BuyIn).ChangeEditOption(PlayerEditOption.EditOption.AddOn);
-                    }
-                }
-                SetProperty(ref _isEliminated, value);
-            }
+            set => SetProperty(ref _isEliminated, value);
         }
 
         public decimal BuyInOrAddOnAmount
@@ -82,34 +58,10 @@ namespace PokerTracker3000.GameSession
             set => SetProperty(ref _buyInOrAddOnAmount, value);
         }
 
-        public bool CanBeRemoved
-        {
-            get => _canBeRemoved;
-            set
-            {
-                var removeOption = SpotOptions.FirstOrDefault(x => x.Option == PlayerEditOption.EditOption.Remove);
-                if (removeOption != default)
-                    removeOption.IsAvailable = value;
-                SetProperty(ref _canBeRemoved, value);
-            }
-        }
-
         public int SpotIndex { get; init; }
 
         public bool HasPlayerData { get => _playerData != null; }
         #endregion
-
-        public PlayerSpot()
-        {
-            SpotOptions =
-            [
-                new(PlayerEditOption.EditOption.ChangeName, isSelected: true),
-                new(PlayerEditOption.EditOption.ChangeImage),
-                new(PlayerEditOption.EditOption.Move),
-                new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success),
-                new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel),
-            ];
-        }
 
         #region Public methods
         public void AddPlayer(int playerId, string pathToImage)
@@ -124,44 +76,11 @@ namespace PokerTracker3000.GameSession
 
         public void RemovePlayer()
         {
-            if (CanBeRemoved)
-            {
-                IsHighlighted = false;
-                IsSelected = false;
-                IsEliminated = false;
-                CanBeRemoved = false;
-                PlayerData = default;
-            }
+            IsHighlighted = false;
+            IsSelected = false;
+            IsEliminated = false;
+            PlayerData = default;
         }
-
-        public void ChangeSelectedOption(InputEvent.NavigationDirection direction)
-        {
-            var currentOption = GetSelectedOption();
-            var currentOptionIndex = SpotOptions.IndexOf(currentOption);
-
-            var onTopRow = currentOptionIndex < 2;
-            var numberOfOptionsEven = (SpotOptions.Count % 2) == 0;
-            var onBottomRow = currentOptionIndex >= (SpotOptions.Count - (numberOfOptionsEven ? 2 : 1));
-            var isOnLastSingleOption = onBottomRow && !numberOfOptionsEven;
-
-            var newOptionIndex = direction switch
-            {
-                InputEvent.NavigationDirection.Left or
-                InputEvent.NavigationDirection.Right =>
-                (isOnLastSingleOption ? currentOptionIndex - 1 :
-                (currentOptionIndex % 2 == 0) ? currentOptionIndex + 1 : currentOptionIndex - 1),
-                InputEvent.NavigationDirection.Down => onBottomRow ?
-                (currentOptionIndex % 2) : Math.Min(currentOptionIndex + 2, SpotOptions.Count - 1),
-                InputEvent.NavigationDirection.Up => onTopRow ?
-                (SpotOptions.Count - (numberOfOptionsEven ? (2 - currentOptionIndex) : (1 + currentOptionIndex))) : (currentOptionIndex - 2),
-                _ => currentOptionIndex
-            };
-            currentOption.IsSelected = false;
-            SpotOptions[newOptionIndex].IsSelected = true;
-        }
-
-        public PlayerEditOption GetSelectedOption()
-            => SpotOptions.First(x => x.IsSelected);
 
         public bool IsPlayer(int id)
             => PlayerData != default && PlayerData.PlayerId == id;

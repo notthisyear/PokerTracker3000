@@ -40,6 +40,7 @@ namespace PokerTracker3000
         public delegate void SideMenuNavigationCallback(InputEvent.NavigationDirection direction);
         public delegate void SideMenuVisibilityChangedCallback(bool isVisible);
         public delegate bool SideMenuButtonCallback(InputEvent.ButtonEventType eventType);
+        public delegate void SpotSelectedCallback(PlayerSpot activeSpot, int spotIndex);
         public delegate void PlayerOptionNavigationCallback(PlayerSpot spot, InputEvent.NavigationDirection direction);
         public delegate FocusArea PlayerOptionSelectCallback(PlayerSpot spot);
         public delegate void EditMenuLostFocusCallback();
@@ -56,6 +57,7 @@ namespace PokerTracker3000
         private SideMenuNavigationCallback? _sideMenuNavigationCallback;
         private SideMenuButtonCallback? _sideMenuButtonCallback;
         private SideMenuVisibilityChangedCallback? _sideMenuVisibilityChangedCallback;
+        private SpotSelectedCallback? _spotSelectedCallback;
         private PlayerOptionNavigationCallback? _playerOptionsNavigationCallback;
         private PlayerOptionSelectCallback? _playerOptionsSelectCallback;
         private EditMenuLostFocusCallback? _editMenuLostFocusCallback;
@@ -99,6 +101,11 @@ namespace PokerTracker3000
         public void RegisterSideMenuButtonCallback(SideMenuButtonCallback callback)
         {
             _sideMenuButtonCallback = callback;
+        }
+
+        public void RegisterSpotSelectedCallback(SpotSelectedCallback callback)
+        {
+            _spotSelectedCallback = callback;
         }
 
         public void RegisterPlayerOptionsCallback(PlayerOptionNavigationCallback callback)
@@ -205,7 +212,11 @@ namespace PokerTracker3000
             switch (CurrentFocusArea)
             {
                 case FocusArea.Players:
-                    SetNewFocusArea(FocusArea.PlayerInfo);
+                    {
+                        SetNewFocusArea(FocusArea.PlayerInfo);
+                        if (_spotSelectedCallback != default && TryGetMatching(_playerSpots, x => x.IsSelected, out var spot))
+                            _spotSelectedCallback.Invoke(spot!, _currentFocusedPlayerSpotIndex);
+                    }
                     break;
 
                 case FocusArea.PlayerInfo:
@@ -286,9 +297,6 @@ namespace PokerTracker3000
                             activeSpot.IsSelected = true;
                         _currentFocusedPlayerSpotIndex = activeSpot.SpotIndex;
                         _lastFocusedPlayerSpotIndex = -1;
-
-                        if (newFocusArea == FocusArea.PlayerInfo && _playerSpots != default)
-                            activeSpot.CanBeRemoved = _playerSpots.Where(x => x.HasPlayerData).Count() > 1;
                     }
                     break;
 

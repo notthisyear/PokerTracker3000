@@ -115,6 +115,9 @@ namespace PokerTracker3000.GameSession
 
         public void ChangeEditOption(EditOption option)
         {
+            if (Option == option)
+                return;
+
             Option = option;
             var (attr, _) = Option.GetCustomAttributeFromEnum<DescriptionAttribute>();
             Name = attr!.Description;

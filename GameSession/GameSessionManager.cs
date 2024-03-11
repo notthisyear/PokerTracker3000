@@ -45,6 +45,13 @@ namespace PokerTracker3000.GameSession
             new(PlayerEditOption.EditOption.Remove1, type: PlayerEditOption.OptionType.Cancel)
         ];
 
+        public List<PlayerEditOption> SpotOptions { get; } =
+        [
+            new(PlayerEditOption.EditOption.ChangeName, isSelected: true),
+            new(PlayerEditOption.EditOption.ChangeImage),
+            new(PlayerEditOption.EditOption.Move),
+        ];
+
         public PlayerSpot? SelectedSpot
         {
             get => _selectedSpot;
@@ -97,6 +104,8 @@ namespace PokerTracker3000.GameSession
         private int _nextPlayerId = 0;
         private bool _moveInProgress = false;
         private TableLayout _currentTableLayout;
+        private readonly PlayerEditOption _addOnOrBuyInOption;
+        private readonly PlayerEditOption _removeOrEliminateOption;
         #endregion
 
         public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
@@ -108,6 +117,12 @@ namespace PokerTracker3000.GameSession
                 PlayerSpots.Add(new() { SpotIndex = i });
 
             _navigationManager = new(PlayerSpots.AsReadOnly());
+
+
+            _addOnOrBuyInOption = new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success);
+            _removeOrEliminateOption = new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel);
+            SpotOptions.Add(_addOnOrBuyInOption);
+            SpotOptions.Add(_removeOrEliminateOption);
 
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
@@ -173,10 +188,38 @@ namespace PokerTracker3000.GameSession
                 }
                 return newSpotIndex;
             });
-            FocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) => activeSpot.ChangeSelectedOption(direction));
+            FocusManager.RegisterSpotSelectedCallback((PlayerSpot activeSpot, int currentSpotIdx) =>
+            {
+                SetOptionsFor(activeSpot.IsEliminated);
+            });
+            FocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) =>
+            {
+                var currentOption = GetSelectedOption();
+                var currentOptionIndex = SpotOptions.IndexOf(currentOption);
+
+                var onTopRow = currentOptionIndex < 2;
+                var numberOfOptionsEven = (SpotOptions.Count % 2) == 0;
+                var onBottomRow = currentOptionIndex >= (SpotOptions.Count - (numberOfOptionsEven ? 2 : 1));
+                var isOnLastSingleOption = onBottomRow && !numberOfOptionsEven;
+
+                var newOptionIndex = direction switch
+                {
+                    InputEvent.NavigationDirection.Left or
+                    InputEvent.NavigationDirection.Right =>
+                    (isOnLastSingleOption ? currentOptionIndex - 1 :
+                    (currentOptionIndex % 2 == 0) ? currentOptionIndex + 1 : currentOptionIndex - 1),
+                    InputEvent.NavigationDirection.Down => onBottomRow ?
+                    (currentOptionIndex % 2) : Math.Min(currentOptionIndex + 2, SpotOptions.Count - 1),
+                    InputEvent.NavigationDirection.Up => onTopRow ?
+                    (SpotOptions.Count - (numberOfOptionsEven ? (2 - currentOptionIndex) : (1 + currentOptionIndex))) : (currentOptionIndex - 2),
+                    _ => currentOptionIndex
+                };
+                currentOption.IsSelected = false;
+                SpotOptions[newOptionIndex].IsSelected = true;
+            });
             FocusManager.RegisterPlayerInfoBoxSelectCallback((PlayerSpot activeSpot) =>
             {
-                switch (activeSpot.GetSelectedOption().Option)
+                switch (GetSelectedOption().Option)
                 {
                     case PlayerEditOption.EditOption.ChangeName:
                         SelectedSpot = activeSpot;
@@ -190,12 +233,12 @@ namespace PokerTracker3000.GameSession
 
                     case PlayerEditOption.EditOption.Eliminate:
                         activeSpot.IsEliminated = true;
+                        SetOptionsFor(eliminatedPlayer: true);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
                     case PlayerEditOption.EditOption.Remove:
-                        if (!activeSpot.CanBeRemoved)
+                        if (!_removeOrEliminateOption.IsAvailable)
                             return MainWindowFocusManager.FocusArea.PlayerInfo;
-
                         activeSpot.RemovePlayer();
                         var newSpotIdx = activeSpot.SpotIndex + 1;
                         var newSpotToFocus = activeSpot;
@@ -214,7 +257,11 @@ namespace PokerTracker3000.GameSession
                         return MainWindowFocusManager.FocusArea.MovementInProgress;
 
                     case PlayerEditOption.EditOption.AddOn:
+                        SelectedSpot = activeSpot;
+                        return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
+
                     case PlayerEditOption.EditOption.BuyIn:
+                        SetOptionsFor(eliminatedPlayer: false);
                         SelectedSpot = activeSpot;
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
 
@@ -231,6 +278,19 @@ namespace PokerTracker3000.GameSession
                 _moveInProgress = false;
                 spot.IsBeingMoved = false;
             });
+        }
+
+        private PlayerEditOption GetSelectedOption()
+            => SpotOptions.First(x => x.IsSelected);
+
+        private void SetOptionsFor(bool eliminatedPlayer)
+        {
+            _addOnOrBuyInOption.ChangeEditOption(eliminatedPlayer ? PlayerEditOption.EditOption.BuyIn : PlayerEditOption.EditOption.AddOn);
+            _removeOrEliminateOption.ChangeEditOption(eliminatedPlayer ? PlayerEditOption.EditOption.Remove : PlayerEditOption.EditOption.Eliminate);
+            if (eliminatedPlayer)
+                _removeOrEliminateOption.IsAvailable = PlayerSpots.Where(x => x.HasPlayerData).Count() > 1;
+            else
+                _removeOrEliminateOption.IsAvailable = true;
         }
         #endregion
     }
