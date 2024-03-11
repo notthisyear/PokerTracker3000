@@ -119,7 +119,7 @@ namespace PokerTracker3000.GameSession
             for (var i = 0; i < NumberOfPlayerSpots; i++)
                 PlayerSpots.Add(new() { SpotIndex = i });
 
-            _navigationManager = new(PlayerSpots.AsReadOnly());
+            _navigationManager = new();
 
             _addOnOrBuyInOption = new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success);
             _removeOrEliminateOption = new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel);
@@ -205,7 +205,9 @@ namespace PokerTracker3000.GameSession
                 // Note: The navigation is set-up in such a way that if no
                 //       available spot is found in the requested navigation
                 //       direction, the current spot index is returned
-                var newSpotIndex = _navigationManager.Navigate(_currentTableLayout, currentSpotIdx, direction, _moveInProgress);
+                var newSpotIndex = _navigationManager.Navigate(_currentTableLayout, currentSpotIdx, direction,
+                    _moveInProgress ? default : (int nextSpotIdx) => PlayerSpots.First(x => x.SpotIndex == nextSpotIdx).HasPlayerData);
+
                 if (_moveInProgress)
                 {
                     var currentSpot = PlayerSpots.First(x => x.SpotIndex == currentSpotIdx);
