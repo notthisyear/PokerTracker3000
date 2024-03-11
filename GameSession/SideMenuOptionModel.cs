@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace PokerTracker3000.GameSession
 {
@@ -8,13 +10,22 @@ namespace PokerTracker3000.GameSession
 
         #region Backing fields
         private string _optionText = string.Empty;
-        private bool _isHighlighted = true;
-        private bool _isSubOption = false;
+        private string _descriptionText = string.Empty;
+        private bool _isHighlighted = false;
+        private bool _isSelected = false;
+        private bool _isAvailable = true;
         #endregion
+
         public string OptionText
         {
             get => _optionText;
             set => SetProperty(ref _optionText, value);
+        }
+
+        public string DescriptionText
+        {
+            get => _descriptionText;
+            set => SetProperty(ref _descriptionText, value);
         }
 
         public bool IsHighlighted
@@ -23,11 +34,31 @@ namespace PokerTracker3000.GameSession
             set => SetProperty(ref _isHighlighted, value);
         }
 
-        public bool IsSubOption
+        public bool IsSelected
         {
-            get => _isSubOption;
-            set => SetProperty(ref _isSubOption, value);
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
         }
+
+        public bool IsAvailable
+        {
+            get => _isAvailable;
+            set => SetProperty(ref _isAvailable, value);
+        }
+
+        public bool HasSubOptions { get; init; }
+
+        public List<SideMenuOptionModel> SubOptions { get; init; } = [];
+
+        public int Id { get; init; }
+
+        public bool IsSubOption { get; init; } = false;
+
+        public Action<SideMenuOptionModel>? OnOpenAction { get; init; } = default;
+
+        public Action<SideMenuOptionModel>? OptionAction { get; init; } = default;
+
+        public string UnavaliableDescriptionText { get; init; } = string.Empty;
         #endregion
     }
 }

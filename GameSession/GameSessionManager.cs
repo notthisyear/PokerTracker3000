@@ -25,11 +25,10 @@ namespace PokerTracker3000.GameSession
         #region Backing fields
         private PlayerSpot? _selectedSpot;
         private CurrencyType _currencyType = CurrencyType.SwedishKrona;
+        private bool _tableFull = false;
         #endregion
 
-        public List<PlayerSpot> PlayerSpots { get; } = new();
-
-        public int NumberOfActivePlayers { get; private set; } = 0;
+        public List<PlayerSpot> PlayerSpots { get; } = [];
 
         public PlayerSpot? SelectedSpot
         {
@@ -41,6 +40,12 @@ namespace PokerTracker3000.GameSession
         {
             get => _currencyType;
             private set => SetProperty(ref _currencyType, value);
+        }
+
+        public bool TableFull
+        {
+            get => _tableFull;
+            private set => SetProperty(ref _tableFull, value);
         }
 
         public GameClock Clock { get; } = new();
@@ -80,14 +85,24 @@ namespace PokerTracker3000.GameSession
             _currentTableLayout = tableLayout;
         }
 
+        public void AddPlayerToSpot()
+        {
+            var targetSpot = PlayerSpots.FirstOrDefault(x => !x.HasPlayerData);
+            if (targetSpot == default)
+                return;
+
+            targetSpot.AddPlayer(_nextPlayerId++, _pathToDefaultPlayerImage);
+            PlayerSpotsUpdatedEvent?.Invoke(this, NumberOfPlayerSpots);
+            TableFull = !PlayerSpots.Where(x => !x.HasPlayerData).Any();
+        }
+
+        #region Private methods
         private void InitializeSpots(int numberOfSpots)
         {
             for (var i = 0; i < numberOfSpots; i++)
                 PlayerSpots[i].AddPlayer(_nextPlayerId++, _pathToDefaultPlayerImage);
-            NumberOfActivePlayers = numberOfSpots;
         }
 
-        #region Private methods
         private void RegisterFocusManagerCallbacks()
         {
             FocusManager.RegisterPlayerSpots(PlayerSpots);
@@ -133,6 +148,10 @@ namespace PokerTracker3000.GameSession
                         while (!newSpotToFocus.HasPlayerData)
                             newSpotToFocus = PlayerSpots[newSpotIdx++ % NumberOfPlayerSpots];
                         newSpotToFocus.IsSelected = true;
+
+                        if (TableFull)
+                            TableFull = false;
+
                         return MainWindowFocusManager.FocusArea.Players;
 
                     case PlayerEditOption.EditOption.Move:

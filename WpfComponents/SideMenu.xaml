@@ -4,11 +4,16 @@
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents">
 
     <StackPanel Orientation="Vertical"
-                DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
-        <ItemsControl ItemsSource="{Binding Path=SideMenuOptions}">
+                DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
+                Margin="20,0,0,0">
+        <ItemsControl ItemsSource="{Binding Path=ViewModel.SideMenuOptions}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <components:SideMenuOption OptionModel="{Binding Path=.}"/>
+                    <components:SideMenuOption OptionModel="{Binding Path=.}"
+                                               MenuViewModel="{Binding RelativeSource={RelativeSource
+                                                                       Mode=FindAncestor,
+                                                                       AncestorType={x:Type UserControl}},
+                                                                       Path=ViewModel}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

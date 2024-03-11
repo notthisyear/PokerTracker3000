@@ -31,6 +31,8 @@ namespace PokerTracker3000.ViewModels
 
         public GameSessionManager SessionManager { get; }
 
+        public SideMenuViewModel SideMenuViewModel { get; }
+
         // public SpotifyClientViewModel SpotifyClientViewModel { get; init; }
         #endregion
 
@@ -45,6 +47,7 @@ namespace PokerTracker3000.ViewModels
             _focusManager = focusManager;
 
             SessionManager = new(settings.DefaultPlayerImagePath, _focusManager);
+            SideMenuViewModel = new(focusManager, SessionManager);
 
             // SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
             //Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());

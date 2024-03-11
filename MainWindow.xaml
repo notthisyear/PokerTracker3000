@@ -122,9 +122,9 @@
                         </Style>
                     </Border.Style>
 
-                    <components:SideMenu x:Name="mainSideMenu"
-                                         VerticalAlignment="Center"
-                                         HorizontalAlignment="Center"/>
+                    <components:SideMenu VerticalAlignment="Center"
+                                         HorizontalAlignment="Stretch"
+                                         ViewModel="{Binding Path=ViewModel.SideMenuViewModel}"/>
                 </Border>
 
 
