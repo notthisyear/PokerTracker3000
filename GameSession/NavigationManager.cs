@@ -196,11 +196,11 @@ namespace PokerTracker3000.GameSession
                     { 0, new() { Id = 0, X = 1, Y = 0 } },
                     { 1, new() { Id = 1, X = 2, Y = 0 } },
                     { 2, new() { Id = 2, X = 3, Y = 0 } },
-                    { 3, new() { Id = 3, X = 4, Y = 0.5F } },
-                    { 4, new() { Id = 4, X = 3, Y = 1 } },
-                    { 5, new() { Id = 5, X = 2, Y = 1 } },
-                    { 6, new() { Id = 6, X = 1, Y = 1 } },
-                    { 7, new() { Id = 7, X = 0, Y = 0.5F } },
+                    { 3, new() { Id = 3, X = 5.5F, Y = 1 } },
+                    { 4, new() { Id = 4, X = 3, Y = 2 } },
+                    { 5, new() { Id = 5, X = 2, Y = 2 } },
+                    { 6, new() { Id = 6, X = 1, Y = 2 } },
+                    { 7, new() { Id = 7, X = -1.5F, Y = 1 } },
                 });
 
             /* Layout:
