@@ -61,6 +61,9 @@ namespace PokerTracker3000.GameSession
 
             [Description("-1")]
             Remove1,
+
+            [Description("OK")]
+            Ok
         }
 
         public enum OptionType

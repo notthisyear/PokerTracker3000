@@ -36,8 +36,8 @@ namespace PokerTracker3000
         #endregion
 
         #region Callback delegates
-        public delegate int NavigationCallback(int currentIndex, InputEvent.NavigationDirection direction);
-        public delegate void SideMenuNavigationCallback(InputEvent.NavigationDirection direction);
+        public delegate int SpotNavigationCallback(int currentIndex, InputEvent.NavigationDirection direction);
+        public delegate void NavigationCallback(InputEvent.NavigationDirection direction);
         public delegate void SideMenuVisibilityChangedCallback(bool isVisible);
         public delegate bool SideMenuButtonCallback(InputEvent.ButtonEventType eventType);
         public delegate void SpotSelectedCallback(PlayerSpot activeSpot, int spotIndex);
@@ -53,13 +53,14 @@ namespace PokerTracker3000
         private int _lastFocusedPlayerSpotIndex = -1;
 
         private List<PlayerSpot>? _playerSpots;
-        private NavigationCallback? _spotNavigationCallback;
-        private SideMenuNavigationCallback? _sideMenuNavigationCallback;
+        private SpotNavigationCallback? _spotNavigationCallback;
+        private NavigationCallback? _sideMenuNavigationCallback;
         private SideMenuButtonCallback? _sideMenuButtonCallback;
         private SideMenuVisibilityChangedCallback? _sideMenuVisibilityChangedCallback;
         private SpotSelectedCallback? _spotSelectedCallback;
         private PlayerOptionNavigationCallback? _playerOptionsNavigationCallback;
         private PlayerOptionSelectCallback? _playerOptionsSelectCallback;
+        private NavigationCallback? _buyInOrAddOnNavigationCallback;
         private EditMenuLostFocusCallback? _editMenuLostFocusCallback;
         private PlayerMovementDoneCallback? _playerMovementDoneCallback;
 
@@ -88,12 +89,12 @@ namespace PokerTracker3000
             _sideMenuVisibilityChangedCallback = callback;
         }
 
-        public void RegisterSpotNavigationCallback(NavigationCallback callback)
+        public void RegisterSpotNavigationCallback(SpotNavigationCallback callback)
         {
             _spotNavigationCallback = callback;
         }
 
-        public void RegisterSideMenuNavigationCallback(SideMenuNavigationCallback callback)
+        public void RegisterSideMenuNavigationCallback(NavigationCallback callback)
         {
             _sideMenuNavigationCallback = callback;
         }
@@ -118,6 +119,10 @@ namespace PokerTracker3000
             _playerOptionsSelectCallback = callback;
         }
 
+        public void RegisterBuyInOrAddOnBoxNavigationCallback(NavigationCallback callback)
+        {
+            _buyInOrAddOnNavigationCallback = callback;
+        }
         public void RegisterEditMenuLostFocusCallback(EditMenuLostFocusCallback callback)
         {
             _editMenuLostFocusCallback = callback;
@@ -157,6 +162,10 @@ namespace PokerTracker3000
                 case FocusArea.PlayerInfo:
                     if (_playerOptionsNavigationCallback != default && TryGetMatching(_playerSpots, x => x.IsSelected, out var spot))
                         _playerOptionsNavigationCallback(spot!, direction);
+                    break;
+
+                case FocusArea.AddOnOrBuyInBox:
+                    _buyInOrAddOnNavigationCallback?.Invoke(direction);
                     break;
             }
         }
@@ -276,6 +285,7 @@ namespace PokerTracker3000
             if (newFocusArea == FocusArea.Players ||
                 newFocusArea == FocusArea.PlayerInfo ||
                 newFocusArea == FocusArea.EditNameBox ||
+                newFocusArea == FocusArea.AddOnOrBuyInBox ||
                 newFocusArea == FocusArea.MovementInProgress)
             {
                 if (!TryGetMatching(_playerSpots, x => x.SpotIndex == _lastFocusedPlayerSpotIndex, out activeSpot))
@@ -290,11 +300,16 @@ namespace PokerTracker3000
                 case FocusArea.PlayerInfo:
                 case FocusArea.EditNameBox:
                 case FocusArea.MovementInProgress:
+                case FocusArea.AddOnOrBuyInBox:
                     if (activeSpot != default)
                     {
                         activeSpot.IsHighlighted = true;
-                        if (newFocusArea == FocusArea.PlayerInfo || newFocusArea == FocusArea.EditNameBox)
+                        if (newFocusArea == FocusArea.PlayerInfo ||
+                            newFocusArea == FocusArea.EditNameBox ||
+                            newFocusArea == FocusArea.AddOnOrBuyInBox)
+                        {
                             activeSpot.IsSelected = true;
+                        }
                         _currentFocusedPlayerSpotIndex = activeSpot.SpotIndex;
                         _lastFocusedPlayerSpotIndex = -1;
                     }

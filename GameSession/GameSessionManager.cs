@@ -39,6 +39,7 @@ namespace PokerTracker3000.GameSession
             new(PlayerEditOption.EditOption.Add100, type: PlayerEditOption.OptionType.Success),
             new(PlayerEditOption.EditOption.Add10, type: PlayerEditOption.OptionType.Success),
             new(PlayerEditOption.EditOption.Add1, type: PlayerEditOption.OptionType.Success),
+            new(PlayerEditOption.EditOption.Ok),
             new(PlayerEditOption.EditOption.Remove1000, type: PlayerEditOption.OptionType.Cancel),
             new(PlayerEditOption.EditOption.Remove100, type: PlayerEditOption.OptionType.Cancel),
             new(PlayerEditOption.EditOption.Remove10, type: PlayerEditOption.OptionType.Cancel),
@@ -106,6 +107,8 @@ namespace PokerTracker3000.GameSession
         private TableLayout _currentTableLayout;
         private readonly PlayerEditOption _addOnOrBuyInOption;
         private readonly PlayerEditOption _removeOrEliminateOption;
+        private readonly int _playerOptionNavigationId;
+        private readonly int _addOnOrBuyInNavigationId;
         #endregion
 
         public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
@@ -118,16 +121,37 @@ namespace PokerTracker3000.GameSession
 
             _navigationManager = new(PlayerSpots.AsReadOnly());
 
-
             _addOnOrBuyInOption = new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success);
             _removeOrEliminateOption = new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel);
             SpotOptions.Add(_addOnOrBuyInOption);
             SpotOptions.Add(_removeOrEliminateOption);
 
+            _playerOptionNavigationId = _navigationManager.RegisterNavigation(
+                [
+                    new(X: 0, Y: 0),
+                    new(X: 1, Y: 0),
+                    new(X: 0, Y: 1),
+                    new(X: 1, Y: 1),
+                    new(X: 0, Y: 2),
+                ]);
+            _addOnOrBuyInNavigationId = _navigationManager.RegisterNavigation(
+                [
+                    new(X: 0, Y: 0),
+                    new(X: 1, Y: 0),
+                    new(X: 2, Y: 0),
+                    new(X: 3, Y: 0),
+                    new(X: 4, Y: 0),
+                    new(X: 0, Y: 5),
+                    new(X: 1, Y: 5),
+                    new(X: 2, Y: 5),
+                    new(X: 3, Y: 5),
+                ]);
+
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
         }
 
+        #region Public methods
         public void SetTableLayout(TableLayout tableLayout)
         {
             _currentTableLayout = tableLayout;
@@ -164,6 +188,7 @@ namespace PokerTracker3000.GameSession
 
             LayoutMightHaveChangedEvent?.Invoke(this, PlayerSpots.Where(x => x.HasPlayerData).Count());
         }
+        #endregion
 
         #region Private methods
         private void InitializeSpots(int numberOfSpots)
@@ -192,34 +217,10 @@ namespace PokerTracker3000.GameSession
             {
                 SetOptionsFor(activeSpot.IsEliminated);
             });
-            FocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) =>
-            {
-                var currentOption = GetSelectedOption();
-                var currentOptionIndex = SpotOptions.IndexOf(currentOption);
-
-                var onTopRow = currentOptionIndex < 2;
-                var numberOfOptionsEven = (SpotOptions.Count % 2) == 0;
-                var onBottomRow = currentOptionIndex >= (SpotOptions.Count - (numberOfOptionsEven ? 2 : 1));
-                var isOnLastSingleOption = onBottomRow && !numberOfOptionsEven;
-
-                var newOptionIndex = direction switch
-                {
-                    InputEvent.NavigationDirection.Left or
-                    InputEvent.NavigationDirection.Right =>
-                    (isOnLastSingleOption ? currentOptionIndex - 1 :
-                    (currentOptionIndex % 2 == 0) ? currentOptionIndex + 1 : currentOptionIndex - 1),
-                    InputEvent.NavigationDirection.Down => onBottomRow ?
-                    (currentOptionIndex % 2) : Math.Min(currentOptionIndex + 2, SpotOptions.Count - 1),
-                    InputEvent.NavigationDirection.Up => onTopRow ?
-                    (SpotOptions.Count - (numberOfOptionsEven ? (2 - currentOptionIndex) : (1 + currentOptionIndex))) : (currentOptionIndex - 2),
-                    _ => currentOptionIndex
-                };
-                currentOption.IsSelected = false;
-                SpotOptions[newOptionIndex].IsSelected = true;
-            });
+            FocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) => NavigateOptions(_playerOptionNavigationId, SpotOptions, direction));
             FocusManager.RegisterPlayerInfoBoxSelectCallback((PlayerSpot activeSpot) =>
             {
-                switch (GetSelectedOption().Option)
+                switch (GetSelectedOptionIn(SpotOptions).Option)
                 {
                     case PlayerEditOption.EditOption.ChangeName:
                         SelectedSpot = activeSpot;
@@ -269,10 +270,8 @@ namespace PokerTracker3000.GameSession
                         return MainWindowFocusManager.FocusArea.None;
                 };
             });
-            FocusManager.RegisterEditMenuLostFocusCallback(() =>
-            {
-                SelectedSpot = default;
-            });
+            FocusManager.RegisterBuyInOrAddOnBoxNavigationCallback((InputEvent.NavigationDirection direction) => NavigateOptions(_addOnOrBuyInNavigationId, AddOnOrBuyInOptions, direction));
+            FocusManager.RegisterEditMenuLostFocusCallback(() => SelectedSpot = default);
             FocusManager.RegisterMovementDoneCallback((PlayerSpot spot) =>
             {
                 _moveInProgress = false;
@@ -280,8 +279,16 @@ namespace PokerTracker3000.GameSession
             });
         }
 
-        private PlayerEditOption GetSelectedOption()
-            => SpotOptions.First(x => x.IsSelected);
+        private void NavigateOptions(int navigationId, List<PlayerEditOption> options, InputEvent.NavigationDirection direction)
+        {
+            var currentOption = GetSelectedOptionIn(options);
+            var currentOptionIndex = options.IndexOf(currentOption);
+
+            var newIndex = _navigationManager.Navigate(navigationId, currentOptionIndex, direction);
+
+            currentOption.IsSelected = false;
+            options[newIndex].IsSelected = true;
+        }
 
         private void SetOptionsFor(bool eliminatedPlayer)
         {
@@ -292,6 +299,9 @@ namespace PokerTracker3000.GameSession
             else
                 _removeOrEliminateOption.IsAvailable = true;
         }
+
+        private static PlayerEditOption GetSelectedOptionIn(List<PlayerEditOption> options)
+            => options.First(x => x.IsSelected);
         #endregion
     }
 }

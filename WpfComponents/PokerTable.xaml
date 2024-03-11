@@ -567,7 +567,7 @@
 
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="2*" />
                         <ColumnDefinition Width="5*" />
                     </Grid.ColumnDefinitions>
 
@@ -591,7 +591,7 @@
                                   Margin="0,0,10,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <UniformGrid Columns="4" />
+                                <UniformGrid Columns="5" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>

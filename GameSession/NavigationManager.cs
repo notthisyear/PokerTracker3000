@@ -9,6 +9,8 @@ namespace PokerTracker3000.GameSession
 {
     internal class NavigationManager
     {
+        public record Node(float X, float Y);
+
         private readonly struct Distance
         {
             public float XDifference { get; init; }
@@ -87,6 +89,7 @@ namespace PokerTracker3000.GameSession
         #region Private fields
         private readonly ReadOnlyCollection<PlayerSpot> _spots;
         private readonly Dictionary<TableLayout, Dictionary<int, ItemCoordinate>> _spotCoordinates;
+        private readonly Dictionary<int, Dictionary<int, ItemCoordinate>> _registeredNavigations;
         private bool _moveInProgress;
         #endregion
 
@@ -94,7 +97,20 @@ namespace PokerTracker3000.GameSession
         {
             _spots = spots;
             _spotCoordinates = [];
+            _registeredNavigations = [];
+
             SetupNavigationInformation();
+        }
+
+        public int RegisterNavigation(List<Node> nodes)
+        {
+            var nextId = _registeredNavigations.Count;
+            _registeredNavigations.Add(nextId, []);
+            for (var i = 0; i < nodes.Count; i++)
+                _registeredNavigations[nextId].Add(i, new() { Id = i, X = nodes[i].X, Y = nodes[i].Y });
+
+            InitializeNavigationDictionary(_registeredNavigations[nextId]);
+            return nextId;
         }
 
         public int Navigate(TableLayout layout, int currentSpotIdx, InputEvent.NavigationDirection direction, bool moveInProgress)
@@ -107,6 +123,17 @@ namespace PokerTracker3000.GameSession
                 return FindFirstOccupiedSpot(currentSpotIdx, [.. navigationOrder!]);
             }
             return currentSpotIdx;
+        }
+
+        public int Navigate(int layoutId, int currentIdx, InputEvent.NavigationDirection direction, Predicate<int>? nodeValidation = default)
+        {
+            if (_registeredNavigations.TryGetValue(layoutId, out var navigation) &&
+                navigation.TryGetValue(currentIdx, out var coordinate) &&
+                coordinate.TryGetValidMovementsInDirection(direction, out var navigationOrder))
+            {
+                return FindFirstAcceptedNode(currentIdx, nodeValidation, [.. navigationOrder!]);
+            }
+            return currentIdx;
         }
 
         #region Private methods
@@ -230,6 +257,18 @@ namespace PokerTracker3000.GameSession
             }
         }
 
+        private void AddToTableLayoutNavigationList(TableLayout layout, List<Node> nodes)
+        {
+            for (var i = 0; i < nodes.Count; i++)
+                _spotCoordinates[layout].Add(i, new() { Id = i, X = nodes[i].X, Y = nodes[i].Y });
+        }
+
+        private static void InitializeNavigationDictionary(Dictionary<int, ItemCoordinate> navigationEntries)
+        {
+            foreach (var entry in navigationEntries.Values)
+                entry.Initialize(navigationEntries.Values.ToList().AsReadOnly());
+        }
+
         private int FindFirstOccupiedSpot(int fallback, params int[] indicesToCheck)
         {
             if (_moveInProgress)
@@ -238,6 +277,19 @@ namespace PokerTracker3000.GameSession
             foreach (var i in indicesToCheck)
             {
                 if (_spots.First(x => x.SpotIndex == i).HasPlayerData != default)
+                    return i;
+            }
+            return fallback;
+        }
+
+        private static int FindFirstAcceptedNode(int fallback, Predicate<int>? nodeValidation = default, params int[] indicesToCheck)
+        {
+            if (nodeValidation == default)
+                return indicesToCheck.First();
+
+            foreach (var i in indicesToCheck)
+            {
+                if (nodeValidation(i))
                     return i;
             }
             return fallback;
