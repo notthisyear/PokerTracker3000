@@ -64,16 +64,16 @@ namespace PokerTracker3000.GameSession
                     {
                         InputEvent.NavigationDirection.Left =>
                                 [.. distanceToOtherSpots.Where(x => x.XDifference < 0).Select(x => x.EndSpotId),
-                                .. distanceToOtherSpots.Where(x => x.XDifference > 0).Select(x => x.EndSpotId).Reverse()],
+                                .. distanceToOtherSpots.Where(x => x.XDifference > 0).Reverse().OrderBy(x => Math.Abs(x.YDifference)).Select(x => x.EndSpotId)],
                         InputEvent.NavigationDirection.Right =>
                                 [.. distanceToOtherSpots.Where(x => x.XDifference > 0).Select(x => x.EndSpotId),
-                                .. distanceToOtherSpots.Where(x => x.XDifference < 0).Select(x => x.EndSpotId).Reverse()],
+                                .. distanceToOtherSpots.Where(x => x.XDifference < 0).Reverse().OrderBy(x => Math.Abs(x.YDifference)).Select(x => x.EndSpotId)],
                         InputEvent.NavigationDirection.Up =>
                                 [.. distanceToOtherSpots.Where(x => x.YDifference < 0).Select(x => x.EndSpotId),
-                                .. distanceToOtherSpots.Where(x => x.YDifference > 0).Select(x => x.EndSpotId)],
+                                .. distanceToOtherSpots.Where(x => x.YDifference > 0).Reverse().OrderBy(x => Math.Abs(x.XDifference)).Select(x => x.EndSpotId)],
                         InputEvent.NavigationDirection.Down =>
                                 [.. distanceToOtherSpots.Where(x => x.YDifference > 0).Select(x => x.EndSpotId),
-                                .. distanceToOtherSpots.Where(x => x.YDifference < 0).Select(x => x.EndSpotId)],
+                                .. distanceToOtherSpots.Where(x => x.YDifference < 0).Reverse().OrderBy(x => Math.Abs(x.XDifference)).Select(x => x.EndSpotId)],
                         _ => []
                     };
 
