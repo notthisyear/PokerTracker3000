@@ -220,7 +220,7 @@ namespace PokerTracker3000.GameSession
                 SetOptionsFor(activeSpot.IsEliminated);
             });
             FocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) => NavigateOptions(_playerOptionNavigationId, SpotOptions, direction));
-            FocusManager.RegisterPlayerInfoBoxSelectCallback((PlayerSpot activeSpot) =>
+            FocusManager.RegisterPlayerOptionSelectCallback((PlayerSpot activeSpot) =>
             {
                 switch (GetSelectedOptionIn(SpotOptions).Option)
                 {
@@ -261,11 +261,13 @@ namespace PokerTracker3000.GameSession
 
                     case PlayerEditOption.EditOption.AddOn:
                         SelectedSpot = activeSpot;
+                        SelectedSpot.BuyInOrAddOnAmount = DefaultAddOnAmount;
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
 
                     case PlayerEditOption.EditOption.BuyIn:
                         SetOptionsFor(eliminatedPlayer: false);
                         SelectedSpot = activeSpot;
+                        SelectedSpot.BuyInOrAddOnAmount = DefaultBuyInAmount;
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
 
                     default:
@@ -274,6 +276,35 @@ namespace PokerTracker3000.GameSession
             });
             FocusManager.RegisterBuyInOrAddOnBoxNavigationCallback((InputEvent.NavigationDirection direction) => NavigateOptions(_addOnOrBuyInNavigationId, AddOnOrBuyInOptions, direction));
             FocusManager.RegisterEditMenuLostFocusCallback(() => SelectedSpot = default);
+            FocusManager.RegisterBuyInOrAddOnOptionSelectedCallback(() =>
+            {
+                if (SelectedSpot == default || SelectedSpot.PlayerData == default)
+                    return false;
+
+                var currentOption = GetSelectedOptionIn(AddOnOrBuyInOptions);
+                if (currentOption.Option == PlayerEditOption.EditOption.Ok)
+                {
+                    SelectedSpot.PlayerData.Information.MoneyInThePot += SelectedSpot.BuyInOrAddOnAmount;
+                    TotalAmountInPot += SelectedSpot.BuyInOrAddOnAmount;
+                    SelectedSpot.BuyInOrAddOnAmount = 0;
+                    return true;
+                }
+
+                var amountToAdd = currentOption.Option switch
+                {
+                    PlayerEditOption.EditOption.Add1000 => 1000,
+                    PlayerEditOption.EditOption.Add100 => 100,
+                    PlayerEditOption.EditOption.Add10 => 10,
+                    PlayerEditOption.EditOption.Add1 => 1,
+                    PlayerEditOption.EditOption.Remove1000 => -1000,
+                    PlayerEditOption.EditOption.Remove100 => -100,
+                    PlayerEditOption.EditOption.Remove10 => -10,
+                    PlayerEditOption.EditOption.Remove1 => -1,
+                    _ => 0,
+                };
+                SelectedSpot.BuyInOrAddOnAmount += amountToAdd;
+                return false;
+            });
             FocusManager.RegisterMovementDoneCallback((PlayerSpot spot) =>
             {
                 _moveInProgress = false;

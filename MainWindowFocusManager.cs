@@ -44,6 +44,7 @@ namespace PokerTracker3000
         public delegate void PlayerOptionNavigationCallback(PlayerSpot spot, InputEvent.NavigationDirection direction);
         public delegate FocusArea PlayerOptionSelectCallback(PlayerSpot spot);
         public delegate void EditMenuLostFocusCallback();
+        public delegate bool BuyInOrAddOnOptionSelectedCallback();
         public delegate void PlayerMovementDoneCallback(PlayerSpot spot);
         #endregion
 
@@ -62,6 +63,7 @@ namespace PokerTracker3000
         private PlayerOptionSelectCallback? _playerOptionsSelectCallback;
         private NavigationCallback? _buyInOrAddOnNavigationCallback;
         private EditMenuLostFocusCallback? _editMenuLostFocusCallback;
+        private BuyInOrAddOnOptionSelectedCallback? _buyInOrAddOnOptionSelected;
         private PlayerMovementDoneCallback? _playerMovementDoneCallback;
 
         private readonly Dictionary<InputEvent.ButtonEventType, Action> _buttonPressedHandlers;
@@ -76,7 +78,8 @@ namespace PokerTracker3000
                 { InputEvent.ButtonEventType.GoBack, HandleGoBackButtonPressed },
             };
         }
-        #region Public method
+
+        #region Public methods
 
         #region Registration methods
         public void RegisterPlayerSpots(List<PlayerSpot> playerSpots)
@@ -114,7 +117,7 @@ namespace PokerTracker3000
             _playerOptionsNavigationCallback = callback;
         }
 
-        public void RegisterPlayerInfoBoxSelectCallback(PlayerOptionSelectCallback callback)
+        public void RegisterPlayerOptionSelectCallback(PlayerOptionSelectCallback callback)
         {
             _playerOptionsSelectCallback = callback;
         }
@@ -123,9 +126,15 @@ namespace PokerTracker3000
         {
             _buyInOrAddOnNavigationCallback = callback;
         }
+
         public void RegisterEditMenuLostFocusCallback(EditMenuLostFocusCallback callback)
         {
             _editMenuLostFocusCallback = callback;
+        }
+
+        public void RegisterBuyInOrAddOnOptionSelectedCallback(BuyInOrAddOnOptionSelectedCallback callback)
+        {
+            _buyInOrAddOnOptionSelected = callback;
         }
 
         public void RegisterMovementDoneCallback(PlayerMovementDoneCallback callback)
@@ -242,6 +251,11 @@ namespace PokerTracker3000
                     SetNewFocusArea(FocusArea.PlayerInfo);
                     break;
 
+                case FocusArea.AddOnOrBuyInBox:
+                    if (_buyInOrAddOnOptionSelected != default && _buyInOrAddOnOptionSelected.Invoke())
+                        SetNewFocusArea(FocusArea.PlayerInfo);
+                    break;
+
                 case FocusArea.MovementInProgress:
                     {
                         if (_playerMovementDoneCallback != default && TryGetMatching(_playerSpots, x => x.IsBeingMoved, out var spot))
@@ -263,7 +277,8 @@ namespace PokerTracker3000
             //       we're going back to a edit box focus, we need to let the session
             //       manager know that a focus change is upcoming, so we call the
             //       callback anyway.
-            if (_lastFocusArea == FocusArea.EditNameBox && _playerOptionsSelectCallback != default)
+            if ((_lastFocusArea == FocusArea.EditNameBox || _lastFocusArea == FocusArea.AddOnOrBuyInBox) &&
+                _playerOptionsSelectCallback != default)
             {
                 if (TryGetMatching(_playerSpots, x => x.SpotIndex == _lastFocusedPlayerSpotIndex, out var lastActiveSpot))
                     _ = _playerOptionsSelectCallback.Invoke(lastActiveSpot!);
