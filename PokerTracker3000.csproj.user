@@ -19,6 +19,9 @@
     <Compile Update="WpfComponents\PokerTable.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="WpfComponents\ScrollingSelectorBox.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WpfComponents\SessionOverview.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -43,6 +46,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="WpfComponents\PokerTable.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="WpfComponents\ScrollingSelectorBox.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="WpfComponents\SessionOverview.xaml">
