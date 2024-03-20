@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.ScrollingSelectorBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PokerTracker3000.WpfComponents">
+    <Grid>
+        <Grid.Resources>
+            <Style x:Key="boxStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                <Setter Property="FontSize" Value="18" />
+                <Setter Property="RenderTransformOrigin" Value="0,0" />
+            </Style>
+        </Grid.Resources>
+        
+        <TextBlock x:Name="first"
+                   Style="{StaticResource boxStyle}"
+                   Background="Gray"/>
+
+        <TextBlock x:Name="second"
+                   Style="{StaticResource boxStyle}"
+                   Background="Blue"/>
+
+        <TextBlock x:Name="third"
+                   Style="{StaticResource boxStyle}"
+                   Background="Red"/>
+
+        <TextBlock x:Name="fourth"
+                   Style="{StaticResource boxStyle}"
+                   Background="Yellow"/>
+
+        <TextBlock x:Name="fifth"
+                   Style="{StaticResource boxStyle}"
+                   Background="Green"/>
+    </Grid>
+</UserControl>

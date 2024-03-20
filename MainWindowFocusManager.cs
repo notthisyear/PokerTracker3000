@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.GameSession;
+using PokerTracker3000.WpfComponents;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000
 {
-    public class MainWindowFocusManager : ObservableObject
+    public class MainWindowFocusManager : ObservableObject, ISelectorBoxNavigator
     {
         public enum FocusArea
         {
@@ -67,6 +69,8 @@ namespace PokerTracker3000
         private PlayerMovementDoneCallback? _playerMovementDoneCallback;
 
         private readonly Dictionary<InputEvent.ButtonEventType, Action> _buttonPressedHandlers;
+
+        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
         #endregion
 
         public MainWindowFocusManager()
@@ -147,10 +151,18 @@ namespace PokerTracker3000
         {
             if (_buttonPressedHandlers.TryGetValue(button, out var handler))
                 handler.Invoke();
+
+            Debug.WriteLine($"_lastFocusArea: {_lastFocusArea}");
+            Debug.WriteLine($"_currentFocusedPlayerSpotIndex: {_currentFocusedPlayerSpotIndex}");
+            Debug.WriteLine($"_lastFocusedPlayerSpot: {_lastFocusedPlayerSpotIndex}");
+            Debug.WriteLine($"CurrentFocusArea: {CurrentFocusArea}\n");
         }
 
         public void HandleNavigationEvent(InputEvent.NavigationDirection direction)
         {
+            Navigate?.Invoke(this, direction);
+            return;
+
             if (CurrentFocusArea == FocusArea.None)
             {
                 FocusPlayerArea();
