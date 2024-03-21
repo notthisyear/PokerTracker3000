@@ -47,27 +47,16 @@ namespace PokerTracker3000.WpfComponents
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public HorizontalAlignment TextAlignment
+        public TextAlignment OptionTextAlignment
         {
-            get { return (HorizontalAlignment)GetValue(TextAlignmentProperty); }
-            set { SetValue(TextAlignmentProperty, value); }
+            get { return (TextAlignment)GetValue(OptionTextAlignmentProperty); }
+            set { SetValue(OptionTextAlignmentProperty, value); }
         }
-        public static readonly DependencyProperty TextAlignmentProperty = DependencyProperty.Register(
-            nameof(TextAlignment),
-            typeof(HorizontalAlignment),
+        public static readonly DependencyProperty OptionTextAlignmentProperty = DependencyProperty.Register(
+            nameof(OptionTextAlignment),
+            typeof(TextAlignment),
             typeof(ScrollingSelectorBox),
-            new FrameworkPropertyMetadata(HorizontalAlignment.Left, FrameworkPropertyMetadataOptions.AffectsRender));
-
-        //public int SelectedIndex
-        //{
-        //    get { return (int)GetValue(SelectedIndexProperty); }
-        //    set { SetValue(SelectedIndexProperty, value); }
-        //}
-        //public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register(
-        //    nameof(SelectedIndex),
-        //    typeof(int),
-        //    typeof(ScrollingSelectorBox),
-        //    new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            new FrameworkPropertyMetadata(TextAlignment.Left, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public int SelectedIndex
         {
