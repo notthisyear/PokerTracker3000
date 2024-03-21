@@ -604,12 +604,5 @@
                 </Grid>
             </Border>
         </StackPanel>
-
-        <components:ScrollingSelectorBox VerticalAlignment="Center"
-                                         HorizontalAlignment="Center"
-                                         WrapAtEnds="False"
-                                         OptionTextAlignment="Center"
-                                         NavigatorRelay="{Binding Path=ViewModel.FocusManager}"
-                                         Options="{Binding Path=ViewModel.Stages}"/>
     </Grid>
 </UserControl>

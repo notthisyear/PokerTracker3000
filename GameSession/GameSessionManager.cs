@@ -55,8 +55,6 @@ namespace PokerTracker3000.GameSession
             new(PlayerEditOption.EditOption.Move),
         ];
 
-        public ObservableCollection<string> Stages { get; }
-
         public PlayerSpot? SelectedSpot
         {
             get => _selectedSpot;
@@ -113,7 +111,6 @@ namespace PokerTracker3000.GameSession
         private readonly PlayerEditOption _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
-        private readonly object _stagesAccessLock = new();
         #endregion
 
         public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
@@ -154,14 +151,6 @@ namespace PokerTracker3000.GameSession
 
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
-
-            Stages = [];
-            BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
-            lock (_stagesAccessLock)
-            {
-                for (var i = 0; i < 10; i++)
-                    Stages.Add($"Stage {i + 1}");
-            }
         }
 
         #region Public methods
