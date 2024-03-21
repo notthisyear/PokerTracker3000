@@ -98,15 +98,20 @@ namespace PokerTracker3000.WpfComponents
 
         private void Initialize()
         {
-            _boxes.AddLast((first, WrapAtEnds ? (-2 * DistanceBetweenItems) : 0, WrapAtEnds ? 0 : 1));
-            _boxes.AddLast((second, DistanceBetweenItems * (WrapAtEnds ? -1 : 1), 0.5));
-            _boxes.AddLast((third, WrapAtEnds ? 0 : (DistanceBetweenItems * 2), WrapAtEnds ? 1 : 0));
-            _boxes.AddLast((fourth, DistanceBetweenItems * (WrapAtEnds ? 1 : 3), WrapAtEnds ? 0.5 : 0));
-            _boxes.AddLast((fifth, DistanceBetweenItems * (WrapAtEnds ? 2 : 4), 0));
+            //_boxes.AddLast((first, WrapAtEnds ? (-2 * DistanceBetweenItems) : 0, WrapAtEnds ? 0 : 1));
+            //_boxes.AddLast((second, DistanceBetweenItems * (WrapAtEnds ? -1 : 1), 0.5));
+            //_boxes.AddLast((third, WrapAtEnds ? 0 : (DistanceBetweenItems * 2), WrapAtEnds ? 1 : 0));
+            //_boxes.AddLast((fourth, DistanceBetweenItems * (WrapAtEnds ? 1 : 3), WrapAtEnds ? 0.5 : 0));
+            //_boxes.AddLast((fifth, DistanceBetweenItems * (WrapAtEnds ? 2 : 4), 0));
+            _boxes.AddLast((first, -2 * DistanceBetweenItems, 0));
+            _boxes.AddLast((second, -DistanceBetweenItems, 0.5));
+            _boxes.AddLast((third, 0, 1));
+            _boxes.AddLast((fourth, DistanceBetweenItems, 0.5));
+            _boxes.AddLast((fifth, 2 * DistanceBetweenItems, 0));
 
             var node = _boxes.First;
             first.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            first.Opacity = 1; //node!.Value.currentOpacity;
+            first.Opacity = 1; // node!.Value.currentOpacity;
 
             node = node.Next;
             second.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
@@ -124,53 +129,98 @@ namespace PokerTracker3000.WpfComponents
             fifth.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
             fifth.Opacity = 1; //node!.Value.currentOpacity;
 
-            if (Options != default)
-            {
-                first.Text = Options.Count > 0 ? Options[0] : string.Empty;
-                second.Text = Options.Count > 1 ? Options[1] : string.Empty;
-                third.Text = Options.Count > 2 ? Options[2] : string.Empty;
-                fourth.Text = Options.Count > 3 ? Options[3] : string.Empty;
-                fifth.Text = Options.Count > 4 ? Options[4] : string.Empty;
-            }
+            if (Options == default)
+                return;
+
+            third.Text = Options.Count > SelectedIndex ? Options[SelectedIndex] : string.Empty;
+
+            var firstBoxTextIndex = (SelectedIndex - 2) < 0 ? (WrapAtEnds ? Options.Count - 2 : -1) : SelectedIndex - 2;
+            var secondBoxTextIndex = (SelectedIndex - 1) < 0 ? (WrapAtEnds ? Options.Count - 1 : -1) : SelectedIndex - 1;
+            var fourthBoxTextIndex = (SelectedIndex + 1) > (Options.Count - 1) ? (WrapAtEnds ? 0 : -1) : SelectedIndex + 1;
+            var fifthBoxTextIndex = (SelectedIndex + 2) > (Options.Count - 1) ? (WrapAtEnds ? 1 : -1) : SelectedIndex + 2;
+
+            // (SelectedIndex - 1) < 0 ? (WrapAtEnds ? Options[^1] : string.Empty) : Options[SelectedIndex - 1];
+            // (SelectedIndex - 2) < 0 ? (WrapAtEnds ? Options[^2] : string.Empty) : Options[SelectedIndex - 2];
+            // (SelectedIndex + 1) > (Options.Count - 1) ? (WrapAtEnds ? Options[0] : string.Empty) : Options[SelectedIndex + 1];
+            // (SelectedIndex + 2) > (Options.Count - 1) ? (WrapAtEnds ? Options[1] : string.Empty) : Options[SelectedIndex + 2];
+            second.Text = ((secondBoxTextIndex < 0) || (secondBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[secondBoxTextIndex];
+            first.Text = ((firstBoxTextIndex < 0) || (firstBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[firstBoxTextIndex];
+            fourth.Text = ((fourthBoxTextIndex < 0) || (fourthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fourthBoxTextIndex];
+            fifth.Text = ((fifthBoxTextIndex < 0) || (fifthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fifthBoxTextIndex];
+
+            //LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? item = default;
+            //for (var i = 0; i < _boxes.Count; i++)
+            //{
+            //    item = (item == default) ? _boxes.First : item.Next;
+            //    var (block, currentOffset, currentOpacity) = item!.Value;
+
+            //    Debug.WriteLine($"\t\t[{i}] {block.Text}, {block.Name} ({currentOffset}, {currentOpacity})");
+            //}
         }
 
         private void Navigate(object? sender, InputEvent.NavigationDirection e)
         {
             Debug.WriteLine("-- Before navigation --");
             Debug.WriteLine($"\tselected index: {SelectedIndex}");
+
+            //if (!WrapAtEnds)
+            //{
+            //    if (SelectedIndex < 2 || SelectedIndex > (Options.Count - 4))
+            //    {
+            //        NavigateWithoutWrapping(e);
+            //        LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node = default;
+            //        Debug.WriteLine("-- After navigation --");
+            //        Debug.WriteLine($"\tselected index: {SelectedIndex}");
+            //        for (var i = 0; i < _boxes.Count; i++)
+            //        {
+            //            node = (node == default) ? _boxes.First : node.Next;
+            //            var (block, currentOffset, currentOpacity) = node!.Value;
+
+            //            Debug.WriteLine($"\t\t[{i}] {block.Text}, {block.Name} ({currentOffset}, {currentOpacity})");
+            //        }
+            //        return;
+            //    }
+            //}
+
             if (!WrapAtEnds)
             {
-                if (SelectedIndex < 2 || SelectedIndex > (Options.Count - 4))
-                {
-                    NavigateWithoutWrapping(e);
-                    LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node = default;
-                    Debug.WriteLine("-- After navigation --");
-                    Debug.WriteLine($"\tselected index: {SelectedIndex}");
-                    for (var i = 0; i < _boxes.Count; i++)
-                    {
-                        node = (node == default) ? _boxes.First : node.Next;
-                        var (block, currentOffset, currentOpacity) = node!.Value;
-
-                        Debug.WriteLine($"\t\t[{i}] {block.Text}, {block.Name} ({currentOffset}, {currentOpacity})");
-                    }
+                if (e == InputEvent.NavigationDirection.Down && SelectedIndex == Options.Count - 1)
                     return;
-                }
+                else if (e == InputEvent.NavigationDirection.Up && SelectedIndex == 0)
+                    return;
             }
 
-            NavigateWithWrapping(e);
-            LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node2 = default;
+            Navigate(e);
+
             Debug.WriteLine("-- After navigation --");
             Debug.WriteLine($"\tselected index: {SelectedIndex}");
-            for (var i = 0; i < _boxes.Count; i++)
-            {
-                node2 = (node2 == default) ? _boxes.First : node2.Next;
-                var (block, currentOffset, currentOpacity) = node2!.Value;
 
-                Debug.WriteLine($"\t\t[{i}] {block.Text}, {block.Name} ({currentOffset}, {currentOpacity})");
-            }
+            //LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node = default;
+            //for (var i = 0; i < _boxes.Count; i++)
+            //{
+            //    node = (node == default) ? _boxes.First : node.Next;
+            //    var (block, currentOffset, currentOpacity) = node!.Value;
+
+            //    Debug.WriteLine($"\t\t[{i}] {block.Text}, {block.Name} ({currentOffset}, {currentOpacity})");
+            //}
         }
 
-        private void NavigateWithWrapping(InputEvent.NavigationDirection e)
+
+        //private void MapToNavigator()
+        //{
+        //    if (Options == default)
+        //        return;
+
+        //    third.Text = Options.Count > SelectedIndex ? Options[SelectedIndex] : string.Empty;
+
+        //    second.Text = (SelectedIndex - 1) < 0 ? (WrapAtEnds ? Options[^1] : string.Empty) : Options[SelectedIndex - 1];
+        //    first.Text = (SelectedIndex - 2) < 0 ? (WrapAtEnds ? Options[^2] : string.Empty) : Options[SelectedIndex - 2];
+
+        //    fourth.Text = (SelectedIndex + 1) > (Options.Count - 1) ? (WrapAtEnds ? Options[0] : string.Empty) : Options[SelectedIndex + 1];
+        //    fifth.Text = (SelectedIndex + 2) > (Options.Count - 1) ? (WrapAtEnds ? Options[1] : string.Empty) : Options[SelectedIndex + 2];
+        //}
+
+        private void Navigate(InputEvent.NavigationDirection e)
         {
             Predicate<int>? isItemThatWrapped = default;
             Func<int, FadeDirection>? itemFadeDirection = default;
@@ -197,6 +247,10 @@ namespace PokerTracker3000.WpfComponents
                 return;
 
             var isUp = e == InputEvent.NavigationDirection.Up;
+            SelectedIndex += (isUp ? -1 : 1);
+            if (WrapAtEnds && (SelectedIndex < 0 || SelectedIndex > (Options.Count - 1)))
+                SelectedIndex = SelectedIndex < 0 ? (Options.Count - 1) : 0;
+
             LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node = default;
             for (var i = 0; i < _boxes.Count; i++)
             {
@@ -204,57 +258,66 @@ namespace PokerTracker3000.WpfComponents
                 var (block, currentOffset, currentOpacity) = node!.Value;
 
                 (var sb, var newOffset, var newOpacity) = isItemThatWrapped(i) ?
-                    GetBoardForEndPosition(currentOffset, isUp ? EndPosition.Top : EndPosition.Bottom) :
-                    GetBoardForItemAnimation(currentOffset, currentOpacity, e, itemFadeDirection(i));
+                    GetStoryBoardForEndPosition(currentOffset, isUp ? EndPosition.Top : EndPosition.Bottom) :
+                    GetStoryBoardForItemAnimation(currentOffset, currentOpacity, e, itemFadeDirection(i));
+
+                if (isItemThatWrapped(i))
+                {
+                    var willWrap = isUp ? ((SelectedIndex - 2) < 0) : ((SelectedIndex + 2) > (Options.Count - 1));
+                    if (isUp)
+                        block.Text = !willWrap ? Options[SelectedIndex - 2] : (WrapAtEnds ? Options[Math.Max(0, Options.Count - 2 + SelectedIndex)] : string.Empty);
+                    else
+                        block.Text = !willWrap ? Options[SelectedIndex + 2] : (WrapAtEnds ? Options[(SelectedIndex + 2) % Options.Count] : string.Empty);
+                }
                 sb.Begin(block, HandoffBehavior.Compose);
 
                 node.ValueRef.currentOffset = newOffset;
                 //node.ValueRef.currentOpacity = newOpacity;
             }
-            SelectedIndex += (isUp ? -1 : 1);
         }
 
-        private void NavigateWithoutWrapping(InputEvent.NavigationDirection e)
-        {
-            var isUp = e == InputEvent.NavigationDirection.Up;
-            if (isUp && SelectedIndex == 0)
-                return;
-            else if (!isUp && SelectedIndex == Options.Count - 1)
-                return;
+        //private void NavigateWithoutWrapping(InputEvent.NavigationDirection e)
+        //{
+        //    var isUp = e == InputEvent.NavigationDirection.Up;
+        //    if (isUp && SelectedIndex == 0)
+        //        return;
+        //    else if (!isUp && SelectedIndex == Options.Count - 1)
+        //        return;
 
-            SelectedIndex += (isUp ? -1 : 1);
-            LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node = default;
-            for (var i = 0; i < _boxes.Count; i++)
-            {
-                node = (node == default) ? _boxes.First : node.Next;
-                var (block, currentOffset, currentOpacity) = node!.Value;
-                (Storyboard sb, int newOffset, double newOpacity)? animationResult = default;
-                if (isUp && i )
-                if (!isUp && i < SelectedIndex)
-                {
-                    animationResult = GetBoardForItemAnimation(currentOffset, currentOpacity,
-                        e,
-                        FadeDirection.Out);
-                }
-                else if (!isUp && i < SelectedIndex + 2)
-                {
-                    animationResult = GetBoardForItemAnimation(currentOffset, currentOpacity,
-                        e,
-                        FadeDirection.In);
-                }
-                else if (!isUp)
-                {
-                    animationResult = GetBoardForItemAnimation(currentOffset, currentOpacity,
-                        e,
-                        FadeDirection.NoChange);
-                }
+        //    SelectedIndex += (isUp ? -1 : 1);
+        //    LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node = default;
+        //    for (var i = 0; i < _boxes.Count; i++)
+        //    {
+        //        node = (node == default) ? _boxes.First : node.Next;
+        //        var (block, currentOffset, currentOpacity) = node!.Value;
+        //        (Storyboard sb, int newOffset, double newOpacity)? animationResult = default;
+        //        //if (isUp && i )
+        //        if (!isUp && i < SelectedIndex)
+        //        {
+        //            animationResult = GetBoardForItemAnimation(currentOffset, currentOpacity,
+        //                e,
+        //                FadeDirection.Out);
+        //        }
+        //        else if (!isUp && i < SelectedIndex + 2)
+        //        {
+        //            animationResult = GetBoardForItemAnimation(currentOffset, currentOpacity,
+        //                e,
+        //                FadeDirection.In);
+        //        }
+        //        else if (!isUp)
+        //        {
+        //            animationResult = GetBoardForItemAnimation(currentOffset, currentOpacity,
+        //                e,
+        //                FadeDirection.NoChange);
+        //        }
 
-                animationResult!.Value.sb.Begin(block, HandoffBehavior.Compose);
-                node.ValueRef.currentOffset = animationResult.Value.newOffset;
-                //node.ValueRef.currentOpacity = animationResult.Value.newOpacity;
-            }
-        }
-        private (Storyboard, int, double) GetBoardForEndPosition(int currentOffset, EndPosition position)
+        //        animationResult!.Value.sb.Begin(block, HandoffBehavior.Compose);
+        //        node.ValueRef.currentOffset = animationResult.Value.newOffset;
+        //        //node.ValueRef.currentOpacity = animationResult.Value.newOpacity;
+        //    }
+        //}
+
+        private (Storyboard, int, double) GetStoryBoardForEndPosition(int currentOffset, EndPosition position)
         {
             var newOffset = DistanceBetweenItems * 2 * (position == EndPosition.Top ? -1 : 1);
             Storyboard sb = new();
@@ -264,7 +327,7 @@ namespace PokerTracker3000.WpfComponents
             return (sb, newOffset, 0.0);
         }
 
-        private (Storyboard, int, double) GetBoardForItemAnimation(int currentOffset, double currentOpacity, InputEvent.NavigationDirection direction, FadeDirection fadeType)
+        private (Storyboard, int, double) GetStoryBoardForItemAnimation(int currentOffset, double currentOpacity, InputEvent.NavigationDirection direction, FadeDirection fadeType)
         {
             var newOffset = currentOffset + (DistanceBetweenItems * (direction == InputEvent.NavigationDirection.Down ? -1 : 1));
             var newOpacity = currentOpacity + (fadeType == FadeDirection.NoChange ? 0 : (fadeType == FadeDirection.In ? 0.5 : -0.5));
