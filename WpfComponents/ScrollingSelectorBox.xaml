@@ -6,6 +6,8 @@
             <Style x:Key="boxStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                 <Setter Property="FontSize" Value="18" />
                 <Setter Property="RenderTransformOrigin" Value="0,0" />
+                <Setter Property="HorizontalAlignment" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=TextAlignment}" />
+                <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=TextBoxWidth}" />
             </Style>
         </Grid.Resources>
         

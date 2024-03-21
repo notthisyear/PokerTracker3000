@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -23,6 +24,7 @@ namespace PokerTracker3000.WpfComponents
             typeof(ObservableCollection<string>),
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
+
         public ISelectorBoxNavigator NavigatorRelay
         {
             get { return (ISelectorBoxNavigator)GetValue(NavigatorRelayProperty); }
@@ -45,16 +47,51 @@ namespace PokerTracker3000.WpfComponents
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public HorizontalAlignment TextAlignment
+        {
+            get { return (HorizontalAlignment)GetValue(TextAlignmentProperty); }
+            set { SetValue(TextAlignmentProperty, value); }
+        }
+        public static readonly DependencyProperty TextAlignmentProperty = DependencyProperty.Register(
+            nameof(TextAlignment),
+            typeof(HorizontalAlignment),
+            typeof(ScrollingSelectorBox),
+            new FrameworkPropertyMetadata(HorizontalAlignment.Left, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        //public int SelectedIndex
+        //{
+        //    get { return (int)GetValue(SelectedIndexProperty); }
+        //    set { SetValue(SelectedIndexProperty, value); }
+        //}
+        //public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register(
+        //    nameof(SelectedIndex),
+        //    typeof(int),
+        //    typeof(ScrollingSelectorBox),
+        //    new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
         public int SelectedIndex
         {
-            get { return (int)GetValue(SelectedIndexProperty); }
-            set { SetValue(SelectedIndexProperty, value); }
+            get => (int)GetValue(s_selectedIndexProperty);
+            private set => SetValue(s_selectedIndexPropertyKey, value);
         }
-        public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register(
+        private static readonly DependencyPropertyKey s_selectedIndexPropertyKey = DependencyProperty.RegisterReadOnly(
             nameof(SelectedIndex),
             typeof(int),
             typeof(ScrollingSelectorBox),
-            new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_selectedIndexProperty = s_selectedIndexPropertyKey.DependencyProperty;
+
+        public double TextBoxWidth
+        {
+            get => (double)GetValue(s_textBoxWidthProperty);
+            private set => SetValue(s_textBoxWidthPropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_textBoxWidthPropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(TextBoxWidth),
+            typeof(double),
+            typeof(ScrollingSelectorBox),
+            new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_textBoxWidthProperty = s_textBoxWidthPropertyKey.DependencyProperty;
         #endregion
 
         #region Private fields
@@ -64,6 +101,7 @@ namespace PokerTracker3000.WpfComponents
         private readonly TimeSpan _animationLength = new(0, 0, 0, 0, 350);
         private readonly IEasingFunction _movementEasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut };
         private const int DistanceBetweenItems = 30;
+
         private enum FadeDirection
         {
             In,
@@ -85,6 +123,7 @@ namespace PokerTracker3000.WpfComponents
             _boxes = new();
         }
 
+        #region Private methods
         private void ComponentLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= ComponentLoaded;
@@ -126,6 +165,7 @@ namespace PokerTracker3000.WpfComponents
             if (Options == default)
                 return;
 
+            // Set-up text
             third.Text = Options.Count > SelectedIndex ? Options[SelectedIndex] : string.Empty;
 
             var firstBoxTextIndex = (SelectedIndex - 2) < 0 ? (WrapAtEnds ? Options.Count - 2 : -1) : SelectedIndex - 2;
@@ -142,6 +182,26 @@ namespace PokerTracker3000.WpfComponents
             // and when WrapAtEnds is true, so we deal with it separately
             if (WrapAtEnds && Options.Count == 2)
                 fifth.Text = Options[0];
+
+            // Set-up width
+            var width = 0.0;
+            foreach (var option in Options)
+                width = Math.Max(width, MeasureWidthOfText(option));
+
+            TextBoxWidth = width;
+        }
+
+        private double MeasureWidthOfText(string text)
+        {
+            var t = new FormattedText(text,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(first.FontFamily, first.FontStyle, first.FontWeight, first.FontStretch),
+                first.FontSize,
+                Brushes.Black,
+                new NumberSubstitution(),
+                VisualTreeHelper.GetDpi(first).PixelsPerDip);
+            return t.Width;
         }
 
         private void Navigate(object? sender, InputEvent.NavigationDirection e)
@@ -237,5 +297,6 @@ namespace PokerTracker3000.WpfComponents
             sb.Children.Add(fadeAnimation);
             return (sb, newOffset, newOpacity);
         }
+        #endregion
     }
 }
