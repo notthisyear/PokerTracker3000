@@ -607,7 +607,7 @@
 
         <components:ScrollingSelectorBox VerticalAlignment="Center"
                                          HorizontalAlignment="Center"
-                                         WrapAtEnds="True"
+                                         WrapAtEnds="False"
                                          NavigatorRelay="{Binding Path=ViewModel.FocusManager}"
                                          Options="{Binding Path=ViewModel.Stages}"/>
     </Grid>

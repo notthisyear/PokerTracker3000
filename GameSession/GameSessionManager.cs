@@ -159,7 +159,7 @@ namespace PokerTracker3000.GameSession
             BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
             lock (_stagesAccessLock)
             {
-                for (var i = 0; i < 2; i++)
+                for (var i = 0; i < 10; i++)
                     Stages.Add($"Stage {i + 1}");
             }
         }
