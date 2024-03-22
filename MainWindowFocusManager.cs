@@ -10,7 +10,7 @@ using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000
 {
-    public class MainWindowFocusManager : ObservableObject, ISelectorBoxNavigator
+    public class MainWindowFocusManager : ObservableObject
     {
         public enum FocusArea
         {
@@ -69,8 +69,6 @@ namespace PokerTracker3000
         private PlayerMovementDoneCallback? _playerMovementDoneCallback;
 
         private readonly Dictionary<InputEvent.ButtonEventType, Action> _buttonPressedHandlers;
-
-        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
         #endregion
 
         public MainWindowFocusManager()
@@ -160,9 +158,6 @@ namespace PokerTracker3000
 
         public void HandleNavigationEvent(InputEvent.NavigationDirection direction)
         {
-            Navigate?.Invoke(this, direction);
-            return;
-
             if (CurrentFocusArea == FocusArea.None)
             {
                 FocusPlayerArea();
