@@ -7,7 +7,7 @@ using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000.GameSession
 {
-    internal class NavigationManager
+    public class NavigationManager
     {
         public record Node(float X, float Y);
 
@@ -96,7 +96,7 @@ namespace PokerTracker3000.GameSession
             _layoutNavigationMaps = [];
             _registeredNavigationMaps = [];
 
-            SetupNavigationInformation();
+            SetupNavigationInformationForPlayerLayouts();
         }
 
         #region Public methods
@@ -127,7 +127,7 @@ namespace PokerTracker3000.GameSession
         #endregion
 
         #region Private methods
-        private void SetupNavigationInformation()
+        private void SetupNavigationInformationForPlayerLayouts()
         {
             /* Layout:
             *

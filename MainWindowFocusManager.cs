@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.GameSession;
-using PokerTracker3000.WpfComponents;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
@@ -21,7 +20,8 @@ namespace PokerTracker3000
             EditNameBox,
             AddOnOrBuyInBox,
             ConfirmationDialog,
-            MovementInProgress
+            MovementInProgress,
+            SideMenuEditOption
         }
 
         #region Public properties
@@ -67,6 +67,8 @@ namespace PokerTracker3000
         private EditMenuLostFocusCallback? _editMenuLostFocusCallback;
         private BuyInOrAddOnOptionSelectedCallback? _buyInOrAddOnOptionSelected;
         private PlayerMovementDoneCallback? _playerMovementDoneCallback;
+        private NavigationCallback? _sideMenuEditOptionNavigationCallback;
+        private SideMenuButtonCallback? _sideMenuEditOptionActionCallback;
 
         private readonly Dictionary<InputEvent.ButtonEventType, Action> _buttonPressedHandlers;
         #endregion
@@ -143,6 +145,16 @@ namespace PokerTracker3000
         {
             _playerMovementDoneCallback = callback;
         }
+
+        public void RegisterSideMenuEditOptionNavigationCallback(NavigationCallback callback)
+        {
+            _sideMenuEditOptionNavigationCallback = callback;
+        }
+
+        public void RegisterSideMenuEditOptionActionCallback(SideMenuButtonCallback callback)
+        {
+            _sideMenuEditOptionActionCallback = callback;
+        }
         #endregion
 
         public void HandleButtonPressedEvent(InputEvent.ButtonEventType button)
@@ -183,7 +195,18 @@ namespace PokerTracker3000
                 case FocusArea.AddOnOrBuyInBox:
                     _buyInOrAddOnNavigationCallback?.Invoke(direction);
                     break;
+
+                case FocusArea.SideMenuEditOption:
+                    _sideMenuEditOptionNavigationCallback?.Invoke(direction);
+                    break;
+
             }
+        }
+
+        public void SideMenuEditOptionSelected()
+        {
+            if (CurrentFocusArea == FocusArea.LeftSideMenu)
+                CurrentFocusArea = FocusArea.SideMenuEditOption;
         }
         #endregion
 
@@ -191,9 +214,21 @@ namespace PokerTracker3000
         private void HandleStartButtonPressed()
         {
             if (CurrentFocusArea == FocusArea.LeftSideMenu)
+            {
                 RestoreFromSideMenu();
+            }
             else
-                SetNewFocusArea(FocusArea.LeftSideMenu);
+            {
+                var saveCurrentFocusAsLastFocusArea = true;
+                if (CurrentFocusArea == FocusArea.SideMenuEditOption)
+                {
+                    _ = _sideMenuEditOptionActionCallback?.Invoke(InputEvent.ButtonEventType.Start);
+                    // This ensure that we don't overwrite what the main focus was
+                    // before we entered the game settings options
+                    saveCurrentFocusAsLastFocusArea = false;
+                }
+                SetNewFocusArea(FocusArea.LeftSideMenu, saveCurrentFocusAsLastFocusArea);
+            }
             _sideMenuVisibilityChangedCallback?.Invoke(CurrentFocusArea == FocusArea.LeftSideMenu);
         }
 
@@ -227,6 +262,14 @@ namespace PokerTracker3000
                     {
                         if (_sideMenuButtonCallback.Invoke(InputEvent.ButtonEventType.GoBack))
                             RestoreFromSideMenu();
+                    }
+                    break;
+
+                case FocusArea.SideMenuEditOption:
+                    if (_sideMenuEditOptionActionCallback != default)
+                    {
+                        if (_sideMenuEditOptionActionCallback.Invoke(InputEvent.ButtonEventType.GoBack))
+                            SetNewFocusArea(FocusArea.LeftSideMenu, false);
                     }
                     break;
             }
@@ -274,6 +317,10 @@ namespace PokerTracker3000
                 case FocusArea.LeftSideMenu:
                     _ = _sideMenuButtonCallback?.Invoke(InputEvent.ButtonEventType.Select);
                     break;
+
+                case FocusArea.SideMenuEditOption:
+                    _ = _sideMenuEditOptionActionCallback?.Invoke(InputEvent.ButtonEventType.Select);
+                    break;
             }
         }
 
@@ -290,6 +337,7 @@ namespace PokerTracker3000
                 if (TryGetMatching(_playerSpots, x => x.SpotIndex == _lastFocusedPlayerSpotIndex, out var lastActiveSpot))
                     _ = _playerOptionsSelectCallback.Invoke(lastActiveSpot!);
             }
+
             SetNewFocusArea(_lastFocusArea);
         }
 
@@ -299,7 +347,7 @@ namespace PokerTracker3000
             SetNewFocusArea(FocusArea.Players);
         }
 
-        private void SetNewFocusArea(FocusArea newFocusArea)
+        private void SetNewFocusArea(FocusArea newFocusArea, bool saveCurrentFocusArea = true)
         {
             ClearFocusFromCurrentlyFocusedArea();
 
@@ -313,7 +361,9 @@ namespace PokerTracker3000
                 if (!TryGetMatching(_playerSpots, x => x.SpotIndex == _lastFocusedPlayerSpotIndex, out activeSpot))
                     return;
             }
-            _lastFocusArea = CurrentFocusArea;
+
+            if (saveCurrentFocusArea)
+                _lastFocusArea = CurrentFocusArea;
             CurrentFocusArea = newFocusArea;
 
             switch (newFocusArea)
@@ -337,7 +387,7 @@ namespace PokerTracker3000
                     }
                     break;
 
-                case FocusArea.LeftSideMenu:
+                default:
                     break;
             }
         }

@@ -8,46 +8,6 @@
     <UserControl.Resources>
         <converters:BoolToZeroOrNumberConverter x:Key="boolToZeroOrNumberConverter" />
 
-        <Storyboard x:Key="scaleUp"
-                    PresentationOptions:Freeze="True">
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
-                <EasingDoubleKeyFrame Value="1.2"
-                                      KeyTime="0:0:0.3">
-                    <EasingDoubleKeyFrame.EasingFunction>
-                        <QuarticEase EasingMode="EaseOut"/>
-                    </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-            </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
-                <EasingDoubleKeyFrame Value="1.2"
-                           KeyTime="0:0:0.3">
-                    <EasingDoubleKeyFrame.EasingFunction>
-                        <QuarticEase EasingMode="EaseOut"/>
-                    </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-            </DoubleAnimationUsingKeyFrames>
-        </Storyboard>
-
-        <Storyboard x:Key="scaleDown"
-            PresentationOptions:Freeze="True">
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
-                <EasingDoubleKeyFrame Value="1.0"
-                           KeyTime="0:0:0.3">
-                    <EasingDoubleKeyFrame.EasingFunction>
-                        <QuarticEase EasingMode="EaseIn"/>
-                    </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame> 
-            </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
-                <EasingDoubleKeyFrame Value="1.0"
-               KeyTime="0:0:0.3">
-                    <EasingDoubleKeyFrame.EasingFunction>
-                        <QuarticEase EasingMode="EaseIn"/>
-                    </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-            </DoubleAnimationUsingKeyFrames>
-        </Storyboard>
-
         <Storyboard x:Key="bouncingScalingAnimation"
              PresentationOptions:Freeze="True"
                     RepeatBehavior="Forever"

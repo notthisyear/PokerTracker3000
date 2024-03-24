@@ -72,7 +72,7 @@ namespace PokerTracker3000.Input
                 => new();
         }
 
-        private readonly Dictionary<Key, Dictionary<ButtonAction, UserInputEvent>> _keyboardEvents = new();
+        private readonly Dictionary<Key, Dictionary<ButtonAction, UserInputEvent>> _keyboardEvents = [];
 
         public void RegisterKeyboardEvent(Key keyboardKey, NavigationDirection direction, ButtonAction action = ButtonAction.Down, bool allowRepeat = false)
         {
@@ -99,10 +99,9 @@ namespace PokerTracker3000.Input
         private void AddKeyboardEvent(Key keyboardKey, UserInputEvent newEvent)
         {
             if (!_keyboardEvents.ContainsKey(keyboardKey))
-                _keyboardEvents.Add(keyboardKey, new());
+                _keyboardEvents.Add(keyboardKey, []);
 
-            if (!_keyboardEvents[keyboardKey].ContainsKey(newEvent.Action))
-                _keyboardEvents[keyboardKey].Add(newEvent.Action, newEvent);
+            _ = _keyboardEvents[keyboardKey].TryAdd(newEvent.Action, newEvent);
         }
     }
 }

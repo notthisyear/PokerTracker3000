@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.GameComponents;
+using PokerTracker3000.Interfaces;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
@@ -20,7 +21,7 @@ namespace PokerTracker3000.GameSession
         TwelvePlayers
     };
 
-    public class GameSessionManager : ObservableObject
+    public class GameSessionManager : ObservableObject, IInputRelay
     {
         #region Public properties
 
@@ -31,6 +32,7 @@ namespace PokerTracker3000.GameSession
         private decimal _totalAmountInPot = 0;
         private decimal _defaultBuyInAmount = 500;
         private decimal _defaultAddOnAmount = 500;
+        private SideMenuViewModel.GameEditOption _currentGameEditOption = SideMenuViewModel.GameEditOption.None;
         #endregion
 
         public List<PlayerSpot> PlayerSpots { get; } = [];
@@ -91,19 +93,30 @@ namespace PokerTracker3000.GameSession
             private set => SetProperty(ref _tableFull, value);
         }
 
+        public SideMenuViewModel.GameEditOption CurrentGameEditOption
+        {
+            get => _currentGameEditOption;
+            set => SetProperty(ref _currentGameEditOption, value);
+        }
+
         public GameClock Clock { get; } = new();
 
         public MainWindowFocusManager FocusManager { get; }
+
+        public ObservableCollection<string> Stages { get; }
+
+        public NavigationManager NavigationManager { get; }
         #endregion
 
         #region Events
         public event EventHandler<int>? LayoutMightHaveChangedEvent;
+        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
+        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
         #endregion
 
         #region Private fields
         private const int NumberOfPlayerSpots = 12;
         private readonly string _pathToDefaultPlayerImage;
-        private readonly NavigationManager _navigationManager;
         private int _nextPlayerId = 0;
         private bool _moveInProgress = false;
         private TableLayout _currentTableLayout;
@@ -111,6 +124,10 @@ namespace PokerTracker3000.GameSession
         private readonly PlayerEditOption _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
+        private readonly object _stagesAccessLock = new();
+        private readonly List<GameStage> _stages;
+        private readonly int _defaultStageLengthSeconds = 20 * 60; // TODO: Should be editable
+
         #endregion
 
         public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
@@ -121,14 +138,14 @@ namespace PokerTracker3000.GameSession
             for (var i = 0; i < NumberOfPlayerSpots; i++)
                 PlayerSpots.Add(new() { SpotIndex = i });
 
-            _navigationManager = new();
+            NavigationManager = new();
 
             _addOnOrBuyInOption = new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success);
             _removeOrEliminateOption = new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel);
             SpotOptions.Add(_addOnOrBuyInOption);
             SpotOptions.Add(_removeOrEliminateOption);
 
-            _playerOptionNavigationId = _navigationManager.RegisterNavigation(
+            _playerOptionNavigationId = NavigationManager.RegisterNavigation(
                 [
                     new(X: 0, Y: 0),
                     new(X: 1, Y: 0),
@@ -136,7 +153,7 @@ namespace PokerTracker3000.GameSession
                     new(X: 1, Y: 1),
                     new(X: 0, Y: 2),
                 ]);
-            _addOnOrBuyInNavigationId = _navigationManager.RegisterNavigation(
+            _addOnOrBuyInNavigationId = NavigationManager.RegisterNavigation(
                 [
                     new(X: 0, Y: 0),
                     new(X: 1, Y: 0),
@@ -151,6 +168,10 @@ namespace PokerTracker3000.GameSession
 
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
+
+            Stages = [];
+            _stages = [];
+            BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
         }
 
         #region Public methods
@@ -190,6 +211,52 @@ namespace PokerTracker3000.GameSession
 
             LayoutMightHaveChangedEvent?.Invoke(this, PlayerSpots.Where(x => x.HasPlayerData).Count());
         }
+
+        public void AddStage(int number = -1, bool isPause = false, decimal smallBlind = -1, decimal bigBlind = -1, int stageLengthSeconds = -1)
+        {
+            number = number == -1 ? _stages.Last().Number + 1 : number;
+            smallBlind = smallBlind == -1 ? _stages.Last().SmallBlind * 2 : smallBlind;
+            bigBlind = bigBlind == -1 ? smallBlind * 2 : bigBlind;
+            stageLengthSeconds = stageLengthSeconds == -1 ? _defaultStageLengthSeconds : stageLengthSeconds;
+
+            _stages.Add(new() { Number = number, IsPause = isPause, SmallBlind = smallBlind, BigBlind = bigBlind, LengthSeconds = stageLengthSeconds });
+            lock (Stages)
+                Stages.Add(_stages.Last().Name);
+        }
+
+        public void RemoveStage(int number)
+        {
+            var stageToRemove = _stages.FirstOrDefault(x => x.Number == number);
+            if (stageToRemove == default)
+                return;
+
+            var indexToRemove = _stages.IndexOf(stageToRemove);
+            _stages.Remove(stageToRemove);
+
+            lock (Stages)
+            {
+                Stages.RemoveAt(indexToRemove);
+                for (var i = 0; i < _stages.Count; i++)
+                {
+                    _stages[i].Number = i + 1;
+                    Stages[i] = _stages[i].Name;
+                }
+            }
+        }
+
+        public bool TryGetStage(int index, out GameStage? stage)
+        {
+            var stageName = string.Empty;
+            lock (Stages)
+                stageName = index < Stages.Count ? Stages[index] : string.Empty;
+
+            stage = default;
+            if (string.IsNullOrEmpty(stageName))
+                return false;
+
+            stage = _stages.FirstOrDefault(x => x.Name.Equals(stageName, StringComparison.InvariantCulture));
+            return stage != default;
+        }
         #endregion
 
         #region Private methods
@@ -207,7 +274,7 @@ namespace PokerTracker3000.GameSession
                 // Note: The navigation is set-up in such a way that if no
                 //       available spot is found in the requested navigation
                 //       direction, the current spot index is returned
-                var newSpotIndex = _navigationManager.Navigate(_currentTableLayout, currentSpotIdx, direction,
+                var newSpotIndex = NavigationManager.Navigate(_currentTableLayout, currentSpotIdx, direction,
                     _moveInProgress ? default : (int nextSpotIdx) => PlayerSpots.First(x => x.SpotIndex == nextSpotIdx).HasPlayerData);
 
                 if (_moveInProgress)
@@ -312,6 +379,42 @@ namespace PokerTracker3000.GameSession
                 _moveInProgress = false;
                 spot.IsBeingMoved = false;
             });
+            FocusManager.RegisterSideMenuEditOptionNavigationCallback((InputEvent.NavigationDirection direction) => Navigate?.Invoke(this, direction));
+            FocusManager.RegisterSideMenuEditOptionActionCallback((InputEvent.ButtonEventType eventType) =>
+            {
+                switch (eventType)
+                {
+                    case InputEvent.ButtonEventType.Start:
+                        CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
+                        return true;
+
+                    case InputEvent.ButtonEventType.GoBack:
+                        {
+                            IInputRelay.ButtonEventArgs eventArgs = new() { ButtonEvent = eventType };
+                            ButtonEvent?.Invoke(this, eventArgs);
+                            if (!eventArgs.Handled)
+                                CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
+                            return !eventArgs.Handled;
+                        }
+
+                    case InputEvent.ButtonEventType.Select:
+                        if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.GameStages)
+                        {
+                            if (Stages.Count == 0)
+                            {
+                                AddStage(1, false, 1, 2, _defaultStageLengthSeconds);
+                            }
+                            else
+                            {
+                                ButtonEvent?.Invoke(this, new() { ButtonEvent = eventType });
+                            }
+                        }
+                        return true;
+
+                    default:
+                        return false;
+                }
+            });
         }
 
         private void NavigateOptions(int navigationId, List<PlayerEditOption> options, InputEvent.NavigationDirection direction)
@@ -319,7 +422,7 @@ namespace PokerTracker3000.GameSession
             var currentOption = GetSelectedOptionIn(options);
             var currentOptionIndex = options.IndexOf(currentOption);
 
-            var newIndex = _navigationManager.Navigate(navigationId, currentOptionIndex, direction);
+            var newIndex = NavigationManager.Navigate(navigationId, currentOptionIndex, direction);
 
             currentOption.IsSelected = false;
             options[newIndex].IsSelected = true;

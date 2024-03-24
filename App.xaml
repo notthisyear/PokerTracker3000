@@ -17,6 +17,7 @@
         <converters:ScaleNumberConverter x:Key="scaleNumberConverter" />
         <converters:IsNullConverter x:Key="isNullConverter" />
         <converters:ValueDisplayConverter x:Key="valueDisplayConverter" />
+        <converters:SecondsToTimeStringConverter x:Key="secondsToTimeStringConverter" />
 
         <!-- Animation -->
         <Storyboard x:Key="animateOpacityToOne"
@@ -37,7 +38,45 @@
                 <LinearDoubleKeyFrame KeyTime="00:00:0.3" Value="0.0" />
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
-
+        <Storyboard x:Key="scaleUp"
+            PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame Value="1.2"
+                              KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuarticEase EasingMode="EaseOut"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
+                <EasingDoubleKeyFrame Value="1.2"
+                   KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuarticEase EasingMode="EaseOut"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="scaleDown"
+     PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame Value="1.0"
+                    KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuarticEase EasingMode="EaseIn"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
+                <EasingDoubleKeyFrame Value="1.0"
+        KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuarticEase EasingMode="EaseIn"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        
         <!-- Colors -->
         <Color x:Key="NoColor" A="255" R="0" G="0" B="0" />
         <Color x:Key="MainBackgroundRaw" A="255" R="59" G="59" B="59" />
@@ -80,6 +119,7 @@
         <SolidColorBrush x:Key="MainErrorColorDisabled" Color="{StaticResource MainErrorColorRaw}" Opacity="0.65"/>
 
         <SolidColorBrush x:Key="MainTextColor" Color="{StaticResource MainTextColorRaw}" />
+        <SolidColorBrush x:Key="MainTextSemiTransparent" Color="{StaticResource MainTextColorRaw}" Opacity="0.6"/>
         <SolidColorBrush x:Key="MainTextMutedColor" Color="#888888" />
         <SolidColorBrush x:Key="MainHighlightColor" Color="#B9CC98" />
         <SolidColorBrush x:Key="MainMouseOverColor" Color="#4788C8" />

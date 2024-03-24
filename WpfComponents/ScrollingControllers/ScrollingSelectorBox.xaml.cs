@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using PokerTracker3000.Interfaces;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
@@ -25,14 +27,14 @@ namespace PokerTracker3000.WpfComponents
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public ISelectorBoxNavigator NavigatorRelay
+        public IInputRelay NavigatorRelay
         {
-            get { return (ISelectorBoxNavigator)GetValue(NavigatorRelayProperty); }
+            get { return (IInputRelay)GetValue(NavigatorRelayProperty); }
             set { SetValue(NavigatorRelayProperty, value); }
         }
         public static readonly DependencyProperty NavigatorRelayProperty = DependencyProperty.Register(
             nameof(NavigatorRelay),
-            typeof(ISelectorBoxNavigator),
+            typeof(IInputRelay),
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
 
@@ -58,18 +60,61 @@ namespace PokerTracker3000.WpfComponents
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(TextAlignment.Left, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public int SelectedIndex
+        public int VerticalSpacing
         {
-            get => (int)GetValue(s_selectedIndexProperty);
-            private set => SetValue(s_selectedIndexPropertyKey, value);
+            get { return (int)GetValue(VerticalSpacingProperty); }
+            set { SetValue(VerticalSpacingProperty, value); }
         }
-        private static readonly DependencyPropertyKey s_selectedIndexPropertyKey = DependencyProperty.RegisterReadOnly(
-            nameof(SelectedIndex),
+        public static readonly DependencyProperty VerticalSpacingProperty = DependencyProperty.Register(
+            nameof(VerticalSpacing),
             typeof(int),
             typeof(ScrollingSelectorBox),
-            new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsArrange));
-        private static readonly DependencyProperty s_selectedIndexProperty = s_selectedIndexPropertyKey.DependencyProperty;
+            new FrameworkPropertyMetadata(30, FrameworkPropertyMetadataOptions.AffectsRender, VerticalSpacingUpdated));
 
+        public bool ShowNextAndPreviousValue
+        {
+            get { return (bool)GetValue(ShowNextAndPreviousValueProperty); }
+            set { SetValue(ShowNextAndPreviousValueProperty, value); }
+        }
+        public static readonly DependencyProperty ShowNextAndPreviousValueProperty = DependencyProperty.Register(
+            nameof(ShowNextAndPreviousValue),
+            typeof(bool),
+            typeof(ScrollingSelectorBox),
+            new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender, ShowNextAndPreviousUpdated));
+
+        private static void ShowNextAndPreviousUpdated(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ScrollingSelectorBox b && e.OldValue is bool oldValue && e.NewValue is bool newValue && oldValue != newValue)
+            {
+                foreach (var (block, _, currentOpacity) in b._boxes)
+                {
+                    if (currentOpacity == 1)
+                        continue;
+
+                    DoubleAnimation fadeAnimation = new(currentOpacity, newValue ? currentOpacity : 0, b._animationLength);
+                    Storyboard sb = new();
+                    Storyboard.SetTargetProperty(fadeAnimation, b._pathToOpacityProperty);
+                    sb.Children.Add(fadeAnimation);
+                    sb.Begin(block, HandoffBehavior.Compose);
+                }
+            }
+        }
+
+        private static void VerticalSpacingUpdated(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ScrollingSelectorBox b && e.OldValue is int oldValue && e.NewValue is int newValue && oldValue != newValue)
+            {
+                var node = b._boxes.First;
+                while (node != default)
+                {
+                    var currentOffset = node.Value.currentOffset;
+                    node.ValueRef.currentOffset = (int)((double)currentOffset / (double)oldValue * (double)newValue);
+                    node = node.Next;
+                }
+            }
+        }
+
+        #region Read-only properties
         public double TextBoxWidth
         {
             get => (double)GetValue(s_textBoxWidthProperty);
@@ -81,6 +126,40 @@ namespace PokerTracker3000.WpfComponents
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsArrange));
         private static readonly DependencyProperty s_textBoxWidthProperty = s_textBoxWidthPropertyKey.DependencyProperty;
+
+        public int CurrentSelectedIndex
+        {
+            get => (int)GetValue(s_currentSelectedIndexProperty);
+            private set => SetValue(s_currentSelectedIndexPropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_currentSelectedIndexPropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(CurrentSelectedIndex),
+            typeof(int),
+            typeof(ScrollingSelectorBox),
+            new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsArrange));
+        private static readonly DependencyProperty s_currentSelectedIndexProperty = s_currentSelectedIndexPropertyKey.DependencyProperty;
+        #endregion
+
+        #endregion
+
+        #region Routed events
+        public static readonly RoutedEvent SelectedIndexChangedEvent = EventManager.RegisterRoutedEvent(
+            nameof(SelectedIndexChanged),
+            RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler),
+            typeof(int));
+
+        public event RoutedEventHandler SelectedIndexChanged
+        {
+            add { AddHandler(SelectedIndexChangedEvent, value); }
+            remove { RemoveHandler(SelectedIndexChangedEvent, value); }
+        }
+
+        private void RaiseSelectedIndexChangedEvent(int newIndex)
+        {
+            var newEventArgs = new SelectedIndexChangedEventArgs(SelectedIndexChangedEvent, newIndex);
+            RaiseEvent(newEventArgs);
+        }
         #endregion
 
         #region Private fields
@@ -89,7 +168,7 @@ namespace PokerTracker3000.WpfComponents
         private readonly PropertyPath _pathToOpacityProperty = new("Opacity");
         private readonly TimeSpan _animationLength = new(0, 0, 0, 0, 350);
         private readonly IEasingFunction _movementEasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut };
-        private const int DistanceBetweenItems = 30;
+        private int _selectedIndex;
 
         private enum FadeDirection
         {
@@ -125,19 +204,19 @@ namespace PokerTracker3000.WpfComponents
 
         private void Initialize()
         {
-            _boxes.AddLast((first, -2 * DistanceBetweenItems, 0));
-            _boxes.AddLast((second, -DistanceBetweenItems, 0.5));
+            _boxes.AddLast((first, -2 * VerticalSpacing, 0));
+            _boxes.AddLast((second, -VerticalSpacing, 0.5));
             _boxes.AddLast((third, 0, 1));
-            _boxes.AddLast((fourth, DistanceBetweenItems, 0.5));
-            _boxes.AddLast((fifth, 2 * DistanceBetweenItems, 0));
+            _boxes.AddLast((fourth, VerticalSpacing, 0.5));
+            _boxes.AddLast((fifth, 2 * VerticalSpacing, 0));
 
             var node = _boxes.First;
             first.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            first.Opacity = node!.Value.currentOpacity;
+            first.Opacity = ShowNextAndPreviousValue ? node!.Value.currentOpacity : 0;
 
             node = node.Next;
             second.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            second.Opacity = node!.Value.currentOpacity;
+            second.Opacity = ShowNextAndPreviousValue ? node!.Value.currentOpacity : 0;
 
             node = node.Next;
             third.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
@@ -145,27 +224,47 @@ namespace PokerTracker3000.WpfComponents
 
             node = node.Next;
             fourth.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            fourth.Opacity = node!.Value.currentOpacity;
+            fourth.Opacity = ShowNextAndPreviousValue ? node!.Value.currentOpacity : 0;
 
             node = node.Next;
             fifth.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            fifth.Opacity = node!.Value.currentOpacity;
+            fifth.Opacity = ShowNextAndPreviousValue ? node!.Value.currentOpacity : 0;
 
             if (Options == default)
                 return;
 
+            Options.CollectionChanged += OptionsCollectionChanged;
+            SetupBoxText();
+        }
+
+        private void SetupBoxText()
+        {
+            // Find the middle box
+            List<TextBlock> boxes = [];
+            var middleBoxIndex = 0;
+            foreach (var (block, currentOffset, _) in _boxes)
+            {
+                boxes.Add(block);
+                if (currentOffset == 0)
+                    middleBoxIndex = boxes.Count - 1;
+            }
+
             // Set-up text
-            third.Text = Options.Count > SelectedIndex ? Options[SelectedIndex] : string.Empty;
+            var selectedIndexAtStart = _selectedIndex;
+            _selectedIndex = Options.Count > _selectedIndex ? _selectedIndex : Options.Count;
+            CurrentSelectedIndex = _selectedIndex;
 
-            var firstBoxTextIndex = (SelectedIndex - 2) < 0 ? (WrapAtEnds ? Options.Count - 2 : -1) : SelectedIndex - 2;
-            var secondBoxTextIndex = (SelectedIndex - 1) < 0 ? (WrapAtEnds ? Options.Count - 1 : -1) : SelectedIndex - 1;
-            var fourthBoxTextIndex = (SelectedIndex + 1) > (Options.Count - 1) ? (WrapAtEnds ? 0 : -1) : SelectedIndex + 1;
-            var fifthBoxTextIndex = (SelectedIndex + 2) > (Options.Count - 1) ? (WrapAtEnds ? 1 : -1) : SelectedIndex + 2;
+            boxes[middleBoxIndex].Text = Options.Count > _selectedIndex ? Options[_selectedIndex] : string.Empty;
 
-            second.Text = ((secondBoxTextIndex < 0) || (secondBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[secondBoxTextIndex];
-            first.Text = ((firstBoxTextIndex < 0) || (firstBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[firstBoxTextIndex];
-            fourth.Text = ((fourthBoxTextIndex < 0) || (fourthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fourthBoxTextIndex];
-            fifth.Text = ((fifthBoxTextIndex < 0) || (fifthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fifthBoxTextIndex];
+            var firstBoxTextIndex = (_selectedIndex - 2) < 0 ? (WrapAtEnds ? Options.Count - 2 : -1) : _selectedIndex - 2;
+            var secondBoxTextIndex = (_selectedIndex - 1) < 0 ? (WrapAtEnds ? Options.Count - 1 : -1) : _selectedIndex - 1;
+            var fourthBoxTextIndex = (_selectedIndex + 1) > (Options.Count - 1) ? (WrapAtEnds ? 0 : -1) : _selectedIndex + 1;
+            var fifthBoxTextIndex = (_selectedIndex + 2) > (Options.Count - 1) ? (WrapAtEnds ? 1 : -1) : _selectedIndex + 2;
+
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, -1, 5)].Text = ((secondBoxTextIndex < 0) || (secondBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[secondBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, -2, 5)].Text = ((firstBoxTextIndex < 0) || (firstBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[firstBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, 1, 5)].Text = ((fourthBoxTextIndex < 0) || (fourthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fourthBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, 2, 5)].Text = ((fifthBoxTextIndex < 0) || (fifthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fifthBoxTextIndex];
 
             // The above works for every initial number of options, except for 2
             // and when WrapAtEnds is true, so we deal with it separately
@@ -178,6 +277,13 @@ namespace PokerTracker3000.WpfComponents
                 width = Math.Max(width, MeasureWidthOfText(option));
 
             TextBoxWidth = width;
+            if (selectedIndexAtStart != _selectedIndex)
+                RaiseSelectedIndexChangedEvent(_selectedIndex);
+        }
+
+        private void OptionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            SetupBoxText();
         }
 
         private double MeasureWidthOfText(string text)
@@ -197,9 +303,9 @@ namespace PokerTracker3000.WpfComponents
         {
             if (!WrapAtEnds)
             {
-                if (e == InputEvent.NavigationDirection.Down && SelectedIndex == Options.Count - 1)
+                if (e == InputEvent.NavigationDirection.Down && _selectedIndex == Options.Count - 1)
                     return;
-                else if (e == InputEvent.NavigationDirection.Up && SelectedIndex == 0)
+                else if (e == InputEvent.NavigationDirection.Up && _selectedIndex == 0)
                     return;
             }
 
@@ -233,9 +339,11 @@ namespace PokerTracker3000.WpfComponents
                 return;
 
             var isUp = e == InputEvent.NavigationDirection.Up;
-            SelectedIndex += (isUp ? -1 : 1);
-            if (WrapAtEnds && (SelectedIndex < 0 || SelectedIndex > (Options.Count - 1)))
-                SelectedIndex = SelectedIndex < 0 ? (Options.Count - 1) : 0;
+            var originalSelectedIndex = _selectedIndex;
+            _selectedIndex += (isUp ? -1 : 1);
+            if (WrapAtEnds && (_selectedIndex < 0 || _selectedIndex > (Options.Count - 1)))
+                _selectedIndex = _selectedIndex < 0 ? (Options.Count - 1) : 0;
+            CurrentSelectedIndex = _selectedIndex;
 
             LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node = default;
             for (var i = 0; i < _boxes.Count; i++)
@@ -249,22 +357,28 @@ namespace PokerTracker3000.WpfComponents
 
                 if (isItemThatWrapped(i))
                 {
-                    var willWrap = isUp ? ((SelectedIndex - 2) < 0) : ((SelectedIndex + 2) > (Options.Count - 1));
+                    var willWrap = isUp ? ((_selectedIndex - 2) < 0) : ((_selectedIndex + 2) > (Options.Count - 1));
                     if (isUp)
-                        block.Text = !willWrap ? Options[SelectedIndex - 2] : (WrapAtEnds ? Options[Math.Max(0, Options.Count - 2 + SelectedIndex)] : string.Empty);
+                        block.Text = !willWrap ? Options[_selectedIndex - 2] : (WrapAtEnds ? Options[Math.Max(0, Options.Count - 2 + _selectedIndex)] : string.Empty);
                     else
-                        block.Text = !willWrap ? Options[SelectedIndex + 2] : (WrapAtEnds ? Options[(SelectedIndex + 2) % Options.Count] : string.Empty);
+                        block.Text = !willWrap ? Options[_selectedIndex + 2] : (WrapAtEnds ? Options[(_selectedIndex + 2) % Options.Count] : string.Empty);
                 }
                 sb.Begin(block, HandoffBehavior.Compose);
 
                 node.ValueRef.currentOffset = newOffset;
                 node.ValueRef.currentOpacity = newOpacity;
+
+                if (!ShowNextAndPreviousValue && newOpacity < 1)
+                    block.Opacity = 0;
             }
+
+            if (_selectedIndex != originalSelectedIndex)
+                RaiseSelectedIndexChangedEvent(_selectedIndex);
         }
 
         private (Storyboard, int, double) GetStoryBoardForEndPosition(int currentOffset, EndPosition position)
         {
-            var newOffset = DistanceBetweenItems * 2 * (position == EndPosition.Top ? -1 : 1);
+            var newOffset = VerticalSpacing * 2 * (position == EndPosition.Top ? -1 : 1);
             Storyboard sb = new();
             DoubleAnimation moveAnimation = new(currentOffset, newOffset, _animationLength);
             Storyboard.SetTargetProperty(moveAnimation, _pathToTranslateYProperty);
@@ -274,10 +388,12 @@ namespace PokerTracker3000.WpfComponents
 
         private (Storyboard, int, double) GetStoryBoardForItemAnimation(int currentOffset, double currentOpacity, InputEvent.NavigationDirection direction, FadeDirection fadeType)
         {
-            var newOffset = currentOffset + (DistanceBetweenItems * (direction == InputEvent.NavigationDirection.Down ? -1 : 1));
+            var newOffset = currentOffset + (VerticalSpacing * (direction == InputEvent.NavigationDirection.Down ? -1 : 1));
             var newOpacity = currentOpacity + (fadeType == FadeDirection.NoChange ? 0 : (fadeType == FadeDirection.In ? 0.5 : -0.5));
             DoubleAnimation moveAnimation = new(currentOffset, newOffset, _animationLength) { EasingFunction = _movementEasingFunction };
-            DoubleAnimation fadeAnimation = new(currentOpacity, newOpacity, _animationLength);
+
+            var animationShouldShow = !(!ShowNextAndPreviousValue && newOpacity < 1);
+            DoubleAnimation fadeAnimation = new(animationShouldShow ? currentOpacity : 0, animationShouldShow ? newOpacity : 0, _animationLength);
 
             Storyboard sb = new();
             Storyboard.SetTargetProperty(moveAnimation, _pathToTranslateYProperty);
@@ -285,6 +401,15 @@ namespace PokerTracker3000.WpfComponents
             sb.Children.Add(moveAnimation);
             sb.Children.Add(fadeAnimation);
             return (sb, newOffset, newOpacity);
+        }
+
+        private static int GetWrappedOffsetIndex(int from, int offset, int length)
+        {
+            var rawNewIndex = from + offset;
+            if (rawNewIndex < 0)
+                return length + rawNewIndex;
+            return rawNewIndex % length;
+
         }
         #endregion
     }

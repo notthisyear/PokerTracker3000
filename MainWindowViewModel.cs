@@ -64,7 +64,8 @@ namespace PokerTracker3000.ViewModels
                 else
                 {
                     _focusManager.HandleButtonPressedEvent(inputEvent.Button);
-                    LeftSideMenuOpen = _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu;
+                    LeftSideMenuOpen = _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu ||
+                        _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.SideMenuEditOption;
                 }
             }
             else if (inputEvent.IsNavigationEvent)

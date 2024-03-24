@@ -4,26 +4,28 @@
     <Grid>
         <Grid.Resources>
             <Style x:Key="boxStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
-                <Setter Property="FontSize" Value="18" />
                 <Setter Property="RenderTransformOrigin" Value="0,0" />
+                <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}" />
                 <Setter Property="TextAlignment" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=OptionTextAlignment}" />
                 <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=TextBoxWidth}" />
+                <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=Foreground}" />
+                <Setter Property="FontWeight" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontWeight}" />
             </Style>
         </Grid.Resources>
-        
+
         <TextBlock x:Name="first"
-                   Style="{StaticResource boxStyle}" />
+                   Style="{StaticResource boxStyle}"/>
 
         <TextBlock x:Name="second"
-                   Style="{StaticResource boxStyle}" />
+                   Style="{StaticResource boxStyle}"/>
 
         <TextBlock x:Name="third"
-                   Style="{StaticResource boxStyle}" />
+                   Style="{StaticResource boxStyle}"/>
 
         <TextBlock x:Name="fourth"
-                   Style="{StaticResource boxStyle}" />
+                   Style="{StaticResource boxStyle}"/>
 
         <TextBlock x:Name="fifth"
-                   Style="{StaticResource boxStyle}" />
+                   Style="{StaticResource boxStyle}"/>
     </Grid>
 </UserControl>

@@ -1,0 +1,333 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.EditGameOptions.EditGameStagesControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents">
+
+    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
+
+        <!-- No stages -->
+        <StackPanel Orientation="Vertical">
+            <StackPanel.Style>
+                <Style TargetType="{x:Type StackPanel}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=SessionManager.Stages.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                           HorizontalAlignment="Center"
+                           FontSize="18"
+                           Text="No stages"
+                           Margin="0,0,0,10"/>
+            <!-- TODO: The EditPlayerBoxBox component can be refactored
+                           into some subcomponent representing only the box.
+                           Then, we wouldn't have to repeat ourselves here. -->
+            <Border MinWidth="110"
+                        Height="30"
+                        CornerRadius="3"
+                        BorderThickness="3"
+                        BorderBrush="{StaticResource MainSuccessColor}"
+                        Background="{StaticResource MainSuccessColor}">
+
+                <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                FontSize="10"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Text="Add stage"/>
+            </Border>
+        </StackPanel>
+
+        <!-- Normal view -->
+        <Grid HorizontalAlignment="Center"
+              MinWidth="400"
+>
+            <Grid.Resources>
+                <Style x:Key="optionTextBlockLabel" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="Text" Value="{Binding Path=Text}" />
+                    <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                    <Setter Property="FontSize" Value="11" />
+                    <Setter Property="FontStyle" Value="Italic" />
+                    <Setter Property="VerticalAlignment" Value="Bottom" />
+                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsHighlighted}" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                            <DataTrigger.Setters>
+                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                                <Setter Property="Opacity" Value="1" />
+                            </DataTrigger.Setters>
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource scaleUp}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource scaleDown}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+                <Style x:Key="numericScroller" TargetType="{x:Type components:NumericalScrollingEditor}">
+                    <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                    <Setter Property="FontWeight" Value="Normal" />
+                    <Setter Property="FontSize" Value="18" />
+                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style x:Key="blindPanel" TargetType="{x:Type StackPanel}">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="Margin" Value="0,0,0,10" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=SelectedStage.IsPause}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Resources>
+
+            <Grid.Style>
+                <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=SessionManager.Stages.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition MinWidth="200" />
+            </Grid.ColumnDefinitions>
+            
+            <components:ScrollingSelectorBox x:Name="stageSelector"
+                                            VerticalAlignment="Center"
+                                            SelectedIndexChanged="StageSelectorSelectedIndexChanged"
+                                            NavigatorRelay="{Binding Path=.}"
+                                            Options="{Binding Path=SessionManager.Stages}"
+                                            FontSize="18">
+                    <components:ScrollingSelectorBox.Style>
+                        <Style TargetType="{x:Type components:ScrollingSelectorBox}">
+                            <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </components:ScrollingSelectorBox.Style>
+                </components:ScrollingSelectorBox>
+
+            <StackPanel Orientation="Vertical"
+                        Grid.Column="2"
+                        Margin="10,0,0,0">
+                
+                <!-- Pause option -->
+                <StackPanel Orientation="Vertical"
+                            Margin="0,0,0,10">
+
+                    <TextBlock DataContext="{Binding Path=PauseModel}"
+                               Style="{StaticResource optionTextBlockLabel}" />
+
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                                <Setter Property="Text" Value="No" />
+                                <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                                <Setter Property="FontWeight" Value="Normal" />
+                                <Setter Property="FontSize" Value="18" />
+                                <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=SelectedStage.IsPause}" Value="True">
+                                        <Setter Property="Text" Value="Yes" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=PauseModel.IsHighlighted}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding Path=PauseModel.IsSelected}" Value="True">
+                                        <DataTrigger.Setters>
+                                            <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Opacity" Value="1" />
+                                        </DataTrigger.Setters>
+                                        
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleUp}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleDown}" />
+                                        </DataTrigger.ExitActions>
+
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Stage length option -->
+                <StackPanel Orientation="Vertical"
+                             Margin="0,0,0,10">
+
+                    <TextBlock DataContext="{Binding Path=StageLengthModel}"
+                              Style="{StaticResource optionTextBlockLabel}" />
+
+                    <components:NumericalScrollingEditor ScrollerMode="Time"
+                                                         IsSelected="{Binding Path=StageLengthModel.IsSelected}"
+                                                         CurrentTimeValueSeconds="{Binding Path=SelectedStage.LengthSeconds}"
+                                                         NavigatorRelay="{Binding Path=StageLengthModel}">
+                        <components:NumericalScrollingEditor.Style>
+                            <Style TargetType="{x:Type components:NumericalScrollingEditor}" BasedOn="{StaticResource numericScroller}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=StageLengthModel.IsHighlighted}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding Path=StageLengthModel.IsSelected}" Value="True">
+                                        <DataTrigger.Setters>
+                                            <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Opacity" Value="1" />
+                                        </DataTrigger.Setters>
+
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleUp}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleDown}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </components:NumericalScrollingEditor.Style>
+                    </components:NumericalScrollingEditor>
+                </StackPanel>
+
+                <!-- Small blind option -->
+                <StackPanel Orientation="Vertical"
+                            Style="{StaticResource blindPanel}">
+                    <TextBlock DataContext="{Binding Path=SmallBlindModel}"
+                               Style="{StaticResource optionTextBlockLabel}" />
+                    <components:NumericalScrollingEditor NumberOfDigits="4"
+                                                         ScrollerMode="Money"
+                                                         Currency="{Binding Path=SessionManager.CurrencyType}"
+                                                         IsSelected="{Binding Path=SmallBlindModel.IsSelected}"
+                                                         CurrentMoneyValue="{Binding Path=SelectedStage.SmallBlind}"
+                                                         NavigatorRelay="{Binding Path=SmallBlindModel}">
+                        <components:NumericalScrollingEditor.Style>
+                            <Style TargetType="{x:Type components:NumericalScrollingEditor}" BasedOn="{StaticResource numericScroller}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=SmallBlindModel.IsHighlighted}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding Path=SmallBlindModel.IsSelected}" Value="True">
+                                        <DataTrigger.Setters>
+                                            <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Opacity" Value="1" />
+                                        </DataTrigger.Setters>
+
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleUp}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleDown}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </components:NumericalScrollingEditor.Style>
+                    </components:NumericalScrollingEditor>
+                </StackPanel>
+
+                <!-- Big blind option -->
+                <StackPanel Orientation="Vertical"
+                            Style="{StaticResource blindPanel}">
+
+                    <TextBlock DataContext="{Binding Path=BigBlindModel}"
+                                Style="{StaticResource optionTextBlockLabel}" />
+                    <components:NumericalScrollingEditor NumberOfDigits="4"
+                                                         ScrollerMode="Money"
+                                                         Currency="{Binding Path=SessionManager.CurrencyType}"
+                                                         IsSelected="{Binding Path=BigBlindModel.IsSelected}"
+                                                         CurrentMoneyValue="{Binding Path=SelectedStage.BigBlind}"
+                                                         NavigatorRelay="{Binding Path=BigBlindModel}">
+                        <components:NumericalScrollingEditor.Style>
+                            <Style TargetType="{x:Type components:NumericalScrollingEditor}" BasedOn="{StaticResource numericScroller}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=BigBlindModel.IsHighlighted}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding Path=BigBlindModel.IsSelected}" Value="True">
+                                        <DataTrigger.Setters>
+                                            <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Opacity" Value="1" />
+                                        </DataTrigger.Setters>
+
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleUp}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleDown}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </components:NumericalScrollingEditor.Style>
+                    </components:NumericalScrollingEditor>
+                </StackPanel>
+
+            </StackPanel>
+
+            <!-- Add stage button -->
+            <components:EditPlayerOptionBox Grid.Row="1"
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Center"
+                                            OptionModel="{Binding Path=AddStageModel}" />
+            <!-- Remove stage button -->
+            <components:EditPlayerOptionBox  Grid.Row="1"
+                                             Grid.Column="2"
+                                             HorizontalAlignment="Left"
+                                             OptionModel="{Binding Path=RemoveStageModel}" />
+            
+        </Grid>
+    </Grid>
+</UserControl>

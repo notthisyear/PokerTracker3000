@@ -4,6 +4,7 @@
              xmlns:app="clr-namespace:PokerTracker3000"
              xmlns:session="clr-namespace:PokerTracker3000.GameSession"
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+             xmlns:editgameoptions="clr-namespace:PokerTracker3000.WpfComponents.EditGameOptions"
              xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules">
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
@@ -13,6 +14,11 @@
                                 Path=ActualWidth,
                                 Converter={StaticResource scaleNumberConverter},
                                 ConverterParameter=*0.9}">
+
+        <Grid.Resources>
+            <editgameoptions:EditGameStagesControl x:Key="editGameStages"
+                                                   SessionManager="{Binding Path=ViewModel}"/>
+        </Grid.Resources>
 
         <Image Source="{StaticResource pokerTable}"/>
 
@@ -502,8 +508,8 @@
 
         <!-- Buy-in/Add-on box -->
         <StackPanel Orientation="Vertical"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center">
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Opacity" Value="0" />
@@ -553,7 +559,7 @@
                      FontWeight="Bold"/>
             </StackPanel>
 
-             <!-- Buy-in/Add on box -->
+             <!-- Actual box -->
             <Border Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
                       Path=ActualHeight,
                       Converter={StaticResource scaleNumberConverter},
@@ -604,5 +610,33 @@
                 </Grid>
             </Border>
         </StackPanel>
+        
+        <!-- Game edit options -->
+        <ContentControl HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center">
+            <ContentControl.Style>
+                <Style TargetType="{x:Type ContentControl}">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="Content" Value="{x:Null}" />
+                    <Style.Triggers>
+                        <!-- FIXME: Currently, the fade-out animation won't work properly as
+                                    the content is cleared as soon as the enum value changes. 
+                                    Maybe a custom attached property could solve this...? -->
+                        <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
+                                     Value="{x:Static app:SideMenuViewModel+GameEditOption.GameStages}">
+                            <DataTrigger.Setters>
+                                <Setter Property="Content" Value="{StaticResource editGameStages}" />
+                            </DataTrigger.Setters>
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ContentControl.Style>
+        </ContentControl>
     </Grid>
 </UserControl>
