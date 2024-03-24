@@ -31,6 +31,7 @@ namespace PokerTracker3000.GameSession
         private decimal _totalAmountInPot = 0;
         private decimal _defaultBuyInAmount = 500;
         private decimal _defaultAddOnAmount = 500;
+        private SideMenuViewModel.GameEditOption _currentGameEditOption = SideMenuViewModel.GameEditOption.None;
         #endregion
 
         public List<PlayerSpot> PlayerSpots { get; } = [];
@@ -91,9 +92,18 @@ namespace PokerTracker3000.GameSession
             private set => SetProperty(ref _tableFull, value);
         }
 
+        public SideMenuViewModel.GameEditOption CurrentGameEditOption
+        {
+            get => _currentGameEditOption;
+            set => SetProperty(ref _currentGameEditOption, value);
+        }
+
         public GameClock Clock { get; } = new();
 
         public MainWindowFocusManager FocusManager { get; }
+
+        public ObservableCollection<string> Stages { get; }
+
         #endregion
 
         #region Events
@@ -111,6 +121,10 @@ namespace PokerTracker3000.GameSession
         private readonly PlayerEditOption _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
+        private readonly object _stagesAccessLock = new();
+        private readonly List<GameStage> _stages;
+        private readonly TimeSpan _defaultStageLength = new(0, 20, 0); // TODO: Should be editable
+
         #endregion
 
         public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
@@ -151,6 +165,10 @@ namespace PokerTracker3000.GameSession
 
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
+
+            Stages = [];
+            _stages = [];
+            BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
         }
 
         #region Public methods
@@ -311,6 +329,30 @@ namespace PokerTracker3000.GameSession
             {
                 _moveInProgress = false;
                 spot.IsBeingMoved = false;
+            });
+            FocusManager.RegisterSideMenuEditOptionActionCallback((InputEvent.ButtonEventType eventType) =>
+            {
+                switch (eventType)
+                {
+                    case InputEvent.ButtonEventType.Start:
+                        CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
+                        return true;
+                    case InputEvent.ButtonEventType.GoBack:
+                        return true;
+                    case InputEvent.ButtonEventType.Select:
+                        if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.GameStages)
+                        {
+                            if (Stages.Count == 0)
+                            {
+                                _stages.Add(new(1, false, 1, 2, _defaultStageLength));
+                                lock (Stages)
+                                    Stages.Add(_stages.First().Name);
+                            }
+                        }
+                        return true;
+                    default:
+                        return false;
+                }
             });
         }
 

@@ -10,7 +10,18 @@ namespace PokerTracker3000
 {
     public class SideMenuViewModel : ObservableObject
     {
+
+        public enum GameEditOption
+        {
+            None,
+            GameStages
+        };
+
+        #region Public properties
+
+        #region Private fields
         private bool _isOpen = false;
+        #endregion
 
         public bool IsOpen
         {
@@ -19,6 +30,8 @@ namespace PokerTracker3000
         }
 
         public List<SideMenuOptionModel> SideMenuOptions { get; }
+        #endregion
+
 
         #region Private fields
         private readonly MainWindowFocusManager _focusManager;
@@ -168,7 +181,12 @@ namespace PokerTracker3000
                 SubOptions =
                 [
                     new() { Id = 0, OptionText = "Edit poker chips", IsSubOption = true },
-                    new() { Id = 1, OptionText = "Edit stages", IsSubOption = true },
+                    new() { Id = 1, OptionText = "Edit stages", IsSubOption = true, OptionAction = (_) =>
+                        {
+                            _sessionManager.CurrentGameEditOption = GameEditOption.GameStages;
+                            _focusManager.SideMenuEditOptionSelected();
+                        }
+                    },
                     new() { Id = 2, OptionText = "Pay-out ratios", IsSubOption = true },
                     new() { Id = 3, OptionText = "Add-on amount", IsSubOption = true },
                     new() { Id = 4, OptionText = "Buy-in amount", IsSubOption = true },

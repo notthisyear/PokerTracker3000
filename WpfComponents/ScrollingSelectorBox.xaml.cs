@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -154,7 +155,14 @@ namespace PokerTracker3000.WpfComponents
             if (Options == default)
                 return;
 
+            Options.CollectionChanged += OptionsCollectionChanged;
+            SetupBoxText();
+        }
+
+        private void SetupBoxText()
+        {
             // Set-up text
+            SelectedIndex = Options.Count > SelectedIndex ? SelectedIndex : Options.Count;
             third.Text = Options.Count > SelectedIndex ? Options[SelectedIndex] : string.Empty;
 
             var firstBoxTextIndex = (SelectedIndex - 2) < 0 ? (WrapAtEnds ? Options.Count - 2 : -1) : SelectedIndex - 2;
@@ -178,6 +186,15 @@ namespace PokerTracker3000.WpfComponents
                 width = Math.Max(width, MeasureWidthOfText(option));
 
             TextBoxWidth = width;
+        }
+
+        private void OptionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                // TODO: Check if selected index was the deleted one
+            }
+            SetupBoxText();
         }
 
         private double MeasureWidthOfText(string text)

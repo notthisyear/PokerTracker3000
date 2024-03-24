@@ -4,6 +4,7 @@
              xmlns:app="clr-namespace:PokerTracker3000"
              xmlns:session="clr-namespace:PokerTracker3000.GameSession"
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+             xmlns:editgameoptions="clr-namespace:PokerTracker3000.WpfComponents.EditGameOptions"
              xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules">
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
@@ -14,6 +15,13 @@
                                 Converter={StaticResource scaleNumberConverter},
                                 ConverterParameter=*0.9}">
 
+        <Grid.Resources>
+            <DataTemplate x:Key="editGameStages">
+                <editgameoptions:EditGameStagesControl />
+            </DataTemplate>
+            <editgameoptions:EditOptionTemplateSelector x:Key="templateSelector"
+                                             EditGameStagesTemplate="{StaticResource editGameStages}" />
+        </Grid.Resources>
         <Image Source="{StaticResource pokerTable}"/>
 
         <!-- Player slots (12 players) -->
@@ -502,8 +510,8 @@
 
         <!-- Buy-in/Add-on box -->
         <StackPanel Orientation="Vertical"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center">
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Opacity" Value="0" />
@@ -553,7 +561,7 @@
                      FontWeight="Bold"/>
             </StackPanel>
 
-             <!-- Buy-in/Add on box -->
+             <!-- Actual box -->
             <Border Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
                       Path=ActualHeight,
                       Converter={StaticResource scaleNumberConverter},
@@ -604,5 +612,11 @@
                 </Grid>
             </Border>
         </StackPanel>
+        
+        <!-- Game edit options -->
+        <ContentControl HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="{Binding Path=ViewModel.CurrentGameEditOption}"
+                        ContentTemplateSelector="{StaticResource templateSelector}" />
     </Grid>
 </UserControl>
