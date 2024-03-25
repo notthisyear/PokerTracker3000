@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.GameComponents;
+using PokerTracker3000.Interfaces;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
@@ -20,7 +21,7 @@ namespace PokerTracker3000.GameSession
         TwelvePlayers
     };
 
-    public class GameSessionManager : ObservableObject
+    public class GameSessionManager : ObservableObject, IInputRelay
     {
         #region Public properties
 
@@ -104,16 +105,18 @@ namespace PokerTracker3000.GameSession
 
         public ObservableCollection<string> Stages { get; }
 
+        public NavigationManager NavigationManager { get; }
         #endregion
 
         #region Events
         public event EventHandler<int>? LayoutMightHaveChangedEvent;
+        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
+        public event EventHandler<InputEvent.ButtonEventType>? ButtonEvent;
         #endregion
 
         #region Private fields
         private const int NumberOfPlayerSpots = 12;
         private readonly string _pathToDefaultPlayerImage;
-        private readonly NavigationManager _navigationManager;
         private int _nextPlayerId = 0;
         private bool _moveInProgress = false;
         private TableLayout _currentTableLayout;
@@ -135,14 +138,14 @@ namespace PokerTracker3000.GameSession
             for (var i = 0; i < NumberOfPlayerSpots; i++)
                 PlayerSpots.Add(new() { SpotIndex = i });
 
-            _navigationManager = new();
+            NavigationManager = new();
 
             _addOnOrBuyInOption = new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success);
             _removeOrEliminateOption = new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel);
             SpotOptions.Add(_addOnOrBuyInOption);
             SpotOptions.Add(_removeOrEliminateOption);
 
-            _playerOptionNavigationId = _navigationManager.RegisterNavigation(
+            _playerOptionNavigationId = NavigationManager.RegisterNavigation(
                 [
                     new(X: 0, Y: 0),
                     new(X: 1, Y: 0),
@@ -150,7 +153,7 @@ namespace PokerTracker3000.GameSession
                     new(X: 1, Y: 1),
                     new(X: 0, Y: 2),
                 ]);
-            _addOnOrBuyInNavigationId = _navigationManager.RegisterNavigation(
+            _addOnOrBuyInNavigationId = NavigationManager.RegisterNavigation(
                 [
                     new(X: 0, Y: 0),
                     new(X: 1, Y: 0),
@@ -208,6 +211,32 @@ namespace PokerTracker3000.GameSession
 
             LayoutMightHaveChangedEvent?.Invoke(this, PlayerSpots.Where(x => x.HasPlayerData).Count());
         }
+
+        public void AddStage(int number = -1, bool isPause = false, decimal smallBlind = -1, decimal bigBlind = -1, TimeSpan stageLength = default)
+        {
+            number = number == -1 ? _stages.Last().Number + 1 : number;
+            smallBlind = smallBlind == -1 ? _stages.Last().SmallBlind * 2 : smallBlind;
+            bigBlind = bigBlind == -1 ? smallBlind * 2 : bigBlind;
+            stageLength = stageLength == default ? _defaultStageLength : stageLength;
+
+            _stages.Add(new(number, isPause, smallBlind, bigBlind, stageLength));
+            lock (Stages)
+                Stages.Add(_stages.Last().Name);
+        }
+
+        public bool TryGetStage(int index, out GameStage? stage)
+        {
+            var stageName = string.Empty;
+            lock (Stages)
+                stageName = index < Stages.Count ? Stages[index] : string.Empty;
+
+            stage = default;
+            if (string.IsNullOrEmpty(stageName))
+                return false;
+
+            stage = _stages.FirstOrDefault(x => x.Name.Equals(stageName, StringComparison.InvariantCulture));
+            return stage != default;
+        }
         #endregion
 
         #region Private methods
@@ -225,7 +254,7 @@ namespace PokerTracker3000.GameSession
                 // Note: The navigation is set-up in such a way that if no
                 //       available spot is found in the requested navigation
                 //       direction, the current spot index is returned
-                var newSpotIndex = _navigationManager.Navigate(_currentTableLayout, currentSpotIdx, direction,
+                var newSpotIndex = NavigationManager.Navigate(_currentTableLayout, currentSpotIdx, direction,
                     _moveInProgress ? default : (int nextSpotIdx) => PlayerSpots.First(x => x.SpotIndex == nextSpotIdx).HasPlayerData);
 
                 if (_moveInProgress)
@@ -330,6 +359,7 @@ namespace PokerTracker3000.GameSession
                 _moveInProgress = false;
                 spot.IsBeingMoved = false;
             });
+            FocusManager.RegisterSideMenuEditOptionNavigationCallback((InputEvent.NavigationDirection direction) => Navigate?.Invoke(this, direction));
             FocusManager.RegisterSideMenuEditOptionActionCallback((InputEvent.ButtonEventType eventType) =>
             {
                 switch (eventType)
@@ -344,9 +374,11 @@ namespace PokerTracker3000.GameSession
                         {
                             if (Stages.Count == 0)
                             {
-                                _stages.Add(new(1, false, 1, 2, _defaultStageLength));
-                                lock (Stages)
-                                    Stages.Add(_stages.First().Name);
+                                AddStage(1, false, 1, 2, _defaultStageLength);
+                            }
+                            else
+                            {
+                                ButtonEvent?.Invoke(this, eventType);
                             }
                         }
                         return true;
@@ -361,7 +393,7 @@ namespace PokerTracker3000.GameSession
             var currentOption = GetSelectedOptionIn(options);
             var currentOptionIndex = options.IndexOf(currentOption);
 
-            var newIndex = _navigationManager.Navigate(navigationId, currentOptionIndex, direction);
+            var newIndex = NavigationManager.Navigate(navigationId, currentOptionIndex, direction);
 
             currentOption.IsSelected = false;
             options[newIndex].IsSelected = true;

@@ -1,98 +1,204 @@
 ﻿<UserControl x:Class="PokerTracker3000.WpfComponents.EditGameOptions.EditGameStagesControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
-             DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}, Path=DataContext}">
-    <Grid>
+             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents">
+
+    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
+
+        <!-- No stages -->
         <StackPanel Orientation="Vertical">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=ViewModel.Stages.Count}" Value="0">
+                        <DataTrigger Binding="{Binding Path=SessionManager.Stages.Count}" Value="0">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </StackPanel.Style>
             <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                       HorizontalAlignment="Center"
-                       FontSize="18"
-                       Text="No stages"
-                       Margin="0,0,0,10"/>
+                           HorizontalAlignment="Center"
+                           FontSize="18"
+                           Text="No stages"
+                           Margin="0,0,0,10"/>
+            <!-- TODO: The EditPlayerBoxBox component can be refactored
+                           into some subcomponent representing only the box.
+                           Then, we wouldn't have to repeat ourselves here. -->
             <Border MinWidth="110"
-                    Height="30"
-                    CornerRadius="3"
-                    BorderThickness="3"
-                    BorderBrush="{StaticResource MainSuccessColor}"
-                    Background="{StaticResource MainSuccessColor}">
-                
+                        Height="30"
+                        CornerRadius="3"
+                        BorderThickness="3"
+                        BorderBrush="{StaticResource MainSuccessColor}"
+                        Background="{StaticResource MainSuccessColor}">
+
                 <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                            FontSize="10"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            FontWeight="Bold"
-                           Text="Add stage"/>
+                                FontSize="10"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontWeight="Bold"
+                                Text="Add stage"/>
             </Border>
         </StackPanel>
-        
+
+        <!-- Normal view -->
         <Grid>
+            <Grid.Resources>
+                <Style x:Key="optionTextBlockBase" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type StackPanel}}, Path=IsEnabled}" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+
+                <Style x:Key="optionTextBlockLabel" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource optionTextBlockBase}">
+                    <Setter Property="FontSize" Value="11" />
+                    <Setter Property="FontStyle" Value="Italic" />
+                    <Setter Property="VerticalAlignment" Value="Bottom" />
+                </Style>
+
+                <Style x:Key="optionTextBlockData" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource optionTextBlockBase}">
+                    <Setter Property="FontWeight" Value="Normal" />
+                    <Setter Property="FontSize" Value="18" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type StackPanel}}, Path=IsEnabled}" Value="True">
+                            <Setter Property="FontWeight" Value="Bold" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Resources>
             <Grid.Style>
                 <Style TargetType="{x:Type Grid}">
                     <Setter Property="Visibility" Value="Visible" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=ViewModel.Stages.Count}" Value="0">
+                        <DataTrigger Binding="{Binding Path=SessionManager.Stages.Count}" Value="0">
                             <Setter Property="Visibility" Value="Collapsed" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <components:ScrollingSelectorBox Grid.Row="0"
-                                             Grid.RowSpan="4"
-                                             Grid.Column="0"
-                                             <!-- Deal with selected index somehow! -->
-                                             Options="{Binding Path=ViewModel.Stages}"/>
-        
-            <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                           Grid.Row="0"
-                           Grid.Column="1"
-                           Grid.ColumnSpan="2"
-                           TextAlignment="Center"
-                           FontSize="18"
-                           Text="Stage title" />
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            
+            <components:ScrollingSelectorBox x:Name="stageSelector"
+                                                 VerticalAlignment="Center"
+                                                 SelectedIndexChanged="StageSelectorSelectedIndexChanged"
+                                                 NavigatorRelay="{Binding Path=.}"
+                                                 Options="{Binding Path=SessionManager.Stages}">
+                    <components:ScrollingSelectorBox.Style>
+                        <Style TargetType="{x:Type components:ScrollingSelectorBox}">
+                            <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </components:ScrollingSelectorBox.Style>
+                </components:ScrollingSelectorBox>
 
-            <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                           Text="Is pause"
-                            Grid.Row="1"
-                            Grid.Column="1" />
+            <StackPanel Orientation="Vertical"
+                        Grid.Column="2"
+                        HorizontalAlignment="Center">
+                <StackPanel x:Name="pauseOption"
+                            Orientation="Vertical"
+                            Margin="0,0,0,10">
 
-            <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                           Text="Small blind"
-                           Grid.Row="2"
-                           Grid.Column="1" />
-                
-            <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                           Text="Big blind"
-                           Grid.Row="3"
-                           Grid.Column="1" />
+                    <TextBlock Style="{StaticResource optionTextBlockLabel}"
+                               Text="Break stage" />
 
-            <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                        Text="Stage length"
-                        Grid.Row="4"
-                        Grid.Column="1" />
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource optionTextBlockData}">
+                                <Setter Property="Text" Value="No" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=SelectedStage.IsPause}" Value="True">
+                                        <Setter Property="Text" Value="Yes" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                </StackPanel>
+                <StackPanel x:Name="stageLengthOption"
+                             Orientation="Vertical"
+                             Margin="0,0,0,10">
+
+                    <TextBlock Style="{StaticResource optionTextBlockLabel}"
+                                Text="Stage length" />
+
+                    <TextBlock Style="{StaticResource optionTextBlockData}"
+                                Text="{Binding Path=SelectedStage.Length}" />
+                </StackPanel>
+
+                <StackPanel x:Name="smallBlindOption"
+                            Orientation="Vertical"
+                            Margin="0,0,0,10">
+
+                    <TextBlock Style="{StaticResource optionTextBlockLabel}"
+                               Text="Small blind" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource optionTextBlockData}">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                    <Binding Path="SelectedStage.SmallBlind" />
+                                    <Binding Path="SessionManager.CurrencyType" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource SymbolButtonStyle}"
+                                Text="&#xE70E;"
+                                FontSize="16"/>
+                        <TextBlock Style="{StaticResource SymbolButtonStyle}"
+                                Text="&#xE70D;"
+                                FontSize="16"/>
+                        
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel x:Name="bigBlindOption"
+                            Orientation="Vertical"
+                            Margin="0,0,0,10">
+                    <TextBlock Style="{StaticResource optionTextBlockLabel}"
+                               Text="Big blind" />
+                    
+                    <TextBlock Style="{StaticResource optionTextBlockData}">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                <Binding Path="SelectedStage.BigBlind" />
+                                <Binding Path="SessionManager.CurrencyType" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+
+               
+            </StackPanel>
+
+            <!-- Add stage button -->
+            <components:EditPlayerOptionBox x:Name="addStageButton"
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            OptionModel="{Binding Path=AddStageModel}" />
+            <!-- Remove stage button -->
+            <components:EditPlayerOptionBox  x:Name="removeStageButton"
+                                             Grid.Row="1"
+                                             Grid.Column="2"
+                                             OptionModel="{Binding Path=RemoveStageModel}" />
+            
         </Grid>
     </Grid>
 </UserControl>

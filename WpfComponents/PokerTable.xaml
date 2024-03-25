@@ -16,12 +16,10 @@
                                 ConverterParameter=*0.9}">
 
         <Grid.Resources>
-            <DataTemplate x:Key="editGameStages">
-                <editgameoptions:EditGameStagesControl />
-            </DataTemplate>
-            <editgameoptions:EditOptionTemplateSelector x:Key="templateSelector"
-                                             EditGameStagesTemplate="{StaticResource editGameStages}" />
+            <editgameoptions:EditGameStagesControl x:Key="editGameStages"
+                                                   SessionManager="{Binding Path=ViewModel}"/>
         </Grid.Resources>
+
         <Image Source="{StaticResource pokerTable}"/>
 
         <!-- Player slots (12 players) -->
@@ -615,8 +613,30 @@
         
         <!-- Game edit options -->
         <ContentControl HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Content="{Binding Path=ViewModel.CurrentGameEditOption}"
-                        ContentTemplateSelector="{StaticResource templateSelector}" />
+                        VerticalAlignment="Center">
+            <ContentControl.Style>
+                <Style TargetType="{x:Type ContentControl}">
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="Content" Value="{x:Null}" />
+                    <Style.Triggers>
+                        <!-- FIXME: Currently, the fade-out animation won't work properly as
+                                    the content is cleared as soon as the enum value changes. 
+                                    Maybe a custom attached property could solve this...? -->
+                        <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
+                                     Value="{x:Static app:SideMenuViewModel+GameEditOption.GameStages}">
+                            <DataTrigger.Setters>
+                                <Setter Property="Content" Value="{StaticResource editGameStages}" />
+                            </DataTrigger.Setters>
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ContentControl.Style>
+        </ContentControl>
     </Grid>
 </UserControl>

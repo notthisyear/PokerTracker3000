@@ -2,10 +2,12 @@
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
-namespace PokerTracker3000.WpfComponents
+namespace PokerTracker3000.Interfaces
 {
-    public interface ISelectorBoxNavigator
+    public interface IInputRelay
     {
         public event EventHandler<InputEvent.NavigationDirection>? Navigate;
+
+        public event EventHandler<InputEvent.ButtonEventType>? ButtonEvent;
     }
 }

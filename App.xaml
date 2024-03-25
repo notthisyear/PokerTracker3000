@@ -80,6 +80,7 @@
         <SolidColorBrush x:Key="MainErrorColorDisabled" Color="{StaticResource MainErrorColorRaw}" Opacity="0.65"/>
 
         <SolidColorBrush x:Key="MainTextColor" Color="{StaticResource MainTextColorRaw}" />
+        <SolidColorBrush x:Key="MainTextSemiTransparent" Color="{StaticResource MainTextColorRaw}" Opacity="0.6"/>
         <SolidColorBrush x:Key="MainTextMutedColor" Color="#888888" />
         <SolidColorBrush x:Key="MainHighlightColor" Color="#B9CC98" />
         <SolidColorBrush x:Key="MainMouseOverColor" Color="#4788C8" />

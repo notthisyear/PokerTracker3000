@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using PokerTracker3000.Interfaces;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
@@ -26,14 +27,14 @@ namespace PokerTracker3000.WpfComponents
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public ISelectorBoxNavigator NavigatorRelay
+        public IInputRelay NavigatorRelay
         {
-            get { return (ISelectorBoxNavigator)GetValue(NavigatorRelayProperty); }
+            get { return (IInputRelay)GetValue(NavigatorRelayProperty); }
             set { SetValue(NavigatorRelayProperty, value); }
         }
         public static readonly DependencyProperty NavigatorRelayProperty = DependencyProperty.Register(
             nameof(NavigatorRelay),
-            typeof(ISelectorBoxNavigator),
+            typeof(IInputRelay),
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
 
@@ -59,18 +60,6 @@ namespace PokerTracker3000.WpfComponents
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(TextAlignment.Left, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public int SelectedIndex
-        {
-            get => (int)GetValue(s_selectedIndexProperty);
-            private set => SetValue(s_selectedIndexPropertyKey, value);
-        }
-        private static readonly DependencyPropertyKey s_selectedIndexPropertyKey = DependencyProperty.RegisterReadOnly(
-            nameof(SelectedIndex),
-            typeof(int),
-            typeof(ScrollingSelectorBox),
-            new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsArrange));
-        private static readonly DependencyProperty s_selectedIndexProperty = s_selectedIndexPropertyKey.DependencyProperty;
-
         public double TextBoxWidth
         {
             get => (double)GetValue(s_textBoxWidthProperty);
@@ -84,6 +73,26 @@ namespace PokerTracker3000.WpfComponents
         private static readonly DependencyProperty s_textBoxWidthProperty = s_textBoxWidthPropertyKey.DependencyProperty;
         #endregion
 
+        #region Routed events
+        public static readonly RoutedEvent SelectedIndexChangedEvent = EventManager.RegisterRoutedEvent(
+            nameof(SelectedIndexChanged),
+            RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler),
+            typeof(int));
+
+        public event RoutedEventHandler SelectedIndexChanged
+        {
+            add { AddHandler(SelectedIndexChangedEvent, value); }
+            remove { RemoveHandler(SelectedIndexChangedEvent, value); }
+        }
+
+        private void RaiseSelectedIndexChangedEvent(int newIndex)
+        {
+            var newEventArgs = new SelectedIndexChangedEventArgs(SelectedIndexChangedEvent, newIndex);
+            RaiseEvent(newEventArgs);
+        }
+        #endregion
+
         #region Private fields
         private readonly LinkedList<(TextBlock block, int currentOffset, double currentOpacity)> _boxes;
         private readonly PropertyPath _pathToTranslateYProperty = new("RenderTransform.(TranslateTransform.Y)");
@@ -91,6 +100,7 @@ namespace PokerTracker3000.WpfComponents
         private readonly TimeSpan _animationLength = new(0, 0, 0, 0, 350);
         private readonly IEasingFunction _movementEasingFunction = new CubicEase() { EasingMode = EasingMode.EaseOut };
         private const int DistanceBetweenItems = 30;
+        private int _selectedIndex;
 
         private enum FadeDirection
         {
@@ -161,19 +171,29 @@ namespace PokerTracker3000.WpfComponents
 
         private void SetupBoxText()
         {
+            // Find the middle box
+            List<TextBlock> boxes = [];
+            var middleBoxIndex = 0;
+            foreach (var (block, currentOffset, _) in _boxes)
+            {
+                boxes.Add(block);
+                if (currentOffset == 0)
+                    middleBoxIndex = boxes.Count - 1;
+            }
+
             // Set-up text
-            SelectedIndex = Options.Count > SelectedIndex ? SelectedIndex : Options.Count;
-            third.Text = Options.Count > SelectedIndex ? Options[SelectedIndex] : string.Empty;
+            _selectedIndex = Options.Count > _selectedIndex ? _selectedIndex : Options.Count;
+            boxes[middleBoxIndex].Text = Options.Count > _selectedIndex ? Options[_selectedIndex] : string.Empty;
 
-            var firstBoxTextIndex = (SelectedIndex - 2) < 0 ? (WrapAtEnds ? Options.Count - 2 : -1) : SelectedIndex - 2;
-            var secondBoxTextIndex = (SelectedIndex - 1) < 0 ? (WrapAtEnds ? Options.Count - 1 : -1) : SelectedIndex - 1;
-            var fourthBoxTextIndex = (SelectedIndex + 1) > (Options.Count - 1) ? (WrapAtEnds ? 0 : -1) : SelectedIndex + 1;
-            var fifthBoxTextIndex = (SelectedIndex + 2) > (Options.Count - 1) ? (WrapAtEnds ? 1 : -1) : SelectedIndex + 2;
+            var firstBoxTextIndex = (_selectedIndex - 2) < 0 ? (WrapAtEnds ? Options.Count - 2 : -1) : _selectedIndex - 2;
+            var secondBoxTextIndex = (_selectedIndex - 1) < 0 ? (WrapAtEnds ? Options.Count - 1 : -1) : _selectedIndex - 1;
+            var fourthBoxTextIndex = (_selectedIndex + 1) > (Options.Count - 1) ? (WrapAtEnds ? 0 : -1) : _selectedIndex + 1;
+            var fifthBoxTextIndex = (_selectedIndex + 2) > (Options.Count - 1) ? (WrapAtEnds ? 1 : -1) : _selectedIndex + 2;
 
-            second.Text = ((secondBoxTextIndex < 0) || (secondBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[secondBoxTextIndex];
-            first.Text = ((firstBoxTextIndex < 0) || (firstBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[firstBoxTextIndex];
-            fourth.Text = ((fourthBoxTextIndex < 0) || (fourthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fourthBoxTextIndex];
-            fifth.Text = ((fifthBoxTextIndex < 0) || (fifthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fifthBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, -1, 5)].Text = ((secondBoxTextIndex < 0) || (secondBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[secondBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, -2, 5)].Text = ((firstBoxTextIndex < 0) || (firstBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[firstBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, 1, 5)].Text = ((fourthBoxTextIndex < 0) || (fourthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fourthBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, 2, 5)].Text = ((fifthBoxTextIndex < 0) || (fifthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fifthBoxTextIndex];
 
             // The above works for every initial number of options, except for 2
             // and when WrapAtEnds is true, so we deal with it separately
@@ -186,6 +206,7 @@ namespace PokerTracker3000.WpfComponents
                 width = Math.Max(width, MeasureWidthOfText(option));
 
             TextBoxWidth = width;
+            RaiseSelectedIndexChangedEvent(_selectedIndex);
         }
 
         private void OptionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -214,9 +235,9 @@ namespace PokerTracker3000.WpfComponents
         {
             if (!WrapAtEnds)
             {
-                if (e == InputEvent.NavigationDirection.Down && SelectedIndex == Options.Count - 1)
+                if (e == InputEvent.NavigationDirection.Down && _selectedIndex == Options.Count - 1)
                     return;
-                else if (e == InputEvent.NavigationDirection.Up && SelectedIndex == 0)
+                else if (e == InputEvent.NavigationDirection.Up && _selectedIndex == 0)
                     return;
             }
 
@@ -250,9 +271,10 @@ namespace PokerTracker3000.WpfComponents
                 return;
 
             var isUp = e == InputEvent.NavigationDirection.Up;
-            SelectedIndex += (isUp ? -1 : 1);
-            if (WrapAtEnds && (SelectedIndex < 0 || SelectedIndex > (Options.Count - 1)))
-                SelectedIndex = SelectedIndex < 0 ? (Options.Count - 1) : 0;
+            var originalSelectedIndex = _selectedIndex;
+            _selectedIndex += (isUp ? -1 : 1);
+            if (WrapAtEnds && (_selectedIndex < 0 || _selectedIndex > (Options.Count - 1)))
+                _selectedIndex = _selectedIndex < 0 ? (Options.Count - 1) : 0;
 
             LinkedListNode<(TextBlock block, int currentOffset, double currentOpacity)>? node = default;
             for (var i = 0; i < _boxes.Count; i++)
@@ -266,17 +288,20 @@ namespace PokerTracker3000.WpfComponents
 
                 if (isItemThatWrapped(i))
                 {
-                    var willWrap = isUp ? ((SelectedIndex - 2) < 0) : ((SelectedIndex + 2) > (Options.Count - 1));
+                    var willWrap = isUp ? ((_selectedIndex - 2) < 0) : ((_selectedIndex + 2) > (Options.Count - 1));
                     if (isUp)
-                        block.Text = !willWrap ? Options[SelectedIndex - 2] : (WrapAtEnds ? Options[Math.Max(0, Options.Count - 2 + SelectedIndex)] : string.Empty);
+                        block.Text = !willWrap ? Options[_selectedIndex - 2] : (WrapAtEnds ? Options[Math.Max(0, Options.Count - 2 + _selectedIndex)] : string.Empty);
                     else
-                        block.Text = !willWrap ? Options[SelectedIndex + 2] : (WrapAtEnds ? Options[(SelectedIndex + 2) % Options.Count] : string.Empty);
+                        block.Text = !willWrap ? Options[_selectedIndex + 2] : (WrapAtEnds ? Options[(_selectedIndex + 2) % Options.Count] : string.Empty);
                 }
                 sb.Begin(block, HandoffBehavior.Compose);
 
                 node.ValueRef.currentOffset = newOffset;
                 node.ValueRef.currentOpacity = newOpacity;
             }
+
+            if (_selectedIndex != originalSelectedIndex)
+                RaiseSelectedIndexChangedEvent(_selectedIndex);
         }
 
         private (Storyboard, int, double) GetStoryBoardForEndPosition(int currentOffset, EndPosition position)
@@ -302,6 +327,15 @@ namespace PokerTracker3000.WpfComponents
             sb.Children.Add(moveAnimation);
             sb.Children.Add(fadeAnimation);
             return (sb, newOffset, newOpacity);
+        }
+
+        private static int GetWrappedOffsetIndex(int from, int offset, int length)
+        {
+            var rawNewIndex = from + offset;
+            if (rawNewIndex < 0)
+                return length + rawNewIndex;
+            return rawNewIndex % length;
+
         }
         #endregion
     }
