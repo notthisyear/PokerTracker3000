@@ -169,6 +169,7 @@ namespace PokerTracker3000.GameSession
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
 
+            Clock.Start(20 * 60);
             Stages = [];
             _stages = [];
             BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);

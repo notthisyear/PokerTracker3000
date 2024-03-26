@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace PokerTracker3000.GameSession
@@ -10,7 +9,7 @@ namespace PokerTracker3000.GameSession
         #region Public properties
 
         #region Backing fields
-        private int _numberOfSeconds = 20 * 60;
+        private int _numberOfSeconds = 0;
         private bool _isRunning = true;
         #endregion
 
@@ -23,22 +22,7 @@ namespace PokerTracker3000.GameSession
         public bool IsRunning
         {
             get => _isRunning;
-            set
-            {
-                if (_isRunning == value)
-                    return;
-
-                if (!value)
-                {
-                    _tickClockTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                    _timeLeftWhenTimerPausedMs = _ticksOnLastFire == DateTime.MinValue.Ticks ? 1000 : (int)((_ticksOnLastFire - DateTime.UtcNow.Ticks) / 10000);
-                }
-                else
-                {
-                    _tickClockTimer.Change(_timeLeftWhenTimerPausedMs, Timeout.Infinite);
-                }
-                _isRunning = value;
-            }
+            private set => SetProperty(ref _isRunning, value);
         }
         #endregion
 
@@ -46,29 +30,65 @@ namespace PokerTracker3000.GameSession
 
         #region Private field
         private readonly Timer _tickClockTimer;
-        private int _timeLeftWhenTimerPausedMs = 1000;
+        private const int TickPeriodMs = 100;
+        private const long TicksPerMillisecond = 10000;
+        private const long MillisecondsPerSecond = 1000;
         private long _ticksOnLastFire = DateTime.MinValue.Ticks;
+        private bool _pauseOnNextTick = false;
+        private long _ticksUntilNextDecrease = MillisecondsPerSecond * TicksPerMillisecond;
         private bool _disposedValue;
         #endregion
 
         public GameClock()
         {
-            _tickClockTimer = new(TickClock, default, 1000, Timeout.Infinite);        
+            _tickClockTimer = new(TickClock, default, Timeout.Infinite, Timeout.Infinite);
+        }
+
+        public void Start(int numberOfSeconds = -1)
+        {
+            if (numberOfSeconds > 0)
+                NumberOfSeconds = numberOfSeconds;
+
+            _ticksOnLastFire = DateTime.UtcNow.Ticks;
+            _tickClockTimer.Change(TickPeriodMs, Timeout.Infinite);
+            IsRunning = true;
+        }
+
+        public void Pause()
+        {
+            _pauseOnNextTick = true;
+            IsRunning = false;
+        }
+
+        public void RegisterCallbackOnTimeLeft(int triggerPoint, Action callback)
+        {
         }
 
         private void TickClock(object? state = default)
         {
-            NumberOfSeconds--;
-            _ticksOnLastFire = DateTime.UtcNow.Ticks;
+            var ticksNow = DateTime.UtcNow.Ticks;
+            var ticksDiff = ticksNow - _ticksOnLastFire;
+            _ticksUntilNextDecrease -= ticksDiff;
+
+            if (_ticksUntilNextDecrease <= 0)
+            {
+                _ticksUntilNextDecrease = MillisecondsPerSecond * TicksPerMillisecond;
+                NumberOfSeconds--;
+            }
+
             if (NumberOfSeconds == 0)
             {
-                _ticksOnLastFire = DateTime.MinValue.Ticks;
                 IsRunning = false;
-                Task.Run(() => ClockHitZeroEvent?.Invoke(this, EventArgs.Empty));
+            }
+            else if (!_pauseOnNextTick)
+            {
+                _ticksOnLastFire = DateTime.UtcNow.Ticks;
+                _tickClockTimer.Change(_ticksUntilNextDecrease < (TickPeriodMs * TicksPerMillisecond) ? (_ticksUntilNextDecrease / TicksPerMillisecond) : TickPeriodMs, Timeout.Infinite);
             }
             else
             {
-                _tickClockTimer.Change(1000, Timeout.Infinite);
+                IsRunning = false;
+                _pauseOnNextTick = false;
             }
         }
 
