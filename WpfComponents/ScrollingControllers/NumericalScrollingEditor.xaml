@@ -1,0 +1,96 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.NumericalScrollingEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents">
+
+    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
+
+        <!-- Display -->
+        <TextBlock FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}"
+                   FontWeight="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontWeight}"
+                   Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=Foreground}">
+         <TextBlock.Text>
+             <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                 <Binding Path="CurrentValue" />
+                 <Binding Path="Currency" />
+             </MultiBinding>
+         </TextBlock.Text>
+
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        
+        <StackPanel Orientation="Horizontal">
+
+            <!-- Selector -->
+            <ItemsControl x:Name="selectorControl"
+                          ItemsSource="{Binding Path=Digits}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <components:ScrollingSelectorBox Options="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.NumberOptions}"
+                                                            WrapAtEnds="True"
+                                                            OptionTextAlignment="Center"
+                                                            VerticalSpacing="15"                                                     
+                                                            FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}"
+                                                            NavigatorRelay="{Binding Path=.}">
+                                <components:ScrollingSelectorBox.Style>
+                                    <Style TargetType="{x:Type components:ScrollingSelectorBox}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Setter Property="ShowNextAndPreviousValue" Value="False" />
+                                        <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.IsSelected}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </components:ScrollingSelectorBox.Style>
+                            </components:ScrollingSelectorBox>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Currency display if selected -->
+            <TextBlock FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize, Converter={StaticResource scaleNumberConverter}, ConverterParameter=-2}"
+                       VerticalAlignment="Bottom"
+                       Foreground="{StaticResource MainTextColor}"
+                       Margin="10,0,0,0">
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                        <Binding Path="Currency" />
+                    </MultiBinding>
+                </TextBlock.Text>
+
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </StackPanel>
+    </Grid>
+</UserControl>

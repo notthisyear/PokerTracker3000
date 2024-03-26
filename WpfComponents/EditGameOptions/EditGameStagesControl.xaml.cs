@@ -36,18 +36,31 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private static readonly DependencyProperty s_selectedStageProperty = s_selectedStagePropertyKey.DependencyProperty;
         #endregion
 
+        #region Public properties
+        public OptionModel PauseModel { get; } = new() { Text = "Break stage" };
+
+        public OptionModel SmallBlindModel { get; } = new() { Text = "Small blind" };
+
+        public OptionModel BigBlindModel { get; } = new() { Text = "Big blind" };
+
+        public OptionModel StageLengthModel { get; } = new() { Text = "Stage length" };
+
         public PlayerEditOption AddStageModel { get; } = new(PlayerEditOption.EditOption.AddStage, PlayerEditOption.OptionType.Success);
+
         public PlayerEditOption RemoveStageModel { get; } = new(PlayerEditOption.EditOption.RemoveStage, PlayerEditOption.OptionType.Cancel);
+        #endregion
 
         #region Events
         public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<InputEvent.ButtonEventType>? ButtonEvent;
+        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
         #endregion
 
         #region Private fields
         private int _navigationId;
         private int _selectedElementIndex;
-        private readonly Dictionary<int, FrameworkElement> _elementMap = [];
+        private readonly Dictionary<int,
+            (Func<InputEvent.NavigationDirection, bool> navigateAction,
+            Action<IInputRelay.ButtonEventArgs> buttonPressAction)> _actionMap = [];
         #endregion
 
         public EditGameStagesControl()
@@ -76,24 +89,84 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 new(1, 4), // Remove stage option
                 ]);
 
-            _elementMap.Add(0, stageSelector);
-            _elementMap.Add(1, stageSelector);
-            _elementMap.Add(2, stageSelector);
-            _elementMap.Add(3, stageSelector);
-            _elementMap.Add(4, addStageButton);
-            _elementMap.Add(5, pauseOption);
-            _elementMap.Add(6, stageLengthOption);
-            _elementMap.Add(7, smallBlindOption);
-            _elementMap.Add(8, bigBlindOption);
-            _elementMap.Add(9, removeStageButton);
+            _actionMap.Add(0, (e =>
+            {
+                Navigate?.Invoke(sender, e);
+                return true;
+            },
+            e => { }
+            ));
+            _actionMap.Add(4, (_ =>
+                {
+                    AddStageModel.IsSelected = !AddStageModel.IsSelected;
+                    return true;
+                },
+                e =>
+                {
+                    if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
+                    {
+                        SessionManager.AddStage();
+                        Navigate?.Invoke(this, InputEvent.NavigationDirection.Down);
+                        e.Handled = true;
+                    }
+                }
+            ));
+            _actionMap.Add(5, (e =>
+                {
+                    var didNavigateAway = HandleCommonNavigationOnSelectableOption(PauseModel);
+                    if (!didNavigateAway && (e == InputEvent.NavigationDirection.Left || e == InputEvent.NavigationDirection.Right))
+                        SelectedStage.IsPause = !SelectedStage.IsPause;
+                    return didNavigateAway;
+                },
+                e =>
+                {
+                    if (e.ButtonEvent == InputEvent.ButtonEventType.Select && PauseModel.IsSelected)
+                        SelectedStage.IsPause = !SelectedStage.IsPause;
+                    else
+                        HandleCommonButtonPressOnSelectableOption(PauseModel, e);
+                }
+            ));
+            _actionMap.Add(6, (_ => HandleCommonNavigationOnSelectableOption(StageLengthModel), _ => { }));
+            _actionMap.Add(7, (e =>
+                {
+                    var didNavigateAway = HandleCommonNavigationOnSelectableOption(SmallBlindModel);
+                    if (!didNavigateAway)
+                        SmallBlindModel.FireNavigationEvent(e);
+                    return didNavigateAway;
+                },
+                e =>
+                {
+                    if (e.ButtonEvent == InputEvent.ButtonEventType.Select && SmallBlindModel.IsSelected)
+                        SmallBlindModel.IsSelected = false;
+                    else
+                        HandleCommonButtonPressOnSelectableOption(SmallBlindModel, e);
+                }
+            ));
+            _actionMap.Add(8, (e =>
+            {
+                var didNavigateAway = HandleCommonNavigationOnSelectableOption(BigBlindModel);
+                if (!didNavigateAway)
+                    BigBlindModel.FireNavigationEvent(e);
+                return didNavigateAway;
+            },
+                e =>
+                {
+                    if (e.ButtonEvent == InputEvent.ButtonEventType.Select && BigBlindModel.IsSelected)
+                        BigBlindModel.IsSelected = false;
+                    else
+                        HandleCommonButtonPressOnSelectableOption(BigBlindModel, e);
+                }
+            ));
+            _actionMap.Add(9, (_ =>
+            {
+                RemoveStageModel.IsSelected = !RemoveStageModel.IsSelected;
+                return true;
+            },
+            _ => { }
+            ));
 
             _selectedElementIndex = 5;
-            pauseOption.IsEnabled = true;
-
-            stageSelector.IsEnabled = false;
-            smallBlindOption.IsEnabled = false;
-            bigBlindOption.IsEnabled = false;
-            stageLengthOption.IsEnabled = false;
+            _actionMap[_selectedElementIndex].navigateAction(InputEvent.NavigationDirection.None);
 
             if (SessionManager.TryGetStage(0, out var stage))
                 SelectedStage = stage!;
@@ -101,40 +174,26 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             SessionManager.Navigate += (s, e) =>
             {
                 var isUpOrDown = e == InputEvent.NavigationDirection.Up || e == InputEvent.NavigationDirection.Down;
-                if (_elementMap[_selectedElementIndex] == stageSelector && isUpOrDown)
+                if (SelectedIndexIsStageSelector() && isUpOrDown)
                 {
-                    Navigate?.Invoke(s, e);
+                    _ = _actionMap[0].navigateAction.Invoke(e);
                 }
                 else
                 {
-                    var newIdx = SessionManager.NavigationManager.Navigate(_navigationId, _selectedElementIndex, e);
-                    if (_elementMap[_selectedElementIndex] == addStageButton)
-                        AddStageModel.IsSelected = false;
-                    else if (_elementMap[_selectedElementIndex] == removeStageButton)
-                        RemoveStageModel.IsSelected = false;
-                    else
-                        _elementMap[_selectedElementIndex].IsEnabled = false;
+                    if (!_actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].navigateAction.Invoke(e))
+                        return;
 
+                    var newIdx = SessionManager.NavigationManager.Navigate(_navigationId, _selectedElementIndex, e);
                     _selectedElementIndex = newIdx;
 
-                    if (_elementMap[_selectedElementIndex] == addStageButton)
-                        AddStageModel.IsSelected = true;
-                    else if (_elementMap[_selectedElementIndex] == removeStageButton)
-                        RemoveStageModel.IsSelected = true;
-                    else
-                        _elementMap[_selectedElementIndex].IsEnabled = true;
-
+                    _ = _actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].navigateAction.Invoke(e);
                 }
             };
-            SessionManager.ButtonEvent += (s, e) =>
-            {
-                if (e == InputEvent.ButtonEventType.Select && _elementMap[_selectedElementIndex] == addStageButton)
-                {
-                    SessionManager.AddStage();
-                    Navigate?.Invoke(this, InputEvent.NavigationDirection.Down);
-                }
-            };
+            SessionManager.ButtonEvent += (s, e) => _actionMap[_selectedElementIndex].buttonPressAction.Invoke(e);
         }
+
+        private bool SelectedIndexIsStageSelector()
+            => _selectedElementIndex < 4;
 
         private void StageSelectorSelectedIndexChanged(object sender, RoutedEventArgs e)
         {
@@ -143,6 +202,28 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             if (SessionManager.TryGetStage(args.NewIndex, out var stage))
                 SelectedStage = stage!;
+        }
+
+        private static bool HandleCommonNavigationOnSelectableOption(OptionModel option)
+        {
+            if (option.IsSelected)
+                return false;
+
+            option.IsHighlighted = !option.IsHighlighted;
+            return true;
+        }
+
+        private static void HandleCommonButtonPressOnSelectableOption(OptionModel option, IInputRelay.ButtonEventArgs e)
+        {
+            if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
+            {
+                option.IsSelected = true;
+            }
+            else if (option.IsSelected && e.ButtonEvent == InputEvent.ButtonEventType.GoBack)
+            {
+                option.IsSelected = false;
+                e.Handled = true;
+            }
         }
     }
 }

@@ -37,7 +37,45 @@
                 <LinearDoubleKeyFrame KeyTime="00:00:0.3" Value="0.0" />
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
-
+        <Storyboard x:Key="scaleUpGlobal"
+            PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame Value="1.2"
+                              KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuarticEase EasingMode="EaseOut"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
+                <EasingDoubleKeyFrame Value="1.2"
+                   KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuarticEase EasingMode="EaseOut"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="scaleDownGlobal"
+     PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame Value="1.0"
+                    KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuarticEase EasingMode="EaseIn"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
+                <EasingDoubleKeyFrame Value="1.0"
+        KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuarticEase EasingMode="EaseIn"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        
         <!-- Colors -->
         <Color x:Key="NoColor" A="255" R="0" G="0" B="0" />
         <Color x:Key="MainBackgroundRaw" A="255" R="59" G="59" B="59" />

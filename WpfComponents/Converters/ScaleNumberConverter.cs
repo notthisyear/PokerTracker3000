@@ -18,7 +18,7 @@ namespace PokerTracker3000.WpfComponents.Converters
             else
                 return value;
 
-            if (parameter is not string s)
+            if (parameter is not string s || s.Length == 0)
                 return v;
 
             Operation op = s[0] switch

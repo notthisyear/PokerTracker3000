@@ -111,7 +111,7 @@ namespace PokerTracker3000.GameSession
         #region Events
         public event EventHandler<int>? LayoutMightHaveChangedEvent;
         public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<InputEvent.ButtonEventType>? ButtonEvent;
+        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
         #endregion
 
         #region Private fields
@@ -219,7 +219,7 @@ namespace PokerTracker3000.GameSession
             bigBlind = bigBlind == -1 ? smallBlind * 2 : bigBlind;
             stageLength = stageLength == default ? _defaultStageLength : stageLength;
 
-            _stages.Add(new(number, isPause, smallBlind, bigBlind, stageLength));
+            _stages.Add(new() { Number = number, IsPause = isPause, SmallBlind = smallBlind, BigBlind = bigBlind, Length = stageLength });
             lock (Stages)
                 Stages.Add(_stages.Last().Name);
         }
@@ -368,7 +368,12 @@ namespace PokerTracker3000.GameSession
                         CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
                         return true;
                     case InputEvent.ButtonEventType.GoBack:
-                        return true;
+                        {
+                            IInputRelay.ButtonEventArgs eventArgs = new() { ButtonEvent = eventType };
+                            ButtonEvent?.Invoke(this, eventArgs);
+                            return !eventArgs.Handled;
+                        }
+
                     case InputEvent.ButtonEventType.Select:
                         if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.GameStages)
                         {
@@ -378,10 +383,11 @@ namespace PokerTracker3000.GameSession
                             }
                             else
                             {
-                                ButtonEvent?.Invoke(this, eventType);
+                                ButtonEvent?.Invoke(this, new() { ButtonEvent = eventType });
                             }
                         }
                         return true;
+
                     default:
                         return false;
                 }

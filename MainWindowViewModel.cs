@@ -51,6 +51,17 @@ namespace PokerTracker3000.ViewModels
 
             // SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
             //Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());
+
+            // Navigate to the edit stage menu
+            HandleInputEvent(new() { IsButtonEvent = true, Button = InputEvent.ButtonEventType.Start });
+            HandleInputEvent(new() { IsNavigationEvent = true, Direction = InputEvent.NavigationDirection.Down });
+            HandleInputEvent(new() { IsNavigationEvent = true, Direction = InputEvent.NavigationDirection.Down });
+            HandleInputEvent(new() { IsNavigationEvent = true, Direction = InputEvent.NavigationDirection.Down });
+            HandleInputEvent(new() { IsNavigationEvent = true, Direction = InputEvent.NavigationDirection.Down });
+            HandleInputEvent(new() { IsButtonEvent = true, Button = InputEvent.ButtonEventType.Select });
+            HandleInputEvent(new() { IsNavigationEvent = true, Direction = InputEvent.NavigationDirection.Down });
+            HandleInputEvent(new() { IsButtonEvent = true, Button = InputEvent.ButtonEventType.Select });
+            HandleInputEvent(new() { IsButtonEvent = true, Button = InputEvent.ButtonEventType.Select });
         }
 
         public void HandleInputEvent(InputEvent inputEvent)

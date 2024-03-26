@@ -10,6 +10,9 @@
     <Compile Update="WpfComponents\EditGameOptions\EditGameStagesControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="WpfComponents\ScrollingControllers\NumericalScrollingEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WpfComponents\Player.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -22,7 +25,7 @@
     <Compile Update="WpfComponents\PokerTable.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="WpfComponents\ScrollingSelectorBox.xaml.cs">
+    <Compile Update="WpfComponents\ScrollingControllers\ScrollingSelectorBox.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="WpfComponents\SessionOverview.xaml.cs">
@@ -42,6 +45,9 @@
     <Page Update="WpfComponents\EditGameOptions\EditGameStagesControl.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="WpfComponents\ScrollingControllers\NumericalScrollingEditor.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="WpfComponents\Player.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -54,7 +60,7 @@
     <Page Update="WpfComponents\PokerTable.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="WpfComponents\ScrollingSelectorBox.xaml">
+    <Page Update="WpfComponents\ScrollingControllers\ScrollingSelectorBox.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="WpfComponents\SessionOverview.xaml">
