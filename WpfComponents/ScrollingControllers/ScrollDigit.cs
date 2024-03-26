@@ -22,6 +22,8 @@ namespace PokerTracker3000.WpfComponents
 
         public int Index { get; init; }
 
+        public bool IsLimitedRange { get; init; }
+
         public bool IsHookedToScrollBox => _box != default;
         #endregion
 
@@ -44,24 +46,34 @@ namespace PokerTracker3000.WpfComponents
 
         public void SyncScrollerToValue(ScrollingSelectorBox box)
         {
-            while ((box.CurrentSelectedIndex - Value) > 0)
+            // Note: The value is inverted in relation to the selected
+            //       index, as the options in the scroller go from 9 -> 0
+            //       (or 5 -> 0). The reason is that it feels more natural
+            //       to scroll when it is in that order.
+            while ((box.CurrentSelectedIndex - InvertValue(Value)) > 0)
                 Navigate?.Invoke(this, InputEvent.NavigationDirection.Up);
 
-            while ((box.CurrentSelectedIndex - Value) < 0)
+            while ((box.CurrentSelectedIndex - InvertValue(Value)) < 0)
                 Navigate?.Invoke(this, InputEvent.NavigationDirection.Down);
         }
 
         public void UnhookToScrollingSelectorBox()
         {
             if (_box != default)
+            {
                 _box.SelectedIndexChanged -= BoxSelectedIndexChanged;
+                _box = default;
+            }
         }
         #endregion
 
         private void BoxSelectedIndexChanged(object sender, RoutedEventArgs e)
         {
             if (e is SelectedIndexChangedEventArgs args)
-                Value = args.NewIndex;
+                Value = InvertValue(args.NewIndex);
         }
+
+        private int InvertValue(int value)
+            => (IsLimitedRange ? 5 : 9) - value;
     }
 }

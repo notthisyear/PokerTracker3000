@@ -269,7 +269,7 @@ namespace PokerTracker3000
                     if (_sideMenuEditOptionActionCallback != default)
                     {
                         if (_sideMenuEditOptionActionCallback.Invoke(InputEvent.ButtonEventType.GoBack))
-                            SetNewFocusArea(FocusArea.LeftSideMenu);
+                            SetNewFocusArea(FocusArea.LeftSideMenu, false);
                     }
                     break;
             }
@@ -337,6 +337,7 @@ namespace PokerTracker3000
                 if (TryGetMatching(_playerSpots, x => x.SpotIndex == _lastFocusedPlayerSpotIndex, out var lastActiveSpot))
                     _ = _playerOptionsSelectCallback.Invoke(lastActiveSpot!);
             }
+
             SetNewFocusArea(_lastFocusArea);
         }
 

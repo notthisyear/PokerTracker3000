@@ -15,22 +15,17 @@
 
         <TextBlock x:Name="first"
                    Style="{StaticResource boxStyle}"/>
-        <!--Background="Red"/>-->
 
         <TextBlock x:Name="second"
                    Style="{StaticResource boxStyle}"/>
-        <!--Background="Blue"/>-->
 
         <TextBlock x:Name="third"
                    Style="{StaticResource boxStyle}"/>
-        <!--Background="Green"/>-->
 
         <TextBlock x:Name="fourth"
                    Style="{StaticResource boxStyle}"/>
-        <!--Background="DarkGoldenrod"/>-->
 
         <TextBlock x:Name="fifth"
                    Style="{StaticResource boxStyle}"/>
-        <!--Background="Gray"/>-->
     </Grid>
 </UserControl>

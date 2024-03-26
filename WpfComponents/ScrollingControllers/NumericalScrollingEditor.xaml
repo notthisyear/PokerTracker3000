@@ -5,30 +5,81 @@
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
 
+        <Grid.Resources>
+            <Style x:Key="scrollerStyleBase" TargetType="{x:Type components:ScrollingSelectorBox}">
+                <Setter Property="WrapAtEnds" Value="True" />
+                <Setter Property="OptionTextAlignment" Value="Center" />
+                <Setter Property="VerticalSpacing" Value="15" />
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Setter Property="ShowNextAndPreviousValue" Value="False" />
+                <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}" />
+            </Style>
+
+            <Style x:Key="scrollerStyleMoney" TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleBase}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.IsSelected}" Value="True">
+                        <Setter Property="Visibility" Value="Visible" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                        <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                        <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="scrollerStyleTime" TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleBase}">
+                <Setter Property="Visibility" Value="Visible" />
+            </Style>
+
+            <Style x:Key="timeUnitText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                <Setter Property="VerticalAlignment" Value="Bottom" />
+                <Setter Property="Margin" Value="2,0,10,2" />
+            </Style>
+        </Grid.Resources>
+        
+        <!-- Money mode -->
+ 
         <!-- Display -->
         <TextBlock FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}"
                    FontWeight="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontWeight}"
                    Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=Foreground}">
-         <TextBlock.Text>
-             <MultiBinding Converter="{StaticResource valueDisplayConverter}">
-                 <Binding Path="CurrentValue" />
-                 <Binding Path="Currency" />
-             </MultiBinding>
-         </TextBlock.Text>
-
+            <TextBlock.Text>
+                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                    <Binding Path="CurrentMoneyValue" />
+                    <Binding Path="Currency" />
+                </MultiBinding>
+            </TextBlock.Text>
             <TextBlock.Style>
                 <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
-                    <Setter Property="Visibility" Value="Visible" />
+                    <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Path=ScrollerMode}" Value="{x:Static components:NumericalScrollingEditor+Mode.Money}" />
+                                <Condition Binding="{Binding Path=IsSelected}" Value="False" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
                     </Style.Triggers>
                 </Style>
             </TextBlock.Style>
         </TextBlock>
-        
+
+        <!-- Edit mode -->
         <StackPanel Orientation="Horizontal">
+            <StackPanel.Style>
+                <Style TargetType="{x:Type StackPanel}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=ScrollerMode}" Value="{x:Static components:NumericalScrollingEditor+Mode.Money}">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
 
             <!-- Selector -->
             <ItemsControl x:Name="selectorControl"
@@ -41,29 +92,9 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Grid>
-                            <components:ScrollingSelectorBox Options="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.NumberOptions}"
-                                                            WrapAtEnds="True"
-                                                            OptionTextAlignment="Center"
-                                                            VerticalSpacing="15"                                                     
-                                                            FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}"
-                                                            NavigatorRelay="{Binding Path=.}">
-                                <components:ScrollingSelectorBox.Style>
-                                    <Style TargetType="{x:Type components:ScrollingSelectorBox}">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                        <Setter Property="ShowNextAndPreviousValue" Value="False" />
-                                        <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.IsSelected}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
-                                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
-                                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </components:ScrollingSelectorBox.Style>
-                            </components:ScrollingSelectorBox>
+                            <components:ScrollingSelectorBox Style="{StaticResource scrollerStyleMoney}"
+                                                             Options="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.NumberOptions}"
+                                                             NavigatorRelay="{Binding Path=.}" />
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -91,6 +122,147 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
+        </StackPanel>
+
+        <!-- Time mode -->
+
+        <!-- Display -->
+        <TextBlock FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}"
+                   FontWeight="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontWeight}"
+                   Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=Foreground}"
+                   Text="{Binding Path=CurrentTimeValueSeconds, Converter={StaticResource secondsToTimeStringConverter}}">
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Path=ScrollerMode}" Value="{x:Static components:NumericalScrollingEditor+Mode.Time}" />
+                                <Condition Binding="{Binding Path=IsSelected}" Value="False" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- Selector -->
+        <StackPanel Orientation="Horizontal">
+            <StackPanel.Style>
+                <Style TargetType="{x:Type StackPanel}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Path=IsSelected}" Value="True" />
+                                <Condition Binding="{Binding Path=ScrollerMode}" Value="{x:Static components:NumericalScrollingEditor+Mode.Time}" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Visibility" Value="Visible" />
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+
+            <!-- Hours -->
+            <components:ScrollingSelectorBox x:Name="tensHourBox"
+                     Options="{Binding Path=NumberOptions}"
+                     NavigatorRelay="{Binding Path=TensHourDigit}">
+                <components:ScrollingSelectorBox.Style>
+                    <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=TensHourDigit.IsSelected}" Value="True">
+                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </components:ScrollingSelectorBox.Style>
+            </components:ScrollingSelectorBox>
+            <components:ScrollingSelectorBox x:Name="onesHourBox"
+                                             Options="{Binding Path=NumberOptions}"
+                                             NavigatorRelay="{Binding Path=OnesHourDigit}">
+                <components:ScrollingSelectorBox.Style>
+                    <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=OnesHourDigit.IsSelected}" Value="True">
+                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </components:ScrollingSelectorBox.Style>
+            </components:ScrollingSelectorBox>
+            <TextBlock Style="{StaticResource timeUnitText}"
+                       Text="h" />
+
+            <!-- Minutes -->
+            <components:ScrollingSelectorBox x:Name="tensMinuteBox"
+                                 Options="{Binding Path=NumberOptionsLimited}"
+                                 NavigatorRelay="{Binding Path=TensMinuteDigit}">
+                <components:ScrollingSelectorBox.Style>
+                    <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=TensMinuteDigit.IsSelected}" Value="True">
+                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </components:ScrollingSelectorBox.Style>
+            </components:ScrollingSelectorBox>
+            <components:ScrollingSelectorBox x:Name="onesMinuteBox"
+                                             Options="{Binding Path=NumberOptions}"
+                                             NavigatorRelay="{Binding Path=OnesMinuteDigit}">
+                <components:ScrollingSelectorBox.Style>
+                    <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=OnesMinuteDigit.IsSelected}" Value="True">
+                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </components:ScrollingSelectorBox.Style>
+            </components:ScrollingSelectorBox>
+            <TextBlock Style="{StaticResource timeUnitText}"
+                       Text="m" />
+
+            <!-- Seconds -->
+            <components:ScrollingSelectorBox x:Name="tensSecondBox"
+                                             Options="{Binding Path=NumberOptionsLimited}"
+                                             NavigatorRelay="{Binding Path=TensSecondDigit}">
+                <components:ScrollingSelectorBox.Style>
+                    <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=TensSecondDigit.IsSelected}" Value="True">
+                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </components:ScrollingSelectorBox.Style>
+            </components:ScrollingSelectorBox>
+            <components:ScrollingSelectorBox x:Name="onesSecondBox"
+                                  Options="{Binding Path=NumberOptions}"
+                                  NavigatorRelay="{Binding Path=OnesSecondDigit}">
+                <components:ScrollingSelectorBox.Style>
+                    <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=OnesSecondDigit.IsSelected}" Value="True">
+                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </components:ScrollingSelectorBox.Style>
+            </components:ScrollingSelectorBox>
+            <TextBlock Style="{StaticResource timeUnitText}"
+                       Text="s" />
         </StackPanel>
     </Grid>
 </UserControl>

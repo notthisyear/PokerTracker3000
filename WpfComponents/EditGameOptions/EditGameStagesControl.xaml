@@ -42,7 +42,9 @@
         </StackPanel>
 
         <!-- Normal view -->
-        <Grid>
+        <Grid HorizontalAlignment="Center"
+              MinWidth="400"
+>
             <Grid.Resources>
                 <Style x:Key="optionTextBlockLabel" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                     <Setter Property="Text" Value="{Binding Path=Text}" />
@@ -86,6 +88,20 @@
                         </Setter.Value>
                     </Setter>
                 </Style>
+                <Style x:Key="blindPanel" TargetType="{x:Type StackPanel}">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="Margin" Value="0,0,0,10" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=SelectedStage.IsPause}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
             </Grid.Resources>
 
             <Grid.Style>
@@ -98,6 +114,7 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Style>
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
@@ -105,10 +122,11 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="30" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition MinWidth="200" />
             </Grid.ColumnDefinitions>
             
-            <components:ScrollingSelectorBox VerticalAlignment="Center"
+            <components:ScrollingSelectorBox x:Name="stageSelector"
+                                            VerticalAlignment="Center"
                                             SelectedIndexChanged="StageSelectorSelectedIndexChanged"
                                             NavigatorRelay="{Binding Path=.}"
                                             Options="{Binding Path=SessionManager.Stages}"
@@ -127,7 +145,7 @@
 
             <StackPanel Orientation="Vertical"
                         Grid.Column="2"
-                        HorizontalAlignment="Center">
+                        Margin="10,0,0,0">
                 
                 <!-- Pause option -->
                 <StackPanel Orientation="Vertical"
@@ -186,20 +204,48 @@
                     <TextBlock DataContext="{Binding Path=StageLengthModel}"
                               Style="{StaticResource optionTextBlockLabel}" />
 
-                    <TextBlock Text="{Binding Path=SelectedStage.Length}" />
+                    <components:NumericalScrollingEditor ScrollerMode="Time"
+                                                         IsSelected="{Binding Path=StageLengthModel.IsSelected}"
+                                                         CurrentTimeValueSeconds="{Binding Path=SelectedStage.LengthSeconds}"
+                                                         NavigatorRelay="{Binding Path=StageLengthModel}">
+                        <components:NumericalScrollingEditor.Style>
+                            <Style TargetType="{x:Type components:NumericalScrollingEditor}" BasedOn="{StaticResource numericScroller}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=StageLengthModel.IsHighlighted}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+                                        <Setter Property="FontWeight" Value="Bold" />
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding Path=StageLengthModel.IsSelected}" Value="True">
+                                        <DataTrigger.Setters>
+                                            <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
+                                            <Setter Property="FontWeight" Value="Bold" />
+                                            <Setter Property="Opacity" Value="1" />
+                                        </DataTrigger.Setters>
+
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleUpGlobal}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource scaleDownGlobal}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </components:NumericalScrollingEditor.Style>
+                    </components:NumericalScrollingEditor>
                 </StackPanel>
 
                 <!-- Small blind option -->
                 <StackPanel Orientation="Vertical"
-                            Margin="0,0,0,10">
-
+                            Style="{StaticResource blindPanel}">
                     <TextBlock DataContext="{Binding Path=SmallBlindModel}"
                                Style="{StaticResource optionTextBlockLabel}" />
-
                     <components:NumericalScrollingEditor NumberOfDigits="4"
+                                                         ScrollerMode="Money"
                                                          Currency="{Binding Path=SessionManager.CurrencyType}"
                                                          IsSelected="{Binding Path=SmallBlindModel.IsSelected}"
-                                                         CurrentValue="{Binding Path=SelectedStage.SmallBlind}"
+                                                         CurrentMoneyValue="{Binding Path=SelectedStage.SmallBlind}"
                                                          NavigatorRelay="{Binding Path=SmallBlindModel}">
                         <components:NumericalScrollingEditor.Style>
                             <Style TargetType="{x:Type components:NumericalScrollingEditor}" BasedOn="{StaticResource numericScroller}">
@@ -231,16 +277,16 @@
 
                 <!-- Big blind option -->
                 <StackPanel Orientation="Vertical"
-                            Margin="0,0,0,10">
+                            Style="{StaticResource blindPanel}">
 
                     <TextBlock DataContext="{Binding Path=BigBlindModel}"
                                 Style="{StaticResource optionTextBlockLabel}" />
-
                     <components:NumericalScrollingEditor NumberOfDigits="4"
-                                         Currency="{Binding Path=SessionManager.CurrencyType}"
-                                         IsSelected="{Binding Path=BigBlindModel.IsSelected}"
-                                         CurrentValue="{Binding Path=SelectedStage.BigBlind}"
-                                         NavigatorRelay="{Binding Path=BigBlindModel}">
+                                                         ScrollerMode="Money"
+                                                         Currency="{Binding Path=SessionManager.CurrencyType}"
+                                                         IsSelected="{Binding Path=BigBlindModel.IsSelected}"
+                                                         CurrentMoneyValue="{Binding Path=SelectedStage.BigBlind}"
+                                                         NavigatorRelay="{Binding Path=BigBlindModel}">
                         <components:NumericalScrollingEditor.Style>
                             <Style TargetType="{x:Type components:NumericalScrollingEditor}" BasedOn="{StaticResource numericScroller}">
                                 <Style.Triggers>
@@ -274,10 +320,12 @@
             <!-- Add stage button -->
             <components:EditPlayerOptionBox Grid.Row="1"
                                             Grid.Column="0"
+                                            HorizontalAlignment="Center"
                                             OptionModel="{Binding Path=AddStageModel}" />
             <!-- Remove stage button -->
             <components:EditPlayerOptionBox  Grid.Row="1"
                                              Grid.Column="2"
+                                             HorizontalAlignment="Left"
                                              OptionModel="{Binding Path=RemoveStageModel}" />
             
         </Grid>

@@ -1,5 +1,4 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace PokerTracker3000.GameSession
 {
@@ -12,7 +11,7 @@ namespace PokerTracker3000.GameSession
         private bool _pause;
         private decimal _smallBlind;
         private decimal _bigBlind;
-        private TimeSpan _length;
+        private int _lengthSeconds;
         #endregion
 
         public int Number
@@ -39,10 +38,10 @@ namespace PokerTracker3000.GameSession
             set => SetProperty(ref _bigBlind, value);
         }
 
-        public TimeSpan Length
+        public int LengthSeconds
         {
-            get => _length;
-            set => SetProperty(ref _length, value);
+            get => _lengthSeconds;
+            set => SetProperty(ref _lengthSeconds, value);
         }
         public string Name => $"Stage {Number}";
         #endregion

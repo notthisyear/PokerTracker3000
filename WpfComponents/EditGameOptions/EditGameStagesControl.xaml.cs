@@ -82,11 +82,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 new(0, 2),
                 new(0, 3),
                 new(0, 4), // Add stage button
-                new(1, 0), // Pause option
-                new(1, 1), // Stage length option
-                new(1, 2), // Small blind option
-                new(1, 3), // Big blind option
-                new(1, 4), // Remove stage option
+                new(4, 0), // Pause option
+                new(4, 1), // Stage length option
+                new(4, 2), // Small blind option
+                new(4, 3), // Big blind option
+                new(4, 4), // Remove stage option
                 ]);
 
             _actionMap.Add(0, (e =>
@@ -126,7 +126,21 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                         HandleCommonButtonPressOnSelectableOption(PauseModel, e);
                 }
             ));
-            _actionMap.Add(6, (_ => HandleCommonNavigationOnSelectableOption(StageLengthModel), _ => { }));
+            _actionMap.Add(6, (e =>
+            {
+                var didNavigateAway = HandleCommonNavigationOnSelectableOption(StageLengthModel);
+                if (!didNavigateAway)
+                    StageLengthModel.FireNavigationEvent(e);
+                return didNavigateAway;
+            },
+                e =>
+                {
+                    if (e.ButtonEvent == InputEvent.ButtonEventType.Select && StageLengthModel.IsSelected)
+                        StageLengthModel.IsSelected = false;
+                    else
+                        HandleCommonButtonPressOnSelectableOption(StageLengthModel, e);
+                }
+            ));
             _actionMap.Add(7, (e =>
                 {
                     var didNavigateAway = HandleCommonNavigationOnSelectableOption(SmallBlindModel);
@@ -162,10 +176,21 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 RemoveStageModel.IsSelected = !RemoveStageModel.IsSelected;
                 return true;
             },
-            _ => { }
+            e =>
+            {
+                if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
+                {
+                    var hasStagesBeforeAndIsNotLast = SelectedStage.Number > 1 && SelectedStage.Number < SessionManager.Stages.Count;
+                    SessionManager.RemoveStage(SelectedStage.Number);
+                    if (!hasStagesBeforeAndIsNotLast && SessionManager.Stages.Count > 0)
+                        Navigate?.Invoke(this, InputEvent.NavigationDirection.Up);
+                    e.Handled = true;
+                }
+            }
             ));
 
             _selectedElementIndex = 5;
+            stageSelector.IsEnabled = false;
             _actionMap[_selectedElementIndex].navigateAction(InputEvent.NavigationDirection.None);
 
             if (SessionManager.TryGetStage(0, out var stage))
@@ -183,13 +208,20 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     if (!_actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].navigateAction.Invoke(e))
                         return;
 
-                    var newIdx = SessionManager.NavigationManager.Navigate(_navigationId, _selectedElementIndex, e);
+                    var newIdx = SessionManager.NavigationManager.Navigate(_navigationId, _selectedElementIndex, e, (newIdx) =>
+                        {
+                            // The blinds are hidden when pause is true, so set a navigate predicate to skip over them
+                            if (!SelectedStage.IsPause)
+                                return true;
+                            return newIdx != 7 && newIdx != 8;
+                        });
                     _selectedElementIndex = newIdx;
 
                     _ = _actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].navigateAction.Invoke(e);
+                    stageSelector.IsEnabled = SelectedIndexIsStageSelector();
                 }
             };
-            SessionManager.ButtonEvent += (s, e) => _actionMap[_selectedElementIndex].buttonPressAction.Invoke(e);
+            SessionManager.ButtonEvent += (s, e) => _actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].buttonPressAction.Invoke(e);
         }
 
         private bool SelectedIndexIsStageSelector()
@@ -222,6 +254,10 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             else if (option.IsSelected && e.ButtonEvent == InputEvent.ButtonEventType.GoBack)
             {
                 option.IsSelected = false;
+
+                // Note: To stop the go back event to be processed further up the chain,
+                //       we use this flag to signal that the event has already been
+                //       handled.
                 e.Handled = true;
             }
         }

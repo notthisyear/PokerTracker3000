@@ -17,6 +17,7 @@
         <converters:ScaleNumberConverter x:Key="scaleNumberConverter" />
         <converters:IsNullConverter x:Key="isNullConverter" />
         <converters:ValueDisplayConverter x:Key="valueDisplayConverter" />
+        <converters:SecondsToTimeStringConverter x:Key="secondsToTimeStringConverter" />
 
         <!-- Animation -->
         <Storyboard x:Key="animateOpacityToOne"

@@ -126,7 +126,7 @@ namespace PokerTracker3000.GameSession
         private readonly int _addOnOrBuyInNavigationId;
         private readonly object _stagesAccessLock = new();
         private readonly List<GameStage> _stages;
-        private readonly TimeSpan _defaultStageLength = new(0, 20, 0); // TODO: Should be editable
+        private readonly int _defaultStageLengthSeconds = 20 * 60; // TODO: Should be editable
 
         #endregion
 
@@ -212,16 +212,36 @@ namespace PokerTracker3000.GameSession
             LayoutMightHaveChangedEvent?.Invoke(this, PlayerSpots.Where(x => x.HasPlayerData).Count());
         }
 
-        public void AddStage(int number = -1, bool isPause = false, decimal smallBlind = -1, decimal bigBlind = -1, TimeSpan stageLength = default)
+        public void AddStage(int number = -1, bool isPause = false, decimal smallBlind = -1, decimal bigBlind = -1, int stageLengthSeconds = -1)
         {
             number = number == -1 ? _stages.Last().Number + 1 : number;
             smallBlind = smallBlind == -1 ? _stages.Last().SmallBlind * 2 : smallBlind;
             bigBlind = bigBlind == -1 ? smallBlind * 2 : bigBlind;
-            stageLength = stageLength == default ? _defaultStageLength : stageLength;
+            stageLengthSeconds = stageLengthSeconds == -1 ? _defaultStageLengthSeconds : stageLengthSeconds;
 
-            _stages.Add(new() { Number = number, IsPause = isPause, SmallBlind = smallBlind, BigBlind = bigBlind, Length = stageLength });
+            _stages.Add(new() { Number = number, IsPause = isPause, SmallBlind = smallBlind, BigBlind = bigBlind, LengthSeconds = stageLengthSeconds });
             lock (Stages)
                 Stages.Add(_stages.Last().Name);
+        }
+
+        public void RemoveStage(int number)
+        {
+            var stageToRemove = _stages.FirstOrDefault(x => x.Number == number);
+            if (stageToRemove == default)
+                return;
+
+            var indexToRemove = _stages.IndexOf(stageToRemove);
+            _stages.Remove(stageToRemove);
+
+            lock (Stages)
+            {
+                Stages.RemoveAt(indexToRemove);
+                for (var i = 0; i < _stages.Count; i++)
+                {
+                    _stages[i].Number = i + 1;
+                    Stages[i] = _stages[i].Name;
+                }
+            }
         }
 
         public bool TryGetStage(int index, out GameStage? stage)
@@ -367,10 +387,13 @@ namespace PokerTracker3000.GameSession
                     case InputEvent.ButtonEventType.Start:
                         CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
                         return true;
+
                     case InputEvent.ButtonEventType.GoBack:
                         {
                             IInputRelay.ButtonEventArgs eventArgs = new() { ButtonEvent = eventType };
                             ButtonEvent?.Invoke(this, eventArgs);
+                            if (!eventArgs.Handled)
+                                CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
                             return !eventArgs.Handled;
                         }
 
@@ -379,7 +402,7 @@ namespace PokerTracker3000.GameSession
                         {
                             if (Stages.Count == 0)
                             {
-                                AddStage(1, false, 1, 2, _defaultStageLength);
+                                AddStage(1, false, 1, 2, _defaultStageLengthSeconds);
                             }
                             else
                             {

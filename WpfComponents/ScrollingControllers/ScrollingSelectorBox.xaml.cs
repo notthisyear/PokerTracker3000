@@ -250,6 +250,7 @@ namespace PokerTracker3000.WpfComponents
             }
 
             // Set-up text
+            var selectedIndexAtStart = _selectedIndex;
             _selectedIndex = Options.Count > _selectedIndex ? _selectedIndex : Options.Count;
             CurrentSelectedIndex = _selectedIndex;
 
@@ -276,15 +277,12 @@ namespace PokerTracker3000.WpfComponents
                 width = Math.Max(width, MeasureWidthOfText(option));
 
             TextBoxWidth = width;
-            RaiseSelectedIndexChangedEvent(_selectedIndex);
+            if (selectedIndexAtStart != _selectedIndex)
+                RaiseSelectedIndexChangedEvent(_selectedIndex);
         }
 
         private void OptionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Remove)
-            {
-                // TODO: Check if selected index was the deleted one
-            }
             SetupBoxText();
         }
 
@@ -393,7 +391,9 @@ namespace PokerTracker3000.WpfComponents
             var newOffset = currentOffset + (VerticalSpacing * (direction == InputEvent.NavigationDirection.Down ? -1 : 1));
             var newOpacity = currentOpacity + (fadeType == FadeDirection.NoChange ? 0 : (fadeType == FadeDirection.In ? 0.5 : -0.5));
             DoubleAnimation moveAnimation = new(currentOffset, newOffset, _animationLength) { EasingFunction = _movementEasingFunction };
-            DoubleAnimation fadeAnimation = new(currentOpacity, newOpacity, _animationLength);
+
+            var animationShouldShow = !(!ShowNextAndPreviousValue && newOpacity < 1);
+            DoubleAnimation fadeAnimation = new(animationShouldShow ? currentOpacity : 0, animationShouldShow ? newOpacity : 0, _animationLength);
 
             Storyboard sb = new();
             Storyboard.SetTargetProperty(moveAnimation, _pathToTranslateYProperty);

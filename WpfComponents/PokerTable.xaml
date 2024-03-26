@@ -612,7 +612,7 @@
         </StackPanel>
         
         <!-- Game edit options -->
-        <ContentControl HorizontalAlignment="Center"
+        <ContentControl HorizontalAlignment="Stretch"
                         VerticalAlignment="Center">
             <ContentControl.Style>
                 <Style TargetType="{x:Type ContentControl}">
