@@ -29,6 +29,7 @@ namespace PokerTracker3000.GameSession
         private PlayerSpot? _selectedSpot;
         private CurrencyType _currencyType = CurrencyType.SwedishKrona;
         private bool _tableFull = false;
+        private GameStage? _currentStage = default;
         private decimal _totalAmountInPot = 0;
         private decimal _defaultBuyInAmount = 500;
         private decimal _defaultAddOnAmount = 500;
@@ -93,13 +94,19 @@ namespace PokerTracker3000.GameSession
             private set => SetProperty(ref _tableFull, value);
         }
 
+        public GameStage? CurrentStage
+        {
+            get => _currentStage;
+            private set => SetProperty(ref _currentStage, value);
+        }
+
         public SideMenuViewModel.GameEditOption CurrentGameEditOption
         {
             get => _currentGameEditOption;
             set => SetProperty(ref _currentGameEditOption, value);
         }
 
-        public GameClock Clock { get; } = new();
+        public GameClock Clock { get; }
 
         public MainWindowFocusManager FocusManager { get; }
 
@@ -168,8 +175,8 @@ namespace PokerTracker3000.GameSession
 
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
+            Clock = new(this);
 
-            Clock.Start(20 * 60);
             Stages = [];
             _stages = [];
             BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
@@ -220,9 +227,21 @@ namespace PokerTracker3000.GameSession
             bigBlind = bigBlind == -1 ? smallBlind * 2 : bigBlind;
             stageLengthSeconds = stageLengthSeconds == -1 ? _defaultStageLengthSeconds : stageLengthSeconds;
 
-            _stages.Add(new() { Number = number, IsPause = isPause, SmallBlind = smallBlind, BigBlind = bigBlind, LengthSeconds = stageLengthSeconds });
+            _stages.Add(new()
+            {
+                Number = number,
+                IsPause = isPause,
+                SmallBlind = smallBlind,
+                BigBlind = bigBlind,
+                LengthSeconds = stageLengthSeconds,
+                LengthSecondsRemaining = stageLengthSeconds
+            });
+
             lock (Stages)
                 Stages.Add(_stages.Last().Name);
+
+            if (_stages.Count == 1)
+                CurrentStage = _stages[0];
         }
 
         public void RemoveStage(int number)

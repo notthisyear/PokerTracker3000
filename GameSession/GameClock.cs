@@ -10,7 +10,7 @@ namespace PokerTracker3000.GameSession
 
         #region Backing fields
         private int _numberOfSeconds = 0;
-        private bool _isRunning = true;
+        private bool _isRunning = false;
         #endregion
 
         public int NumberOfSeconds
@@ -39,9 +39,23 @@ namespace PokerTracker3000.GameSession
         private bool _disposedValue;
         #endregion
 
-        public GameClock()
+        public GameClock(GameSessionManager sessionManager)
         {
             _tickClockTimer = new(TickClock, default, Timeout.Infinite, Timeout.Infinite);
+            sessionManager.PropertyChanging += (s, e) =>
+            {
+                if (e.PropertyName?.Equals(nameof(sessionManager.CurrentStage), StringComparison.InvariantCulture) ?? false)
+                {
+                    if (sessionManager.CurrentStage != default)
+                        sessionManager.CurrentStage.LengthSecondsRemaining = NumberOfSeconds;
+
+                }
+            };
+            sessionManager.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName?.Equals(nameof(sessionManager.CurrentStage), StringComparison.InvariantCulture) ?? false)
+                    NumberOfSeconds = sessionManager.CurrentStage!.LengthSeconds;
+            };
         }
 
         public void Start(int numberOfSeconds = -1)
@@ -72,7 +86,7 @@ namespace PokerTracker3000.GameSession
 
             if (_ticksUntilNextDecrease <= 0)
             {
-                _ticksUntilNextDecrease = MillisecondsPerSecond * TicksPerMillisecond;
+                _ticksUntilNextDecrease = (MillisecondsPerSecond * TicksPerMillisecond) + _ticksUntilNextDecrease;
                 NumberOfSeconds--;
             }
 

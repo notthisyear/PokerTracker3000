@@ -144,16 +144,16 @@ namespace PokerTracker3000.GameSession
                 {
                     if (_sessionManager.Clock.IsRunning)
                     {
-                        opt.OptionText = "Pause game";
-                        opt.DescriptionText = "Resume the game";
-                        opt.UnavaliableDescriptionText = "Add stages to resume the game";
+                        opt.OptionText = "Start game";
+                        opt.DescriptionText = "Start the game";
+                        opt.UnavaliableDescriptionText = "Add stages to start the game";
                         _sessionManager.Clock.Pause();
                     }
                     else
                     {
-                        opt.OptionText = "Start game";
-                        opt.DescriptionText = "Start the game";
-                        opt.UnavaliableDescriptionText = "Add stages to start the game";
+                        opt.OptionText = "Pause game";
+                        opt.DescriptionText = "Resume the game";
+                        opt.UnavaliableDescriptionText = "Add stages to resume the game";
                         _sessionManager.Clock.Start();
                     }
                 }

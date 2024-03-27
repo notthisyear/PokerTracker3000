@@ -12,6 +12,7 @@ namespace PokerTracker3000.GameSession
         private decimal _smallBlind;
         private decimal _bigBlind;
         private int _lengthSeconds;
+        private int _lengthSecondsRemaining;
         #endregion
 
         public int Number
@@ -43,6 +44,13 @@ namespace PokerTracker3000.GameSession
             get => _lengthSeconds;
             set => SetProperty(ref _lengthSeconds, value);
         }
+
+        public int LengthSecondsRemaining
+        {
+            get => _lengthSecondsRemaining;
+            set => SetProperty(ref _lengthSecondsRemaining, value);
+        }
+
         public string Name => $"Stage {Number}";
         #endregion
     }
