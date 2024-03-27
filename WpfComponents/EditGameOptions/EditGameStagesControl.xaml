@@ -6,7 +6,8 @@
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
 
         <!-- No stages -->
-        <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Vertical"
+                    HorizontalAlignment="Center">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Visibility" Value="Collapsed" />

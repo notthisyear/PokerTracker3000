@@ -198,6 +198,9 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             SessionManager.Navigate += (s, e) =>
             {
+                if (!TrySelectStageIfNeeded())
+                    return;
+
                 var isUpOrDown = e == InputEvent.NavigationDirection.Up || e == InputEvent.NavigationDirection.Down;
                 if (SelectedIndexIsStageSelector() && isUpOrDown)
                 {
@@ -210,6 +213,9 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
                     var newIdx = SessionManager.NavigationManager.Navigate(_navigationId, _selectedElementIndex, e, (newIdx) =>
                         {
+                            if (SelectedStage == default)
+                                return true;
+
                             // The blinds are hidden when pause is true, so set a navigate predicate to skip over them
                             if (!SelectedStage.IsPause)
                                 return true;
@@ -221,11 +227,31 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     stageSelector.IsEnabled = SelectedIndexIsStageSelector();
                 }
             };
-            SessionManager.ButtonEvent += (s, e) => _actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].buttonPressAction.Invoke(e);
+            SessionManager.ButtonEvent += (s, e) =>
+            {
+                if (!TrySelectStageIfNeeded())
+                    return;
+                _actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].buttonPressAction.Invoke(e);
+            };
         }
 
         private bool SelectedIndexIsStageSelector()
             => _selectedElementIndex < 4;
+
+        private bool TrySelectStageIfNeeded()
+        {
+            if (SessionManager.Stages.Count == 0)
+                return false;
+
+            if (SelectedStage == default)
+            {
+                if (SessionManager.TryGetStage(0, out var stage))
+                    SelectedStage = stage!;
+                else
+                    return false;
+            }
+            return true;
+        }
 
         private void StageSelectorSelectedIndexChanged(object sender, RoutedEventArgs e)
         {
