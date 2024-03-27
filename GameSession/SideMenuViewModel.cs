@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PokerTracker3000.GameSession;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
-namespace PokerTracker3000
+namespace PokerTracker3000.GameSession
 {
     public class SideMenuViewModel : ObservableObject
     {
@@ -125,6 +125,10 @@ namespace PokerTracker3000
                 }
                 return false;
             });
+            _sessionManager.Stages.CollectionChanged += (s, e) =>
+            {
+                SideMenuOptions.First(x => x.Id == 0).IsAvailable = _sessionManager.Stages.Any();
+            };
         }
 
         private void InitializeOptionsList()
@@ -133,7 +137,26 @@ namespace PokerTracker3000
             {
                 Id = 0,
                 OptionText = "Start game",
-                DescriptionText = "Start the game"
+                DescriptionText = "Start the game",
+                IsAvailable = _sessionManager.Stages.Any(),
+                UnavaliableDescriptionText = "Add stages to start the game",
+                OptionAction = (SideMenuOptionModel opt) =>
+                {
+                    if (_sessionManager.Clock.IsRunning)
+                    {
+                        opt.OptionText = "Pause game";
+                        opt.DescriptionText = "Resume the game";
+                        opt.UnavaliableDescriptionText = "Add stages to resume the game";
+                        _sessionManager.Clock.Pause();
+                    }
+                    else
+                    {
+                        opt.OptionText = "Start game";
+                        opt.DescriptionText = "Start the game";
+                        opt.UnavaliableDescriptionText = "Add stages to start the game";
+                        _sessionManager.Clock.Start();
+                    }
+                }
             });
             SideMenuOptions.Add(new()
             {

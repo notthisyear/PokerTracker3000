@@ -14,6 +14,7 @@ namespace PokerTracker3000.GameSession
         private bool _isHighlighted = false;
         private bool _isSelected = false;
         private bool _isAvailable = true;
+        private string _unavaliableDescriptionText = string.Empty;
         #endregion
 
         public string OptionText
@@ -46,6 +47,12 @@ namespace PokerTracker3000.GameSession
             set => SetProperty(ref _isAvailable, value);
         }
 
+        public string UnavaliableDescriptionText
+        {
+            get => _unavaliableDescriptionText;
+            set => SetProperty(ref _unavaliableDescriptionText, value);
+        }
+
         public bool HasSubOptions { get; init; }
 
         public List<SideMenuOptionModel> SubOptions { get; init; } = [];
@@ -57,8 +64,6 @@ namespace PokerTracker3000.GameSession
         public Action<SideMenuOptionModel>? OnOpenAction { get; init; } = default;
 
         public Action<SideMenuOptionModel>? OptionAction { get; init; } = default;
-
-        public string UnavaliableDescriptionText { get; init; } = string.Empty;
         #endregion
     }
 }

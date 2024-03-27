@@ -623,7 +623,7 @@
                                     the content is cleared as soon as the enum value changes. 
                                     Maybe a custom attached property could solve this...? -->
                         <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
-                                     Value="{x:Static app:SideMenuViewModel+GameEditOption.GameStages}">
+                                     Value="{x:Static session:SideMenuViewModel+GameEditOption.GameStages}">
                             <DataTrigger.Setters>
                                 <Setter Property="Content" Value="{StaticResource editGameStages}" />
                             </DataTrigger.Setters>
