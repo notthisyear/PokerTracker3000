@@ -83,7 +83,9 @@
                 <!-- Clock -->
                 <components:SessionOverview Grid.Row="1"
                                             HorizontalAlignment="Center"
-                                            SessionManager="{Binding Path=ViewModel.SessionManager}" />
+                                            StageManager="{Binding Path=ViewModel.SessionManager.StageManager}"
+                                            Clock="{Binding Path=ViewModel.SessionManager.Clock}"
+                                            Currency="{Binding Path=ViewModel.SessionManager.CurrencyType}"/>
 
                 <!-- Players -->
                 <components:PokerTable Grid.Row="2"
@@ -122,7 +124,7 @@
                         </Style>
                     </Border.Style>
 
-                    <components:SideMenu VerticalAlignment="Center"
+                    <components:SideMenu VerticalAlignment="Stretch"
                                          HorizontalAlignment="Stretch"
                                          ViewModel="{Binding Path=ViewModel.SideMenuViewModel}"/>
                 </Border>

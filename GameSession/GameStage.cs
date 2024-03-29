@@ -51,6 +51,11 @@ namespace PokerTracker3000.GameSession
             set => SetProperty(ref _lengthSecondsRemaining, value);
         }
 
+        public void ResetStage()
+        {
+            LengthSecondsRemaining = LengthSeconds;
+        }
+
         public string Name => $"Stage {Number}";
         #endregion
     }

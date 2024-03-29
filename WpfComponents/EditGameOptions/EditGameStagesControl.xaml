@@ -12,7 +12,7 @@
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=SessionManager.Stages.Count}" Value="0">
+                        <DataTrigger Binding="{Binding Path=SessionManager.StageManager.Stages.Count}" Value="0">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
                     </Style.Triggers>
@@ -23,9 +23,9 @@
                            FontSize="18"
                            Text="No stages"
                            Margin="0,0,0,10"/>
-            <!-- TODO: The EditPlayerBoxBox component can be refactored
-                           into some subcomponent representing only the box.
-                           Then, we wouldn't have to repeat ourselves here. -->
+            <!-- TODO: The EditPlayerBox component can be refactored
+                       into some subcomponent representing only the box.
+                       Then, we wouldn't have to repeat ourselves here. -->
             <Border MinWidth="110"
                         Height="30"
                         CornerRadius="3"
@@ -109,7 +109,7 @@
                 <Style TargetType="{x:Type Grid}">
                     <Setter Property="Visibility" Value="Visible" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=SessionManager.Stages.Count}" Value="0">
+                        <DataTrigger Binding="{Binding Path=SessionManager.StageManager.Stages.Count}" Value="0">
                             <Setter Property="Visibility" Value="Collapsed" />
                         </DataTrigger>
                     </Style.Triggers>
@@ -130,7 +130,7 @@
                                             VerticalAlignment="Center"
                                             SelectedIndexChanged="StageSelectorSelectedIndexChanged"
                                             NavigatorRelay="{Binding Path=.}"
-                                            Options="{Binding Path=SessionManager.Stages}"
+                                            Options="{Binding Path=SessionManager.StageManager.Stages}"
                                             FontSize="18">
                     <components:ScrollingSelectorBox.Style>
                         <Style TargetType="{x:Type components:ScrollingSelectorBox}">

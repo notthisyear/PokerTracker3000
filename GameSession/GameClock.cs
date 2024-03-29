@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace PokerTracker3000.GameSession
@@ -26,35 +28,30 @@ namespace PokerTracker3000.GameSession
         }
         #endregion
 
-        public event EventHandler? ClockHitZeroEvent;
-
         #region Private field
-        private readonly Timer _tickClockTimer;
         private const int TickPeriodMs = 100;
         private const long TicksPerMillisecond = 10000;
         private const long MillisecondsPerSecond = 1000;
+
+        private readonly Timer _tickClockTimer;
+        private readonly List<Action> _callbacksOnTick = [];
+        private readonly Dictionary<int, List<Action<GameClock>>> _callbacksOnTimeLeft = [];
+
         private long _ticksOnLastFire = DateTime.MinValue.Ticks;
         private bool _pauseOnNextTick = false;
         private long _ticksUntilNextDecrease = MillisecondsPerSecond * TicksPerMillisecond;
         private bool _disposedValue;
         #endregion
 
-        public GameClock(GameSessionManager sessionManager)
+        public GameClock(GameStagesManager stageManager)
         {
             _tickClockTimer = new(TickClock, default, Timeout.Infinite, Timeout.Infinite);
-            sessionManager.PropertyChanging += (s, e) =>
+            stageManager.CurrentStageChanged += (s, e) =>
             {
-                if (e.PropertyName?.Equals(nameof(sessionManager.CurrentStage), StringComparison.InvariantCulture) ?? false)
-                {
-                    if (sessionManager.CurrentStage != default)
-                        sessionManager.CurrentStage.LengthSecondsRemaining = NumberOfSeconds;
-
-                }
-            };
-            sessionManager.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName?.Equals(nameof(sessionManager.CurrentStage), StringComparison.InvariantCulture) ?? false)
-                    NumberOfSeconds = sessionManager.CurrentStage!.LengthSeconds;
+                if (e.oldStage != default)
+                    e.oldStage.LengthSecondsRemaining = NumberOfSeconds;
+                if (e.newStage != default)
+                    NumberOfSeconds = e.newStage!.LengthSeconds;
             };
         }
 
@@ -74,10 +71,22 @@ namespace PokerTracker3000.GameSession
             IsRunning = false;
         }
 
-        public void RegisterCallbackOnTimeLeft(int triggerPoint, Action callback)
+        public void Stop()
         {
+            _tickClockTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            NumberOfSeconds = 0;
+        }
+        public void RegisterCallbackOnTimeLeft(int trigger, Action<GameClock> action)
+        {
+            if (!_callbacksOnTimeLeft.TryGetValue(trigger, out var actions))
+                _callbacksOnTimeLeft.Add(trigger, []);
+            _callbacksOnTimeLeft[trigger].Add(action);
         }
 
+        public void RegisterCallbackOnTick(Action action)
+        {
+            _callbacksOnTick.Add(action);
+        }
         private void TickClock(object? state = default)
         {
             var ticksNow = DateTime.UtcNow.Ticks;
@@ -88,16 +97,28 @@ namespace PokerTracker3000.GameSession
             {
                 _ticksUntilNextDecrease = (MillisecondsPerSecond * TicksPerMillisecond) + _ticksUntilNextDecrease;
                 NumberOfSeconds--;
+                if (_callbacksOnTick.Count > 0)
+                {
+                    Task.Run(() =>
+                    {
+                        foreach (var action in _callbacksOnTick)
+                            action.Invoke();
+                    });
+                }
+                if (_callbacksOnTimeLeft.TryGetValue(NumberOfSeconds, out var value))
+                {
+                    Task.Run(() =>
+                    {
+                        foreach (var action in value)
+                            action.Invoke(this);
+                    });
+                }
             }
 
-            if (NumberOfSeconds == 0)
-            {
-                IsRunning = false;
-            }
-            else if (!_pauseOnNextTick)
+            if (!_pauseOnNextTick)
             {
                 _ticksOnLastFire = DateTime.UtcNow.Ticks;
-                _tickClockTimer.Change(_ticksUntilNextDecrease < (TickPeriodMs * TicksPerMillisecond) ? (_ticksUntilNextDecrease / TicksPerMillisecond) : TickPeriodMs, Timeout.Infinite);
+                _tickClockTimer.Change(Math.Min(1, _ticksUntilNextDecrease < (TickPeriodMs * TicksPerMillisecond) ? (_ticksUntilNextDecrease / TicksPerMillisecond) : TickPeriodMs), Timeout.Infinite);
             }
             else
             {

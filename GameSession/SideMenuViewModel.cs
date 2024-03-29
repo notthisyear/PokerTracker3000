@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -21,13 +20,21 @@ namespace PokerTracker3000.GameSession
 
         #region Private fields
         private bool _isOpen = false;
+        private int _currentStageNumber = 0;
         #endregion
 
         public bool IsOpen
         {
             get => _isOpen;
-            set => SetProperty(ref _isOpen, value);
+            private set => SetProperty(ref _isOpen, value);
         }
+
+        public int CurrentStageNumber
+        {
+            get => _currentStageNumber;
+            private set => SetProperty(ref _currentStageNumber, value);
+        }
+        public GameSessionManager SessionManager { get; }
 
         public List<SideMenuOptionModel> SideMenuOptions { get; }
         #endregion
@@ -35,7 +42,6 @@ namespace PokerTracker3000.GameSession
 
         #region Private fields
         private readonly MainWindowFocusManager _focusManager;
-        private readonly GameSessionManager _sessionManager;
         private int _currentFocusOptionId = 0;
         private readonly Stack<int> _currentFocusParentOptionStack;
         private readonly Stack<List<SideMenuOptionModel>> _currentFocusParentOptionListStack;
@@ -46,11 +52,11 @@ namespace PokerTracker3000.GameSession
         public SideMenuViewModel(MainWindowFocusManager focusManager, GameSessionManager sessionManager)
         {
             _focusManager = focusManager;
-            _sessionManager = sessionManager;
             _onOpenCallbacks = [];
             _currentFocusParentOptionStack = new();
             _currentFocusParentOptionListStack = new();
 
+            SessionManager = sessionManager;
             SideMenuOptions = [];
             InitializeOptionsList();
 
@@ -125,9 +131,19 @@ namespace PokerTracker3000.GameSession
                 }
                 return false;
             });
-            _sessionManager.Stages.CollectionChanged += (s, e) =>
+
+            SessionManager.StageManager.StageAdded += (s, e) =>
             {
-                SideMenuOptions.First(x => x.Id == 0).IsAvailable = _sessionManager.Stages.Any();
+                SideMenuOptions.First(x => x.Id == 0).IsAvailable = SessionManager.StageManager.Stages.Any();
+            };
+            SessionManager.StageManager.StageRemoved += (s, e) =>
+            {
+                SideMenuOptions.First(x => x.Id == 0).IsAvailable = SessionManager.StageManager.Stages.Any();
+            };
+            SessionManager.StageManager.CurrentStageChanged += (s, e) =>
+            {
+                if (e.newStage != default)
+                    CurrentStageNumber = e.newStage.Number;
             };
         }
 
@@ -138,23 +154,23 @@ namespace PokerTracker3000.GameSession
                 Id = 0,
                 OptionText = "Start game",
                 DescriptionText = "Start the game",
-                IsAvailable = _sessionManager.Stages.Any(),
+                IsAvailable = SessionManager.StageManager.Stages.Any(),
                 UnavaliableDescriptionText = "Add stages to start the game",
                 OptionAction = (SideMenuOptionModel opt) =>
                 {
-                    if (_sessionManager.Clock.IsRunning)
+                    if (SessionManager.Clock.IsRunning)
                     {
                         opt.OptionText = "Start game";
                         opt.DescriptionText = "Start the game";
                         opt.UnavaliableDescriptionText = "Add stages to start the game";
-                        _sessionManager.Clock.Pause();
+                        SessionManager.Clock.Pause();
                     }
                     else
                     {
                         opt.OptionText = "Pause game";
                         opt.DescriptionText = "Resume the game";
                         opt.UnavaliableDescriptionText = "Add stages to resume the game";
-                        _sessionManager.Clock.Start();
+                        SessionManager.Clock.Start();
                     }
                 }
             });
@@ -166,9 +182,15 @@ namespace PokerTracker3000.GameSession
                 HasSubOptions = true,
                 SubOptions =
                 [
-                    new() { Id = 0, OptionText = "Next stage", IsSubOption = true},
-                    new() { Id = 1, OptionText = "Previous stage", IsSubOption = true},
-                    new() { Id = 2, OptionText = "Stage...", IsSubOption = true, HasSubOptions = true }
+                    new() { Id = 0, OptionText = "Next stage", IsSubOption = true, OptionAction = (SideMenuOptionModel opt) =>
+                    {
+                        SessionManager.StageManager.TryGotoNextStage();
+                    }},
+                    new() { Id = 1, OptionText = "Previous stage", IsSubOption = true, OptionAction = (SideMenuOptionModel opt) =>
+                    {
+                        SessionManager.StageManager.TryGotoPreviousStage();
+                    }},
+                    new() { Id = 2, OptionText = "Stage...", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" }
                 ],
             });
             SideMenuOptionModel addPlayerOption = new()
@@ -176,11 +198,11 @@ namespace PokerTracker3000.GameSession
                 Id = 2,
                 OptionText = "Add player",
                 DescriptionText = "Add a new player to an empty spot",
-                OnOpenAction = (SideMenuOptionModel opt) => { opt.IsAvailable = !_sessionManager.TableFull; },
+                OnOpenAction = (SideMenuOptionModel opt) => { opt.IsAvailable = !SessionManager.TableFull; },
                 OptionAction = (SideMenuOptionModel opt) =>
                 {
-                    _sessionManager.AddPlayerToSpot();
-                    opt.IsAvailable = !_sessionManager.TableFull;
+                    SessionManager.AddPlayerToSpot();
+                    opt.IsAvailable = !SessionManager.TableFull;
                 },
                 UnavaliableDescriptionText = "Cannot add new player - table full"
             };
@@ -192,7 +214,7 @@ namespace PokerTracker3000.GameSession
                 Id = 3,
                 OptionText = "Remove empty spots",
                 DescriptionText = "Removes all empty slots",
-                OptionAction = (_) => _sessionManager.ConsolidateLayout(),
+                OptionAction = (_) => SessionManager.ConsolidateLayout(),
             });
 
             SideMenuOptions.Add(new()
@@ -203,17 +225,22 @@ namespace PokerTracker3000.GameSession
                 HasSubOptions = true,
                 SubOptions =
                 [
-                    new() { Id = 0, OptionText = "Edit poker chips", IsSubOption = true },
+                    new() { Id = 0, OptionText = "Edit poker chips", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
                     new() { Id = 1, OptionText = "Edit stages", IsSubOption = true, OptionAction = (_) =>
                         {
-                            _sessionManager.CurrentGameEditOption = GameEditOption.GameStages;
+                            SessionManager.CurrentGameEditOption = GameEditOption.GameStages;
                             _focusManager.SideMenuEditOptionSelected();
                         }
                     },
-                    new() { Id = 2, OptionText = "Pay-out ratios", IsSubOption = true },
-                    new() { Id = 3, OptionText = "Add-on amount", IsSubOption = true },
-                    new() { Id = 4, OptionText = "Buy-in amount", IsSubOption = true },
-                    new() { Id = 5, OptionText = "Reset all amounts", IsSubOption = true }
+                    new() { Id = 2, OptionText = "Reset all stages", IsSubOption = true, OptionAction = (_) =>
+                        {
+                            SessionManager.StageManager.ResetAllStages();
+                        }
+                    },
+                    new() { Id = 3, OptionText = "Pay-out ratios", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
+                    new() { Id = 4, OptionText = "Add-on amount", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
+                    new() { Id = 5, OptionText = "Buy-in amount", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
+                    new() { Id = 6, OptionText = "Reset all amounts", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" }
                 ],
             });
             SideMenuOptions.Add(new()

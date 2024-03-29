@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.GameComponents;
 using PokerTracker3000.Interfaces;
@@ -29,7 +27,6 @@ namespace PokerTracker3000.GameSession
         private PlayerSpot? _selectedSpot;
         private CurrencyType _currencyType = CurrencyType.SwedishKrona;
         private bool _tableFull = false;
-        private GameStage? _currentStage = default;
         private decimal _totalAmountInPot = 0;
         private decimal _defaultBuyInAmount = 500;
         private decimal _defaultAddOnAmount = 500;
@@ -94,12 +91,6 @@ namespace PokerTracker3000.GameSession
             private set => SetProperty(ref _tableFull, value);
         }
 
-        public GameStage? CurrentStage
-        {
-            get => _currentStage;
-            private set => SetProperty(ref _currentStage, value);
-        }
-
         public SideMenuViewModel.GameEditOption CurrentGameEditOption
         {
             get => _currentGameEditOption;
@@ -110,7 +101,7 @@ namespace PokerTracker3000.GameSession
 
         public MainWindowFocusManager FocusManager { get; }
 
-        public ObservableCollection<string> Stages { get; }
+        public GameStagesManager StageManager { get; }
 
         public NavigationManager NavigationManager { get; }
         #endregion
@@ -131,10 +122,6 @@ namespace PokerTracker3000.GameSession
         private readonly PlayerEditOption _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
-        private readonly object _stagesAccessLock = new();
-        private readonly List<GameStage> _stages;
-        private readonly int _defaultStageLengthSeconds = 20 * 60; // TODO: Should be editable
-
         #endregion
 
         public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
@@ -175,11 +162,11 @@ namespace PokerTracker3000.GameSession
 
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
-            Clock = new(this);
 
-            Stages = [];
-            _stages = [];
-            BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
+            StageManager = new();
+            Clock = new(StageManager);
+            StageManager.SetClockCallbacks(Clock);
+            StageManager.AllStagesDone += (s, e) => Clock.Stop();
         }
 
         #region Public methods
@@ -218,64 +205,6 @@ namespace PokerTracker3000.GameSession
             }
 
             LayoutMightHaveChangedEvent?.Invoke(this, PlayerSpots.Where(x => x.HasPlayerData).Count());
-        }
-
-        public void AddStage(int number = -1, bool isPause = false, decimal smallBlind = -1, decimal bigBlind = -1, int stageLengthSeconds = -1)
-        {
-            number = number == -1 ? _stages.Last().Number + 1 : number;
-            smallBlind = smallBlind == -1 ? _stages.Last().SmallBlind * 2 : smallBlind;
-            bigBlind = bigBlind == -1 ? smallBlind * 2 : bigBlind;
-            stageLengthSeconds = stageLengthSeconds == -1 ? _defaultStageLengthSeconds : stageLengthSeconds;
-
-            _stages.Add(new()
-            {
-                Number = number,
-                IsPause = isPause,
-                SmallBlind = smallBlind,
-                BigBlind = bigBlind,
-                LengthSeconds = stageLengthSeconds,
-                LengthSecondsRemaining = stageLengthSeconds
-            });
-
-            lock (Stages)
-                Stages.Add(_stages.Last().Name);
-
-            if (_stages.Count == 1)
-                CurrentStage = _stages[0];
-        }
-
-        public void RemoveStage(int number)
-        {
-            var stageToRemove = _stages.FirstOrDefault(x => x.Number == number);
-            if (stageToRemove == default)
-                return;
-
-            var indexToRemove = _stages.IndexOf(stageToRemove);
-            _stages.Remove(stageToRemove);
-
-            lock (Stages)
-            {
-                Stages.RemoveAt(indexToRemove);
-                for (var i = 0; i < _stages.Count; i++)
-                {
-                    _stages[i].Number = i + 1;
-                    Stages[i] = _stages[i].Name;
-                }
-            }
-        }
-
-        public bool TryGetStage(int index, out GameStage? stage)
-        {
-            var stageName = string.Empty;
-            lock (Stages)
-                stageName = index < Stages.Count ? Stages[index] : string.Empty;
-
-            stage = default;
-            if (string.IsNullOrEmpty(stageName))
-                return false;
-
-            stage = _stages.FirstOrDefault(x => x.Name.Equals(stageName, StringComparison.InvariantCulture));
-            return stage != default;
         }
         #endregion
 
@@ -420,9 +349,9 @@ namespace PokerTracker3000.GameSession
                     case InputEvent.ButtonEventType.Select:
                         if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.GameStages)
                         {
-                            if (Stages.Count == 0)
+                            if (StageManager.Stages.Count == 0)
                             {
-                                AddStage(1, false, 1, 2, _defaultStageLengthSeconds);
+                                StageManager.AddStage(1, false, 1, 2);
                             }
                             else
                             {

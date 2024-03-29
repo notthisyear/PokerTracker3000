@@ -3,10 +3,28 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents">
 
-    <StackPanel Orientation="Vertical"
-                DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
+    <Grid       DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
                 Margin="20,0,0,0">
-        <ItemsControl ItemsSource="{Binding Path=ViewModel.SideMenuOptions}">
+
+        <Grid.Resources>
+            <Style x:Key="gameProgressLabel" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                <Setter Property="FontStyle" Value="Italic" />
+                <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+            </Style>
+            <Style x:Key="gameProgressData" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                <Setter Property="FontWeight" Value="Bold" />
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="5*" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ItemsControl   Grid.Row="1"
+                        VerticalAlignment="Center"
+                        ItemsSource="{Binding Path=ViewModel.SideMenuOptions}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <components:SideMenuOption OptionModel="{Binding Path=.}"
@@ -17,5 +35,136 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-    </StackPanel>
+
+        <!-- Game progress panel -->
+        <Separator Grid.Row="2"
+                   Margin="0,0,20,0"/>
+        <Grid Grid.Row="3"
+              Margin="0,0,0,20"
+              VerticalAlignment="Stretch"
+              HorizontalAlignment="Stretch">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="2*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                       Text="Game progress"
+                       FontWeight="Bold"
+                       FontSize="14"/>
+
+            <!-- Stage progress -->
+            <TextBlock Style="{StaticResource gameProgressLabel}"
+                       Grid.Row="1"
+                       Text="Stage progress:"/>
+            <StackPanel Orientation="Horizontal"
+                        Grid.Row="1"
+                        Grid.Column="1">
+                <StackPanel.Style>
+                    <Style TargetType="{x:Type StackPanel}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.StageManager.Stages.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Style="{StaticResource gameProgressData}"
+                           Text="{Binding Path=ViewModel.CurrentStageNumber}"/>
+                <TextBlock Style="{StaticResource gameProgressData}"
+                           Text="/"/>
+                <TextBlock Style="{StaticResource gameProgressData}"
+                           Text="{Binding Path=ViewModel.SessionManager.StageManager.Stages.Count}"/>
+            </StackPanel>
+            <TextBlock Grid.Row="1"
+                       Grid.Column="1"
+                       Text="N/a">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource gameProgressData}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.StageManager.Stages.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <!-- Time remaining -->
+            <TextBlock Style="{StaticResource gameProgressLabel}"
+                       Grid.Row="2"
+                       Text="Time remaining:"/>
+            <TextBlock Grid.Row="2"
+                       Grid.Column="1"
+                       Text="{Binding Path=ViewModel.SessionManager.StageManager.SecondsUntilEnd, Converter={StaticResource secondsToTimeStringConverter}, ConverterParameter=longformat}">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource gameProgressData}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.StageManager.SecondsUntilEnd}" Value="0">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock Grid.Row="2"
+                       Grid.Column="1"
+                       Text="N/a">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource gameProgressData}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.StageManager.SecondsUntilEnd}" Value="0">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <!-- Est. finish time -->
+            <TextBlock Style="{StaticResource gameProgressLabel}"
+                       Grid.Row="3"
+                       Text="Est. finish time:"/>
+            <TextBlock Grid.Row="3"
+                       Grid.Column="1"
+                       Text="{Binding Path=ViewModel.SessionManager.StageManager.SecondsUntilEnd, Converter={StaticResource secondsToTimestampConverter}}">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource gameProgressData}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.StageManager.SecondsUntilEnd}" Value="0">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock Grid.Row="3"
+                       Grid.Column="1"
+                       Text="N/a">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource gameProgressData}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.StageManager.SecondsUntilEnd}" Value="0">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+    </Grid>
 </UserControl>

@@ -24,6 +24,7 @@
     <None Remove="Resources\Fonts\Lato-Regular.ttf" />
     <None Remove="Resources\Fonts\Lato-Thin.ttf" />
     <None Remove="Resources\Fonts\Lato-ThinItalic.ttf" />
+    <None Remove="Resources\Images\coffee_mug.png" />
     <None Remove="Resources\Images\poker_table.png" />
   </ItemGroup>
 
@@ -61,6 +62,9 @@
     <Resource Include="Resources\Fonts\Lato-Regular.ttf" />
     <Resource Include="Resources\Fonts\Lato-Thin.ttf" />
     <Resource Include="Resources\Fonts\Lato-ThinItalic.ttf" />
+    <Resource Include="Resources\Images\coffee_mug.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\Images\poker_table.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

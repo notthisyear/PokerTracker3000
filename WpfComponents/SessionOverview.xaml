@@ -5,18 +5,130 @@
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor,
         AncestorType={x:Type UserControl}}, Path=.}">
 
+        <Grid.Resources>
+            <Style x:Key="nextBlindsPanel" TargetType="{x:Type StackPanel}">
+                <Setter Property="Opacity" Value="0" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="Orientation" Value="Horizontal" />
+                <Style.Triggers>
+
+                    <DataTrigger Binding="{Binding Path=StageManager.CurrentStage.IsPause}" Value="True">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+
+                    <DataTrigger Binding="{Binding Path=NextStage}" Value="{x:Null}">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="currentBlindsGrid" TargetType="{x:Type Grid}">
+                <Setter Property="Opacity" Value="0" />
+                <Setter Property="Visibility" Value="Visible" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=StageManager.CurrentStage.IsPause}" Value="True">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+
+                    <DataTrigger Binding="{Binding Path=StageManager.CurrentStage}" Value="{x:Null}">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="blindsText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                <Setter Property="FontSize" Value="8" />
+            </Style>
+        </Grid.Resources>
+
         <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Center" >
+                    HorizontalAlignment="Center">
 
-             <!-- Current stage -->
-            <TextBlock HorizontalAlignment="Center"
-                       Style="{StaticResource MainTextBlockStyle}"
-                        Margin="0,10,0,-5"
-                        Text="current: 50/100"/>
+            <!-- Current stage -->
+            <Grid Margin="0,10,0,0">
+                <TextBlock Text="- break -"
+                           HorizontalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                            <Setter Property="FontSize" Value="28" />
+                            <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                            <Setter Property="Opacity" Value="0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=StageManager.CurrentStage.IsPause}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <Grid Style="{StaticResource currentBlindsGrid}">
 
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="0">
+                        <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                   HorizontalAlignment="Center"
+                                   FontSize="18">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                    <Binding Path="StageManager.CurrentStage.SmallBlind" />
+                                    <Binding Path="Currency" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource blindsText}"
+                                   Text="small blind" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                               Grid.Column="1"
+                               HorizontalAlignment="Center"
+                               FontSize="18"
+                               Text="|" />
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="2">
+                        <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                   HorizontalAlignment="Center"
+                                   FontSize="18">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                    <Binding Path="StageManager.CurrentStage.BigBlind" />
+                                    <Binding Path="Currency" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource blindsText}"
+                                   Text="big blind" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
             <!-- Clock -->
             <Grid>
-                <TextBlock Text="{Binding Path=SessionManager.Clock.NumberOfSeconds,
+                <TextBlock Text="{Binding Path=Clock.NumberOfSeconds,
                             Converter={StaticResource secondsToTimeStringConverter}}">
                     <TextBlock.Style>
                         <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
@@ -24,7 +136,7 @@
                             <Setter Property="FontSize" Value="80" />
                             <Setter Property="FontWeight" Value="Bold" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=SessionManager.Clock.IsRunning}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Clock.IsRunning}" Value="False">
                                     <Setter Property="Foreground" Value="{StaticResource MainTextMutedColor}" />
                                 </DataTrigger>
                             </Style.Triggers>
@@ -44,7 +156,7 @@
                             <Setter Property="CornerRadius" Value="5" />
                             <Setter Property="Opacity" Value="0" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=SessionManager.Clock.IsRunning}" Value="False">
+                                <DataTrigger Binding="{Binding Path=Clock.IsRunning}" Value="False">
                                     <DataTrigger.EnterActions>
                                         <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
                                     </DataTrigger.EnterActions>
@@ -66,9 +178,95 @@
             </Grid>
 
             <!-- Next stage -->
-            <TextBlock HorizontalAlignment="Center"
-                       Style="{StaticResource MainTextBlockStyle}"
-                       Text="next: 75/125"/>
+            <Grid HorizontalAlignment="Center">
+                <StackPanel Style="{StaticResource nextBlindsPanel}">
+                    <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                               Text="next: " />
+
+                    <!-- Next stage is not pause -->
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel.Style>
+                            <Style TargetType="{x:Type StackPanel}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=NextStage.IsPause}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <TextBlock Style="{StaticResource MainTextBlockStyle}">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                    <Binding Path="NextStage.SmallBlind" />
+                                    <Binding Path="Currency" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                   Text=" / " />
+                        <TextBlock Style="{StaticResource MainTextBlockStyle}">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                    <Binding Path="NextStage.BigBlind" />
+                                    <Binding Path="Currency" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+
+                        <!-- Time until break -->
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Style>
+                                <Style TargetType="{x:Type StackPanel}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=StageManager.HasPauseStage}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+
+                            <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                   Text=" (next break in " />
+                            <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                   Text="{Binding Path=StageManager.SecondsUntilPause, Converter={StaticResource secondsToTimeStringConverter}, ConverterParameter=longformat}" />
+                            <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                   Text=")" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Next stage is pause -->
+                    <TextBlock Text="break">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=NextStage.IsPause}" Value="False">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- When on last stage -->
+                <TextBlock Text="no more stages">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=StageManager.OnLastStage}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
         </StackPanel>
     </Grid>
 </UserControl>
