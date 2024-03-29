@@ -119,7 +119,7 @@ namespace PokerTracker3000.GameSession
             _resetStageOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Reset current stage", StringComparison.InvariantCulture)).Id;
             _resetAllStagesOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Reset all stages", StringComparison.InvariantCulture)).Id;
             _loadGameSettingsOptionId = SideMenuOptions[_loadSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Game settings", StringComparison.InvariantCulture)).Id;
-            _loadPlayerConfigurationOptionId = SideMenuOptions[_loadSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Player configuration", StringComparison.InvariantCulture)).Id;
+            _loadPlayerConfigurationOptionId = SideMenuOptions[_loadSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Table configuration", StringComparison.InvariantCulture)).Id;
 
             _currentFocusOptionList = SideMenuOptions;
             SideMenuOptions.First(x => x.Id == _currentFocusOptionId).IsHighlighted = true;
@@ -426,18 +426,42 @@ namespace PokerTracker3000.GameSession
                         IsSubOption = true,
                         OptionAction = (_) =>
                         {
+                            s_loadSettingsDialog.Title = "Load game settings";
+                            if (s_loadSettingsDialog.ShowDialog() == true)
+                            {
+                                LastSaveLoadStatus = SessionManager.TryLoadGameSettingsFromFile(s_loadSettingsDialog.FileName, out var resultMessage) ?
+                                LastSaveLoadResult.Success : (string.IsNullOrEmpty(resultMessage) ? LastSaveLoadResult.None : LastSaveLoadResult.Failure);
+                                LastSaveLoadMessage = resultMessage;
+                                Task.Run(() =>
+                                {
+                                    Task.Delay(3000).Wait();
+                                    LastSaveLoadStatus = LastSaveLoadResult.None;
+                                });
+                            }
                         }
                     },
                     new()
                     {
                         Id = 1,
-                        OptionText = "Player configuration",
-                        DescriptionText = "Load player configuration",
+                        OptionText = "Table configuration",
+                        DescriptionText = "Load table configuration",
                         IsAvailable = !SessionManager.Clock.IsRunning,
                         UnavaliableDescriptionText = "Pause game to load",
                         IsSubOption = true,
                         OptionAction = (_) =>
                         {
+                            s_loadSettingsDialog.Title = "Load table configuration";
+                            if (s_loadSettingsDialog.ShowDialog() == true)
+                            {
+                                LastSaveLoadStatus = SessionManager.TryLoadTableConfigurationFromFile(s_loadSettingsDialog.FileName, out var resultMessage) ?
+                                LastSaveLoadResult.Success : (string.IsNullOrEmpty(resultMessage) ? LastSaveLoadResult.None : LastSaveLoadResult.Failure);
+                                LastSaveLoadMessage = resultMessage;
+                                Task.Run(() =>
+                                {
+                                    Task.Delay(3000).Wait();
+                                    LastSaveLoadStatus = LastSaveLoadResult.None;
+                                });
+                            }
                         }
                     },
                 ]

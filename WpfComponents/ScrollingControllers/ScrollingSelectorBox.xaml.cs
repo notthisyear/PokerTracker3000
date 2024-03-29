@@ -233,12 +233,16 @@ namespace PokerTracker3000.WpfComponents
             if (Options == default)
                 return;
 
-            Options.CollectionChanged += OptionsCollectionChanged;
+            Options.CollectionChanged += (s, e) => SetupBoxText();
             SetupBoxText();
         }
 
-        private void SetupBoxText()
+        public void SetupBoxText(ObservableCollection<string>? options = default, int forcedSelectedIndex = -1)
         {
+            options ??= Options;
+            if (options == default)
+                return;
+
             // Find the middle box
             List<TextBlock> boxes = [];
             var middleBoxIndex = 0;
@@ -251,39 +255,34 @@ namespace PokerTracker3000.WpfComponents
 
             // Set-up text
             var selectedIndexAtStart = _selectedIndex;
-            _selectedIndex = Options.Count > _selectedIndex ? _selectedIndex : Options.Count;
+            _selectedIndex = forcedSelectedIndex >= 0 ? forcedSelectedIndex : (options.Count > _selectedIndex ? _selectedIndex : options.Count);
             CurrentSelectedIndex = _selectedIndex;
 
-            boxes[middleBoxIndex].Text = Options.Count > _selectedIndex ? Options[_selectedIndex] : string.Empty;
+            boxes[middleBoxIndex].Text = options.Count > _selectedIndex ? options[_selectedIndex] : string.Empty;
 
-            var firstBoxTextIndex = (_selectedIndex - 2) < 0 ? (WrapAtEnds ? Options.Count - 2 : -1) : _selectedIndex - 2;
-            var secondBoxTextIndex = (_selectedIndex - 1) < 0 ? (WrapAtEnds ? Options.Count - 1 : -1) : _selectedIndex - 1;
-            var fourthBoxTextIndex = (_selectedIndex + 1) > (Options.Count - 1) ? (WrapAtEnds ? 0 : -1) : _selectedIndex + 1;
-            var fifthBoxTextIndex = (_selectedIndex + 2) > (Options.Count - 1) ? (WrapAtEnds ? 1 : -1) : _selectedIndex + 2;
+            var firstBoxTextIndex = (_selectedIndex - 2) < 0 ? (WrapAtEnds ? options.Count - 2 : -1) : _selectedIndex - 2;
+            var secondBoxTextIndex = (_selectedIndex - 1) < 0 ? (WrapAtEnds ? options.Count - 1 : -1) : _selectedIndex - 1;
+            var fourthBoxTextIndex = (_selectedIndex + 1) > (options.Count - 1) ? (WrapAtEnds ? 0 : -1) : _selectedIndex + 1;
+            var fifthBoxTextIndex = (_selectedIndex + 2) > (options.Count - 1) ? (WrapAtEnds ? 1 : -1) : _selectedIndex + 2;
 
-            boxes[GetWrappedOffsetIndex(middleBoxIndex, -1, 5)].Text = ((secondBoxTextIndex < 0) || (secondBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[secondBoxTextIndex];
-            boxes[GetWrappedOffsetIndex(middleBoxIndex, -2, 5)].Text = ((firstBoxTextIndex < 0) || (firstBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[firstBoxTextIndex];
-            boxes[GetWrappedOffsetIndex(middleBoxIndex, 1, 5)].Text = ((fourthBoxTextIndex < 0) || (fourthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fourthBoxTextIndex];
-            boxes[GetWrappedOffsetIndex(middleBoxIndex, 2, 5)].Text = ((fifthBoxTextIndex < 0) || (fifthBoxTextIndex > Options.Count - 1)) ? string.Empty : Options[fifthBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, -1, 5)].Text = ((secondBoxTextIndex < 0) || (secondBoxTextIndex > options.Count - 1)) ? string.Empty : options[secondBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, -2, 5)].Text = ((firstBoxTextIndex < 0) || (firstBoxTextIndex > options.Count - 1)) ? string.Empty : options[firstBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, 1, 5)].Text = ((fourthBoxTextIndex < 0) || (fourthBoxTextIndex > options.Count - 1)) ? string.Empty : options[fourthBoxTextIndex];
+            boxes[GetWrappedOffsetIndex(middleBoxIndex, 2, 5)].Text = ((fifthBoxTextIndex < 0) || (fifthBoxTextIndex > options.Count - 1)) ? string.Empty : options[fifthBoxTextIndex];
 
             // The above works for every initial number of options, except for 2
             // and when WrapAtEnds is true, so we deal with it separately
-            if (WrapAtEnds && Options.Count == 2)
-                fifth.Text = Options[0];
+            if (WrapAtEnds && options.Count == 2)
+                fifth.Text = options[0];
 
             // Set-up width
             var width = 0.0;
-            foreach (var option in Options)
+            foreach (var option in options)
                 width = Math.Max(width, MeasureWidthOfText(option));
 
             TextBoxWidth = width;
-            if (selectedIndexAtStart != _selectedIndex)
+            if (forcedSelectedIndex < 0 && selectedIndexAtStart != _selectedIndex)
                 RaiseSelectedIndexChangedEvent(_selectedIndex);
-        }
-
-        private void OptionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            SetupBoxText();
         }
 
         private double MeasureWidthOfText(string text)

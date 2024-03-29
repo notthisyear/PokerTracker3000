@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PokerTracker3000.Common;
 using PokerTracker3000.Common.FileUtilities;
 using PokerTracker3000.Interfaces;
 
@@ -92,6 +93,7 @@ namespace PokerTracker3000.GameSession
 
         #region Events
         public event EventHandler<int>? LayoutMightHaveChangedEvent;
+        public event EventHandler? StagesCollectionLoadedFromFile;
         public event EventHandler<InputEvent.NavigationDirection>? Navigate;
         public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
         #endregion
@@ -99,7 +101,6 @@ namespace PokerTracker3000.GameSession
         #region Private fields
         private readonly string _pathToDefaultPlayerImage;
         private const int NumberOfPlayerSpots = 12;
-        private int _nextPlayerId = 0;
         private bool _moveInProgress = false;
         private TableLayout _currentTableLayout;
         private readonly PlayerEditOption _addOnOrBuyInOption;
@@ -107,7 +108,8 @@ namespace PokerTracker3000.GameSession
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
 
-        private record PlayerConfiguration(int SpotIndex, PlayerModel.PlayerInformation PlayerInformation);
+        private record PlayerConfiguration(int SpotIndex, PlayerModel PlayerModel);
+
         private record TableConfiguration(List<PlayerConfiguration> PlayerConfigurations);
         #endregion
 
@@ -169,7 +171,7 @@ namespace PokerTracker3000.GameSession
             if (targetSpot == default)
                 return;
 
-            targetSpot.AddPlayer(_nextPlayerId++, _pathToDefaultPlayerImage);
+            targetSpot.AddPlayer(_pathToDefaultPlayerImage);
             var numberOfActivePlayers = PlayerSpots.Where(x => x.HasPlayerData).Count();
             LayoutMightHaveChangedEvent?.Invoke(this, numberOfActivePlayers);
             TableFull = numberOfActivePlayers == NumberOfPlayerSpots;
@@ -198,6 +200,14 @@ namespace PokerTracker3000.GameSession
         public bool TrySaveGameSettings(string filePath, out string resultMessage)
             => GameSettings.TrySave(StageManager, filePath, out resultMessage);
 
+        public bool TryLoadGameSettingsFromFile(string filePath, out string resultMessage)
+        {
+            var result = GameSettings.TryLoadFromFile(StageManager, filePath, out resultMessage);
+            if (result)
+                StagesCollectionLoadedFromFile?.Invoke(this, EventArgs.Empty);
+            return result;
+        }
+
         public bool TrySaveTableConfiguration(string filePath, out string resultMessage)
         {
             resultMessage = string.Empty;
@@ -205,7 +215,7 @@ namespace PokerTracker3000.GameSession
             foreach (var spot in PlayerSpots)
             {
                 if (spot.HasPlayerData)
-                    configs.Add(new(spot.SpotIndex, spot.PlayerData!.Information));
+                    configs.Add(new(spot.SpotIndex, spot.PlayerData!));
             }
 
             if (configs.Count == 0)
@@ -219,13 +229,55 @@ namespace PokerTracker3000.GameSession
             resultMessage = success ? $"Configuration saved to '{Path.GetFileName(path)}'!" : $"Save failed - {e!.Message}";
             return success;
         }
+
+        public bool TryLoadTableConfigurationFromFile(string filePath, out string resultMessage)
+        {
+            FileTextReader reader = new(filePath);
+            if (!reader.SuccessfulRead)
+            {
+                resultMessage = $"Reading table configuration failed - {reader.ReadException!.Message}";
+                return false;
+            }
+
+            var (configuration, e) = reader.AllText.DeserializeJsonString<TableConfiguration>(convertSnakeCaseToPascalCase: true);
+            if (e != default)
+            {
+                resultMessage = $"Reading table configuration failed - {e!.Message}";
+                return false;
+            }
+
+            if (configuration!.PlayerConfigurations == default || configuration.PlayerConfigurations.Count == 0)
+            {
+                resultMessage = "Reading table configuration failed - no players found";
+                return false;
+            }
+
+            TotalAmountInPot = 0;
+            foreach (var spot in PlayerSpots)
+            {
+                var playerDataOrNull = configuration!.PlayerConfigurations.FirstOrDefault(x => x.SpotIndex == spot.SpotIndex);
+                if (playerDataOrNull == null)
+                {
+                    spot.RemovePlayer();
+                }
+                else
+                {
+                    spot.AddPlayer(playerDataOrNull.PlayerModel);
+                    TotalAmountInPot += playerDataOrNull.PlayerModel.MoneyInThePot;
+                }
+            }
+
+            ConsolidateLayout();
+            resultMessage = $"Table configuration read from '{Path.GetFileName(filePath)}'!";
+            return true;
+        }
         #endregion
 
         #region Private methods
         private void InitializeSpots(int numberOfSpots)
         {
             for (var i = 0; i < numberOfSpots; i++)
-                PlayerSpots[i].AddPlayer(_nextPlayerId++, _pathToDefaultPlayerImage);
+                PlayerSpots[i].AddPlayer(_pathToDefaultPlayerImage);
         }
 
         private void RegisterFocusManagerCallbacks()
@@ -265,8 +317,16 @@ namespace PokerTracker3000.GameSession
                         //       will have to change
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
+                    // TODO: Some sort of save/load feedback would be nice
                     case PlayerEditOption.EditOption.Save:
-                        activeSpot.SavePlayer();
+                        activeSpot.TrySavePlayer();
+                        return MainWindowFocusManager.FocusArea.PlayerInfo;
+
+                    case PlayerEditOption.EditOption.Load:
+                        var currentAmountInSpot = activeSpot.HasPlayerData ? activeSpot.PlayerData!.MoneyInThePot : 0;
+                        activeSpot.TryLoadPlayer();
+                        if (activeSpot.HasPlayerData && activeSpot.PlayerData!.MoneyInThePot != currentAmountInSpot)
+                            TotalAmountInPot += (activeSpot.PlayerData!.MoneyInThePot - currentAmountInSpot);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
                     case PlayerEditOption.EditOption.Eliminate:
@@ -319,7 +379,7 @@ namespace PokerTracker3000.GameSession
                 var currentOption = GetSelectedOptionIn(AddOnOrBuyInOptions);
                 if (currentOption.Option == PlayerEditOption.EditOption.Ok)
                 {
-                    SelectedSpot.PlayerData.Information.MoneyInThePot += SelectedSpot.BuyInOrAddOnAmount;
+                    SelectedSpot.PlayerData.MoneyInThePot += SelectedSpot.BuyInOrAddOnAmount;
                     TotalAmountInPot += SelectedSpot.BuyInOrAddOnAmount;
                     SelectedSpot.BuyInOrAddOnAmount = 0;
                     return true;
@@ -351,17 +411,12 @@ namespace PokerTracker3000.GameSession
                 switch (eventType)
                 {
                     case InputEvent.ButtonEventType.Start:
-                        CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
-                        return true;
-
                     case InputEvent.ButtonEventType.GoBack:
-                        {
-                            IInputRelay.ButtonEventArgs eventArgs = new() { ButtonEvent = eventType };
-                            ButtonEvent?.Invoke(this, eventArgs);
-                            if (!eventArgs.Handled)
-                                CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
-                            return !eventArgs.Handled;
-                        }
+                        IInputRelay.ButtonEventArgs eventArgs = new() { ButtonEvent = eventType };
+                        ButtonEvent?.Invoke(this, eventArgs);
+                        if (!eventArgs.Handled)
+                            CurrentGameEditOption = SideMenuViewModel.GameEditOption.None;
+                        return !eventArgs.Handled;
 
                     case InputEvent.ButtonEventType.Select:
                         if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.GameStages)

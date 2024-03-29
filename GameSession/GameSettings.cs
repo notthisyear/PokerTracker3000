@@ -3,6 +3,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using PokerTracker3000.Common;
 using PokerTracker3000.Common.FileUtilities;
 using PokerTracker3000.GameComponents;
 
@@ -70,8 +71,33 @@ namespace PokerTracker3000.GameSession
             return success;
         }
 
-        public static GameSettings LoadFromFile()
-            => new();
+        public bool TryLoadFromFile(GameStagesManager stageManager, string filePath, out string resultMessage)
+        {
+            FileTextReader reader = new(filePath);
+            if (!reader.SuccessfulRead)
+            {
+                resultMessage = $"Reading settings failed - {reader.ReadException!.Message}";
+                return false;
+            }
+
+            var (setup, e) = reader.AllText.DeserializeJsonString<GameSetup>(convertSnakeCaseToPascalCase: true);
+            if (e != default)
+            {
+                resultMessage = $"Reading settings failed - {e!.Message}";
+                return false;
+            }
+
+            stageManager.SetStages(setup!.Stages);
+
+            CurrencyType = setup.Settings.CurrencyType;
+            DefaultBuyInAmount = setup.Settings.DefaultBuyInAmount;
+            DefaultAddOnAmount = setup.Settings.DefaultAddOnAmount;
+            DefaultStageLengthSeconds = setup.Settings.DefaultStageLengthSeconds;
+
+            resultMessage = $"Settings read from '{Path.GetFileName(filePath)}!";
+            CurrencyType = setup.Settings.CurrencyType;
+            return true;
+        }
         #endregion
     }
 }

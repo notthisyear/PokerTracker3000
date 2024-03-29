@@ -29,6 +29,12 @@ namespace PokerTracker3000.GameSession
             DefaultExt = "json",
             Filter = "JSON file (*.json)|*.json"
         };
+        private static readonly VistaOpenFileDialog s_loadPlayerDialog = new()
+        {
+            Title = "Select player file",
+            Multiselect = false,
+            Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*"
+        };
         #endregion
 
         public PlayerModel? PlayerData
@@ -73,14 +79,23 @@ namespace PokerTracker3000.GameSession
         #endregion
 
         #region Public methods
-        public void AddPlayer(int playerId, string pathToImage)
+        public void AddPlayer(string pathToImage)
         {
-            PlayerData = PlayerModel.GetNewPlayer(playerId, pathToImage);
+            PlayerData = PlayerModel.GetNewPlayer(pathToImage);
         }
 
-        public void AddPlayer(string pathToPlayerFile)
+        public void AddPlayer(PlayerModel model)
         {
-            PlayerData = PlayerModel.GetPlayer(pathToPlayerFile);
+            PlayerData = model;
+        }
+
+        public void TryLoadPlayer()
+        {
+            if (s_loadPlayerDialog.ShowDialog() == true)
+            {
+                if (PlayerModel.TryLoadPlayerFromFile(s_loadPlayerDialog.FileName, out var model))
+                    PlayerData = model!;
+            }
         }
 
         public void RemovePlayer()
@@ -91,23 +106,20 @@ namespace PokerTracker3000.GameSession
             PlayerData = default;
         }
 
-        public bool IsPlayer(int id)
-            => PlayerData != default && PlayerData.PlayerId == id;
-
         public void ChangeImage()
         {
             if (PlayerData != default && s_loadImageDialog.ShowDialog() == true)
             {
                 // TODO: Make a nice image loader dialog that supports cropping the selected image
-                PlayerData.Information.PathToImage = s_loadImageDialog.FileName;
+                PlayerData.PathToImage = s_loadImageDialog.FileName;
             }
         }
 
-        public void SavePlayer()
+        public void TrySavePlayer()
         {
             if (PlayerData != default && s_savePlayerDialog.ShowDialog() == true)
             {
-                var (s, e) = PlayerData.Information.SerializeToJsonString(convertPascalCaseToSnakeCase: true, indent: true);
+                var (s, e) = PlayerData.SerializeToJsonString(convertPascalCaseToSnakeCase: true, indent: true);
                 if (e != default)
                     return;
 

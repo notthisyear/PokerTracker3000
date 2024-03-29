@@ -219,6 +219,15 @@ namespace PokerTracker3000.GameSession
                 _clock.UpdateNumberOfSeconds(CurrentStage.LengthSecondsRemaining);
         }
 
+        public void SetStages(List<GameStage> stages)
+        {
+            while (_stages.Count > 0)
+                RemoveStage(1);
+
+            foreach (var stage in stages)
+                AddStage(stage.Number, stage.IsPause, stage.SmallBlind, stage.BigBlind, stage.LengthSeconds);
+        }
+
         public static int GetIndexForNumber(int number)
             => number - 1;
         #endregion

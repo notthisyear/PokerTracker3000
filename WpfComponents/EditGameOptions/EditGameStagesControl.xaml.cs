@@ -245,10 +245,22 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     return;
 
                 _actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].buttonPressAction.Invoke(e);
+
+            };
+            SessionManager.StagesCollectionLoadedFromFile += (s, e) =>
+            {
+                if (s is GameSessionManager sessionManager)
+                {
+                    if (sessionManager.StageManager.TryGetStageByNumber(1, out var stage))
+                    {
+                        SelectedStage = stage!;
+                        stageSelector.SetupBoxText(sessionManager.StageManager.Stages, 0);
+                    }
+                }
             };
             SessionManager.StageManager.StageAdded += (s, e) =>
             {
-                if (SessionManager.StageManager.Stages.Count == 1)
+                if (SessionManager != default && SessionManager.StageManager.Stages.Count == 1)
                     TrySelectStageIfNeeded();
             };
         }

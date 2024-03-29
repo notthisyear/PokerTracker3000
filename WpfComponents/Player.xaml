@@ -355,7 +355,7 @@
         </Style>
 
         <Style x:Key="playerImage" TargetType="{x:Type components:GreyableImage}">
-            <Setter Property="Source" Value="{Binding Path=SpotData.PlayerData.Information.PathToImage}" />
+            <Setter Property="Source" Value="{Binding Path=SpotData.PlayerData.PathToImage}" />
             <Setter Property="OpacityMask" Value="{StaticResource radialImageMask}" />
             <Setter Property="Opacity" Value="{Binding Path=AlwaysShowPlayerImage,
                 Converter={StaticResource boolToZeroOrNumberConverter},
@@ -490,7 +490,7 @@
 
                     <!-- Player name -->
                     <TextBlock  Style="{StaticResource playerNameStyle}"
-                                Text="{Binding Path=SpotData.PlayerData.Information.Name}"/>
+                                Text="{Binding Path=SpotData.PlayerData.Name}"/>
 
                     <!-- Money in the pot -->
                     <StackPanel Orientation="Horizontal"
@@ -504,7 +504,7 @@
                                     FontSize="16">
                             <TextBlock.Text>
                                 <MultiBinding Converter="{StaticResource valueDisplayConverter}">
-                                    <Binding Path="SpotData.PlayerData.Information.MoneyInThePot" />
+                                    <Binding Path="SpotData.PlayerData.MoneyInThePot" />
                                     <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type components:PokerTable}}" Path="ViewModel.GameSettings.CurrencyType" />
                                 </MultiBinding>
                             </TextBlock.Text>
@@ -554,7 +554,7 @@
 
                     <!-- Player name -->
                     <TextBlock  Style="{StaticResource playerNameStyle}"
-                                Text="{Binding Path=SpotData.PlayerData.Information.Name}"/>
+                                Text="{Binding Path=SpotData.PlayerData.Name}"/>
 
                     <!-- Money in the pot -->
                     <StackPanel Orientation="Horizontal"
@@ -568,7 +568,7 @@
                                     FontSize="16">
                             <TextBlock.Text>
                                 <MultiBinding Converter="{StaticResource valueDisplayConverter}">
-                                    <Binding Path="SpotData.PlayerData.Information.MoneyInThePot" />
+                                    <Binding Path="SpotData.PlayerData.MoneyInThePot" />
                                     <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type components:PokerTable}}" Path="ViewModel.GameSettings.CurrencyType" />
                                 </MultiBinding>
                             </TextBlock.Text>

@@ -19,7 +19,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="5*" />
-            <RowDefinition Height="30" />
+            <RowDefinition Height="50" />
             <RowDefinition Height="20" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -40,7 +40,8 @@
         </ItemsControl>
 
         <!-- Save/load status -->
-        <TextBlock Grid.Row="2">
+        <TextBlock Grid.Row="2"
+                   VerticalAlignment="Bottom">
             <TextBlock.Style>
                 <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                     <Setter Property="HorizontalAlignment" Value="Left" />
