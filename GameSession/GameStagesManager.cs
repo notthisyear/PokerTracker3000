@@ -64,17 +64,19 @@ namespace PokerTracker3000.GameSession
         private int _secondsInOtherStagesUntilPause;
         private int _secondsInOtherStagesUntilEnd;
         private readonly GameClock _clock;
+        private readonly GameSettings _settings;
         private readonly List<GameStage> _stages;
         private readonly object _stagesAccessLock = new();
-        private readonly int _defaultStageLengthSeconds = 10; // TODO: Should be editable
         #endregion
 
-        public GameStagesManager(GameClock clock)
+        public GameStagesManager(GameClock clock, GameSettings settings)
         {
             Stages = [];
             _stages = [];
             BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
+
             _clock = clock;
+            _settings = settings;
 
             clock.RegisterCallbackOnTick(() =>
             {
@@ -103,7 +105,7 @@ namespace PokerTracker3000.GameSession
             number = number == -1 ? _stages.Last().Number + 1 : number;
             smallBlind = smallBlind == -1 ? _stages.Last().SmallBlind * 2 : smallBlind;
             bigBlind = bigBlind == -1 ? smallBlind * 2 : bigBlind;
-            stageLengthSeconds = stageLengthSeconds == -1 ? _defaultStageLengthSeconds : stageLengthSeconds;
+            stageLengthSeconds = stageLengthSeconds == -1 ? _settings.DefaultStageLengthSeconds : stageLengthSeconds;
 
             _stages.Add(new()
             {

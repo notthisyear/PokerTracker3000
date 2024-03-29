@@ -19,8 +19,8 @@
                                                  ScrollerMode="Money"
                                                  NavigatorRelay="{Binding Path=.}"
                                                  Foreground="{StaticResource MainTextColor}"
-                                                 Currency="{Binding Path=SessionManager.CurrencyType}"
-                                                 CurrentMoneyValue="{Binding Path=SessionManager.DefaultAddOnAmount}" />
+                                                 Currency="{Binding Path=SessionManager.GameSettings.CurrencyType}"
+                                                 CurrentMoneyValue="{Binding Path=SessionManager.GameSettings.DefaultAddOnAmount}" />
             </StackPanel>
     </Grid>
 </UserControl>

@@ -85,7 +85,7 @@
                                             HorizontalAlignment="Center"
                                             StageManager="{Binding Path=ViewModel.SessionManager.StageManager}"
                                             Clock="{Binding Path=ViewModel.SessionManager.Clock}"
-                                            Currency="{Binding Path=ViewModel.SessionManager.CurrencyType}"/>
+                                            Currency="{Binding Path=ViewModel.SessionManager.GameSettings.CurrencyType}"/>
 
                 <!-- Players -->
                 <components:PokerTable Grid.Row="2"

@@ -25,11 +25,8 @@ namespace PokerTracker3000.GameSession
 
         #region Backing fields
         private PlayerSpot? _selectedSpot;
-        private CurrencyType _currencyType = CurrencyType.SwedishKrona;
         private bool _tableFull = false;
         private decimal _totalAmountInPot = 0;
-        private decimal _defaultBuyInAmount = 500;
-        private decimal _defaultAddOnAmount = 500;
         private SideMenuViewModel.GameEditOption _currentGameEditOption = SideMenuViewModel.GameEditOption.None;
         #endregion
 
@@ -61,28 +58,10 @@ namespace PokerTracker3000.GameSession
             private set => SetProperty(ref _selectedSpot, value);
         }
 
-        public CurrencyType CurrencyType
-        {
-            get => _currencyType;
-            private set => SetProperty(ref _currencyType, value);
-        }
-
         public decimal TotalAmountInPot
         {
             get => _totalAmountInPot;
             private set => SetProperty(ref _totalAmountInPot, value);
-        }
-
-        public decimal DefaultBuyInAmount
-        {
-            get => _defaultBuyInAmount;
-            set => SetProperty(ref _defaultBuyInAmount, value);
-        }
-
-        public decimal DefaultAddOnAmount
-        {
-            get => _defaultAddOnAmount;
-            set => SetProperty(ref _defaultAddOnAmount, value);
         }
 
         public bool TableFull
@@ -104,6 +83,8 @@ namespace PokerTracker3000.GameSession
         public GameStagesManager StageManager { get; }
 
         public NavigationManager NavigationManager { get; }
+
+        public GameSettings GameSettings { get; }
         #endregion
 
         #region Events
@@ -113,8 +94,8 @@ namespace PokerTracker3000.GameSession
         #endregion
 
         #region Private fields
-        private const int NumberOfPlayerSpots = 12;
         private readonly string _pathToDefaultPlayerImage;
+        private const int NumberOfPlayerSpots = 12;
         private int _nextPlayerId = 0;
         private bool _moveInProgress = false;
         private TableLayout _currentTableLayout;
@@ -127,6 +108,7 @@ namespace PokerTracker3000.GameSession
         public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
         {
             FocusManager = focusManager;
+            GameSettings = new();
 
             _pathToDefaultPlayerImage = pathToDefaultPlayerImage;
             for (var i = 0; i < NumberOfPlayerSpots; i++)
@@ -164,7 +146,7 @@ namespace PokerTracker3000.GameSession
             InitializeSpots(8);
 
             Clock = new();
-            StageManager = new(Clock);
+            StageManager = new(Clock, GameSettings);
         }
 
         #region Public methods
@@ -277,13 +259,13 @@ namespace PokerTracker3000.GameSession
 
                     case PlayerEditOption.EditOption.AddOn:
                         SelectedSpot = activeSpot;
-                        SelectedSpot.BuyInOrAddOnAmount = DefaultAddOnAmount;
+                        SelectedSpot.BuyInOrAddOnAmount = GameSettings.DefaultAddOnAmount;
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
 
                     case PlayerEditOption.EditOption.BuyIn:
                         SetOptionsFor(eliminatedPlayer: false);
                         SelectedSpot = activeSpot;
-                        SelectedSpot.BuyInOrAddOnAmount = DefaultBuyInAmount;
+                        SelectedSpot.BuyInOrAddOnAmount = GameSettings.DefaultBuyInAmount;
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
 
                     default:

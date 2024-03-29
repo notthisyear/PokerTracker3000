@@ -244,7 +244,7 @@
                                Style="{StaticResource optionTextBlockLabel}" />
                     <components:NumericalScrollingEditor NumberOfDigits="4"
                                                          ScrollerMode="Money"
-                                                         Currency="{Binding Path=SessionManager.CurrencyType}"
+                                                         Currency="{Binding Path=SessionManager.GameSettings.CurrencyType}"
                                                          IsSelected="{Binding Path=SmallBlindModel.IsSelected}"
                                                          CurrentMoneyValue="{Binding Path=SelectedStage.SmallBlind}"
                                                          NavigatorRelay="{Binding Path=SmallBlindModel}">
@@ -284,7 +284,7 @@
                                 Style="{StaticResource optionTextBlockLabel}" />
                     <components:NumericalScrollingEditor NumberOfDigits="4"
                                                          ScrollerMode="Money"
-                                                         Currency="{Binding Path=SessionManager.CurrencyType}"
+                                                         Currency="{Binding Path=SessionManager.GameSettings.CurrencyType}"
                                                          IsSelected="{Binding Path=BigBlindModel.IsSelected}"
                                                          CurrentMoneyValue="{Binding Path=SelectedStage.BigBlind}"
                                                          NavigatorRelay="{Binding Path=BigBlindModel}">

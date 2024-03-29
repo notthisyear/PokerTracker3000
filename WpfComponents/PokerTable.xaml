@@ -627,7 +627,7 @@
                         <TextBlock.Text>
                             <MultiBinding Converter="{StaticResource valueDisplayConverter}">
                                 <Binding Path="ViewModel.SelectedSpot.BuyInOrAddOnAmount" />
-                                <Binding Path="ViewModel.CurrencyType" />
+                                <Binding Path="ViewModel.GameSettings.CurrencyType" />
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
