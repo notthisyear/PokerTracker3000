@@ -13,7 +13,8 @@ namespace PokerTracker3000.GameSession
         {
             None,
             GameStages,
-            ChangeDefaultAddOnAmount
+            ChangeDefaultAddOnAmount,
+            ChangeDefaultBuyInAmount
         };
 
         #region Public properties
@@ -323,7 +324,18 @@ namespace PokerTracker3000.GameSession
                             _focusManager.SideMenuEditOptionSelected();
                         }
                     },
-                    new() { Id = 6, OptionText = "Buy-in amount", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
+                    new()
+                    {
+                        Id = 6,
+                        OptionText = "Buy-in amount",
+                        IsSubOption = true,
+                        DescriptionText = "Change default buy-in amount",
+                        OptionAction = (_) =>
+                        {
+                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeDefaultBuyInAmount;
+                            _focusManager.SideMenuEditOptionSelected();
+                        }
+                    },
                     new() { Id = 7, OptionText = "Stage length", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
                     new() { Id = 8, OptionText = "Reset all amounts", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" }
                 ],

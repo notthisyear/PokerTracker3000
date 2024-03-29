@@ -20,7 +20,9 @@
             <editgameoptions:EditGameStagesControl x:Key="editGameStages"
                                                    SessionManager="{Binding Path=ViewModel}"/>
             <editgameoptions:ChangeAddOnAmountControl x:Key="changeAddOnAmount"
-                                       SessionManager="{Binding Path=ViewModel}"/>
+                                                      SessionManager="{Binding Path=ViewModel}"/>
+            <editgameoptions:ChangeBuyInAmountControl x:Key="changeBuyInAmount"
+                                                      SessionManager="{Binding Path=ViewModel}"/>
             <Storyboard x:Key="animateCoffeeMug"
                         PresentationOptions:Freeze="True"
                         RepeatBehavior="Forever"
@@ -29,7 +31,6 @@
                     <LinearDoubleKeyFrame KeyTime="00:00:0.0" Value="0.2" />
                     <LinearDoubleKeyFrame KeyTime="00:00:5.0" Value="0.7" />
                 </DoubleAnimationUsingKeyFrames>
-
                 <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
                     <EasingDoubleKeyFrame Value="0.95"
                                           KeyTime="0:0:0.0">
@@ -44,7 +45,6 @@
                         </EasingDoubleKeyFrame.EasingFunction>
                     </EasingDoubleKeyFrame>
                 </DoubleAnimationUsingKeyFrames>
-
                 <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
                     <EasingDoubleKeyFrame Value="0.95"
                                KeyTime="0:0:0.0">
@@ -661,9 +661,6 @@
                     <Setter Property="Opacity" Value="0" />
                     <Setter Property="Content" Value="{x:Null}" />
                     <Style.Triggers>
-                        <!-- FIXME: Currently, the fade-out animation won't work properly as
-                                    the content is cleared as soon as the enum value changes. 
-                                    Maybe a custom attached property could solve this...? -->
                         <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
                                      Value="{x:Static session:SideMenuViewModel+GameEditOption.GameStages}">
                             <DataTrigger.Setters>
@@ -675,6 +672,12 @@
                                      Value="{x:Static session:SideMenuViewModel+GameEditOption.ChangeDefaultAddOnAmount}">
                             <DataTrigger.Setters>
                                 <Setter Property="Content" Value="{StaticResource changeAddOnAmount}" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
+                                     Value="{x:Static session:SideMenuViewModel+GameEditOption.ChangeDefaultBuyInAmount}">
+                            <DataTrigger.Setters>
+                                <Setter Property="Content" Value="{StaticResource changeBuyInAmount}" />
                             </DataTrigger.Setters>
                         </DataTrigger>
 

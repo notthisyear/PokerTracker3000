@@ -76,7 +76,7 @@ namespace PokerTracker3000.GameSession
         public decimal DefaultBuyInAmount
         {
             get => _defaultBuyInAmount;
-            private set => SetProperty(ref _defaultBuyInAmount, value);
+            set => SetProperty(ref _defaultBuyInAmount, value);
         }
 
         public decimal DefaultAddOnAmount
@@ -356,7 +356,8 @@ namespace PokerTracker3000.GameSession
                                 ButtonEvent?.Invoke(this, new() { ButtonEvent = eventType });
                             }
                         }
-                        else if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultAddOnAmount)
+                        else if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultAddOnAmount ||
+                                 CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultBuyInAmount)
                         {
                             ButtonEvent?.Invoke(this, new() { ButtonEvent = eventType });
                         }

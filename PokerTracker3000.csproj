@@ -71,6 +71,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="WpfComponents\EditGameOptions\ChangeBuyInAmountControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WpfComponents\EditGameOptions\ChangeAddOnAmountControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
