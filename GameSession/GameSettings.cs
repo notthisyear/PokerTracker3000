@@ -1,4 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.Generic;
+using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using PokerTracker3000.Common.FileUtilities;
 using PokerTracker3000.GameComponents;
 
 namespace PokerTracker3000.GameSession
@@ -14,6 +19,7 @@ namespace PokerTracker3000.GameSession
         private int _defaultStageLengthSeconds = 20 * 60;
         #endregion
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public CurrencyType CurrencyType
         {
             get => _currencyType;
@@ -37,6 +43,35 @@ namespace PokerTracker3000.GameSession
             get => _defaultStageLengthSeconds;
             set => SetProperty(ref _defaultStageLengthSeconds, value);
         }
+        #endregion
+
+        #region Private fields
+        private record GameSetup(GameSettings Settings, List<GameStage> Stages);
+        #endregion
+
+        #region Public methods
+
+        public bool TrySave(GameStagesManager stageManager, string filePath, out string resultMessage)
+        {
+            List<GameStage> stages = [];
+            if (stageManager.TryGetStageByIndex(0, out var stage))
+            {
+                stages.Add(stage!);
+                while (stageManager.TryGetNextStage(stage!, out var next))
+                {
+                    stages.Add(next!);
+                    stage = next;
+                }
+            }
+
+            var setup = new GameSetup(this, stages);
+            var (success, fullPath, e) = setup.SerializeWriteToJsonFile(filePath);
+            resultMessage = success ? $"Settings saved to '{Path.GetFileName(fullPath)}'!" : $"Save failed - {e!.Message}";
+            return success;
+        }
+
+        public static GameSettings LoadFromFile()
+            => new();
         #endregion
     }
 }

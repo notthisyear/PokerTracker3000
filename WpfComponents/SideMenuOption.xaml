@@ -84,7 +84,7 @@
             <ItemsControl ItemsSource="{Binding Path=OptionModel.SubOptions}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <components:SideMenuOption OptionModel="{Binding Path=.}"/>
+                        <components:SideMenuOption OptionModel="{Binding Path=.}" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

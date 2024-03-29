@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Newtonsoft.Json;
 
 namespace PokerTracker3000.GameSession
 {
@@ -45,6 +46,7 @@ namespace PokerTracker3000.GameSession
             set => SetProperty(ref _lengthSeconds, value);
         }
 
+        [JsonIgnore]
         public int LengthSecondsRemaining
         {
             get => _lengthSecondsRemaining;
@@ -56,6 +58,7 @@ namespace PokerTracker3000.GameSession
             LengthSecondsRemaining = LengthSeconds;
         }
 
+        [JsonIgnore]
         public string Name => $"Stage {Number}";
         #endregion
     }

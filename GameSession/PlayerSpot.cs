@@ -1,5 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Ookii.Dialogs.Wpf;
+using PokerTracker3000.Common;
 
 namespace PokerTracker3000.GameSession
 {
@@ -19,6 +21,13 @@ namespace PokerTracker3000.GameSession
             Title = "Select player image",
             Multiselect = false,
             Filter = "Image files (*.png, *.jpg, *.jpeg, *.bmp)|*.png;*.jpg;*.jpeg;*.bmp|All files (*.*)|*.*"
+        };
+        private static readonly VistaSaveFileDialog s_savePlayerDialog = new()
+        {
+            Title = "Select file name",
+            AddExtension = true,
+            DefaultExt = "json",
+            Filter = "JSON file (*.json)|*.json"
         };
         #endregion
 
@@ -91,6 +100,19 @@ namespace PokerTracker3000.GameSession
             {
                 // TODO: Make a nice image loader dialog that supports cropping the selected image
                 PlayerData.Information.PathToImage = s_loadImageDialog.FileName;
+            }
+        }
+
+        public void SavePlayer()
+        {
+            if (PlayerData != default && s_savePlayerDialog.ShowDialog() == true)
+            {
+                var (s, e) = PlayerData.Information.SerializeToJsonString(convertPascalCaseToSnakeCase: true, indent: true);
+                if (e != default)
+                    return;
+
+                var path = Path.ChangeExtension(s_savePlayerDialog.FileName, s_savePlayerDialog.DefaultExt);
+                _ = new FileTextWriter(s!, path);
             }
         }
 

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PokerTracker3000.GameComponents;
+using PokerTracker3000.Common.FileUtilities;
 using PokerTracker3000.Interfaces;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
@@ -50,6 +51,8 @@ namespace PokerTracker3000.GameSession
             new(PlayerEditOption.EditOption.ChangeName, isSelected: true),
             new(PlayerEditOption.EditOption.ChangeImage),
             new(PlayerEditOption.EditOption.Move),
+            new(PlayerEditOption.EditOption.Load),
+            new(PlayerEditOption.EditOption.Save),
         ];
 
         public PlayerSpot? SelectedSpot
@@ -103,6 +106,9 @@ namespace PokerTracker3000.GameSession
         private readonly PlayerEditOption _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
+
+        private record PlayerConfiguration(int SpotIndex, PlayerModel.PlayerInformation PlayerInformation);
+        private record TableConfiguration(List<PlayerConfiguration> PlayerConfigurations);
         #endregion
 
         public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
@@ -128,6 +134,8 @@ namespace PokerTracker3000.GameSession
                     new(X: 0, Y: 1),
                     new(X: 1, Y: 1),
                     new(X: 0, Y: 2),
+                    new(X: 1, Y: 2),
+                    new(X: 0, Y: 3),
                 ]);
             _addOnOrBuyInNavigationId = NavigationManager.RegisterNavigation(
                 [
@@ -186,6 +194,31 @@ namespace PokerTracker3000.GameSession
 
             LayoutMightHaveChangedEvent?.Invoke(this, PlayerSpots.Where(x => x.HasPlayerData).Count());
         }
+
+        public bool TrySaveGameSettings(string filePath, out string resultMessage)
+            => GameSettings.TrySave(StageManager, filePath, out resultMessage);
+
+        public bool TrySaveTableConfiguration(string filePath, out string resultMessage)
+        {
+            resultMessage = string.Empty;
+            var configs = new List<PlayerConfiguration>();
+            foreach (var spot in PlayerSpots)
+            {
+                if (spot.HasPlayerData)
+                    configs.Add(new(spot.SpotIndex, spot.PlayerData!.Information));
+            }
+
+            if (configs.Count == 0)
+            {
+                resultMessage = "Save failed - no players";
+                return false;
+            }
+
+            var tableConfiguration = new TableConfiguration(configs);
+            var (success, path, e) = tableConfiguration.SerializeWriteToJsonFile(filePath);
+            resultMessage = success ? $"Configuration saved to '{Path.GetFileName(path)}'!" : $"Save failed - {e!.Message}";
+            return success;
+        }
         #endregion
 
         #region Private methods
@@ -230,6 +263,10 @@ namespace PokerTracker3000.GameSession
                         activeSpot.ChangeImage();
                         // TODO: When there's a nice image picker dialog, this line
                         //       will have to change
+                        return MainWindowFocusManager.FocusArea.PlayerInfo;
+
+                    case PlayerEditOption.EditOption.Save:
+                        activeSpot.SavePlayer();
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
                     case PlayerEditOption.EditOption.Eliminate:

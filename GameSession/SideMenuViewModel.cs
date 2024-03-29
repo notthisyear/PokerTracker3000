@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-
+using Ookii.Dialogs.Wpf;
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000.GameSession
@@ -18,11 +19,19 @@ namespace PokerTracker3000.GameSession
             ChangeDefaultStageLength,
         };
 
+        public enum LastSaveLoadResult
+        {
+            None,
+            Success,
+            Failure,
+        }
         #region Public properties
 
         #region Private fields
         private bool _isOpen = false;
         private int _currentStageNumber = 0;
+        private LastSaveLoadResult _lastSaveLoadStatus = LastSaveLoadResult.None;
+        private string _lastSaveLoadMessage = string.Empty;
         #endregion
 
         public bool IsOpen
@@ -35,6 +44,18 @@ namespace PokerTracker3000.GameSession
         {
             get => _currentStageNumber;
             private set => SetProperty(ref _currentStageNumber, value);
+        }
+
+        public LastSaveLoadResult LastSaveLoadStatus
+        {
+            get => _lastSaveLoadStatus;
+            private set => SetProperty(ref _lastSaveLoadStatus, value);
+        }
+
+        public string LastSaveLoadMessage
+        {
+            get => _lastSaveLoadMessage;
+            private set => SetProperty(ref _lastSaveLoadMessage, value);
         }
 
         public GameSessionManager SessionManager { get; }
@@ -56,8 +77,25 @@ namespace PokerTracker3000.GameSession
         private readonly int _nextStageOptionId;
         private readonly int _gameSettingsOptionId;
         private readonly int _editStagesOptionId;
+        private readonly int _loadSettingsOptionId;
+        private readonly int _loadGameSettingsOptionId;
+        private readonly int _loadPlayerConfigurationOptionId;
         private readonly int _resetStageOptionId;
         private readonly int _resetAllStagesOptionId;
+
+        private static readonly VistaSaveFileDialog s_saveSettingsDialog = new()
+        {
+            Title = "Save settings",
+            AddExtension = true,
+            DefaultExt = "json",
+            Filter = "JSON file (*.json)|*.json"
+        };
+        private static readonly VistaOpenFileDialog s_loadSettingsDialog = new()
+        {
+            Title = "Load settings file",
+            Multiselect = false,
+            Filter = "JSON file (*.json)|*.json|All files (*.*)|*.*"
+        };
         #endregion
 
         public SideMenuViewModel(MainWindowFocusManager focusManager, GameSessionManager sessionManager)
@@ -74,11 +112,14 @@ namespace PokerTracker3000.GameSession
             _startPauseGameOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Start game", StringComparison.InvariantCulture)).Id;
             _goToOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Go to...", StringComparison.InvariantCulture)).Id;
             _gameSettingsOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Game settings...", StringComparison.InvariantCulture)).Id;
+            _loadSettingsOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Load...", StringComparison.InvariantCulture)).Id;
             _previousStageOptionId = SideMenuOptions[_goToOptionId].SubOptions.First(x => x.OptionText.Equals("Previous stage", StringComparison.InvariantCulture)).Id;
             _nextStageOptionId = SideMenuOptions[_goToOptionId].SubOptions.First(x => x.OptionText.Equals("Next stage", StringComparison.InvariantCulture)).Id;
             _editStagesOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Edit stages", StringComparison.InvariantCulture)).Id;
             _resetStageOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Reset current stage", StringComparison.InvariantCulture)).Id;
             _resetAllStagesOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Reset all stages", StringComparison.InvariantCulture)).Id;
+            _loadGameSettingsOptionId = SideMenuOptions[_loadSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Game settings", StringComparison.InvariantCulture)).Id;
+            _loadPlayerConfigurationOptionId = SideMenuOptions[_loadSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Player configuration", StringComparison.InvariantCulture)).Id;
 
             _currentFocusOptionList = SideMenuOptions;
             SideMenuOptions.First(x => x.Id == _currentFocusOptionId).IsHighlighted = true;
@@ -199,6 +240,8 @@ namespace PokerTracker3000.GameSession
                         SessionManager.Clock.Start();
                     }
                     SideMenuOptions[_gameSettingsOptionId].SubOptions[_editStagesOptionId].IsAvailable = !SessionManager.Clock.IsRunning;
+                    SideMenuOptions[_loadSettingsOptionId].SubOptions[_loadGameSettingsOptionId].IsAvailable = !SessionManager.Clock.IsRunning;
+                    SideMenuOptions[_loadSettingsOptionId].SubOptions[_loadPlayerConfigurationOptionId].IsAvailable = !SessionManager.Clock.IsRunning;
                 }
             });
             SideMenuOptions.Add(new()
@@ -266,11 +309,11 @@ namespace PokerTracker3000.GameSession
                 HasSubOptions = true,
                 SubOptions =
                 [
-                    new() { Id = 0, OptionText = "Edit poker chips", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
                     new()
                     {
-                        Id = 1,
+                        Id = 0,
                         OptionText = "Edit stages",
+                        DescriptionText = "Add, remove or change stages",
                         IsAvailable = !SessionManager.Clock.IsRunning,
                         UnavaliableDescriptionText = "Pause game to edit",
                         IsSubOption = true,
@@ -280,12 +323,51 @@ namespace PokerTracker3000.GameSession
                             _focusManager.SideMenuEditOptionSelected();
                         }
                     },
+                    new() { Id = 1, OptionText = "Edit poker chips", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
+                    new() { Id = 2, OptionText = "Pay-out ratios", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
                     new()
                     {
-                        Id = 2,
+                        Id = 3,
+                        OptionText = "Add-on amount",
+                        IsSubOption = true,
+                        DescriptionText = "Change default add-on amount",
+                        OptionAction = (_) =>
+                        {
+                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeDefaultAddOnAmount;
+                            _focusManager.SideMenuEditOptionSelected();
+                        }
+                    },
+                    new()
+                    {
+                        Id = 4,
+                        OptionText = "Buy-in amount",
+                        IsSubOption = true,
+                        DescriptionText = "Change default buy-in amount",
+                        OptionAction = (_) =>
+                        {
+                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeDefaultBuyInAmount;
+                            _focusManager.SideMenuEditOptionSelected();
+                        }
+                    },
+                    new()
+                    {
+                        Id = 5,
+                        OptionText = "Stage length",
+                        IsSubOption = true,
+                        DescriptionText = "Change default stage length",
+                        OptionAction = (_) =>
+                        {
+                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeDefaultStageLength;
+                            _focusManager.SideMenuEditOptionSelected();
+                        }
+                    },
+                    new()
+                    {
+                        Id = 6,
                         OptionText = "Reset current stage",
+                        DescriptionText = "Reset time for current stages",
                         IsAvailable = SessionManager.StageManager.CurrentStage != default,
-                        UnavaliableDescriptionText = "No stages",
+                        UnavaliableDescriptionText = "No stages added",
                         IsSubOption = true, OptionAction = (_) =>
                         {
                             SessionManager.StageManager.ResetCurrentStage();
@@ -298,8 +380,9 @@ namespace PokerTracker3000.GameSession
                     },
                     new()
                     {
-                        Id = 3,
+                        Id = 7,
                         OptionText = "Reset all stages",
+                        DescriptionText = "Reset time for all stages",
                         IsAvailable = SessionManager.StageManager.Stages.Any(),
                         UnavaliableDescriptionText = "No stages added",
                         IsSubOption = true, OptionAction = (_) =>
@@ -312,44 +395,7 @@ namespace PokerTracker3000.GameSession
                             }
                         }
                     },
-                    new() { Id = 4, OptionText = "Pay-out ratios", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
-                    new()
-                    {
-                        Id = 5,
-                        OptionText = "Add-on amount",
-                        IsSubOption = true,
-                        DescriptionText = "Change default add-on amount",
-                        OptionAction = (_) =>
-                        {
-                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeDefaultAddOnAmount;
-                            _focusManager.SideMenuEditOptionSelected();
-                        }
-                    },
-                    new()
-                    {
-                        Id = 6,
-                        OptionText = "Buy-in amount",
-                        IsSubOption = true,
-                        DescriptionText = "Change default buy-in amount",
-                        OptionAction = (_) =>
-                        {
-                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeDefaultBuyInAmount;
-                            _focusManager.SideMenuEditOptionSelected();
-                        }
-                    },
-                    new()
-                    {
-                        Id = 7,
-                        OptionText = "Stage length",
-                        IsSubOption = true,
-                        DescriptionText = "Change default stage length",
-                        OptionAction = (_) =>
-                        {
-                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeDefaultStageLength;
-                            _focusManager.SideMenuEditOptionSelected();
-                        }
-                    },
-                    new() { Id = 8, OptionText = "Reset all amounts", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" }
+                    new() { Id = 8, OptionText = "Reset all amounts", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
                 ],
             });
             SideMenuOptions.Add(new()
@@ -366,6 +412,93 @@ namespace PokerTracker3000.GameSession
             SideMenuOptions.Add(new()
             {
                 Id = 6,
+                OptionText = "Load...",
+                DescriptionText = "Load settings or players",
+                HasSubOptions = true,
+                SubOptions = [
+                    new()
+                    {
+                        Id = 0,
+                        OptionText = "Game settings",
+                        DescriptionText = "Load game settings",
+                        IsAvailable = !SessionManager.Clock.IsRunning,
+                        UnavaliableDescriptionText = "Pause game to load",
+                        IsSubOption = true,
+                        OptionAction = (_) =>
+                        {
+                        }
+                    },
+                    new()
+                    {
+                        Id = 1,
+                        OptionText = "Player configuration",
+                        DescriptionText = "Load player configuration",
+                        IsAvailable = !SessionManager.Clock.IsRunning,
+                        UnavaliableDescriptionText = "Pause game to load",
+                        IsSubOption = true,
+                        OptionAction = (_) =>
+                        {
+                        }
+                    },
+                ]
+            });
+            SideMenuOptions.Add(new()
+            {
+                Id = 7,
+                OptionText = "Save...",
+                DescriptionText = "Save settings or players",
+                HasSubOptions = true,
+                SubOptions =
+                [
+                    new()
+                    {
+                        Id = 0,
+                        OptionText = "Game settings",
+                        DescriptionText = "Save game settings",
+                        IsSubOption = true,
+                        OptionAction = (_) =>
+                        {
+                            s_saveSettingsDialog.Title = "Save game settings";
+                            if (s_saveSettingsDialog.ShowDialog() == true)
+                            {
+                                LastSaveLoadStatus = SessionManager.TrySaveGameSettings(s_saveSettingsDialog.FileName, out var resultMessage) ?
+                                LastSaveLoadResult.Success : (string.IsNullOrEmpty(resultMessage) ? LastSaveLoadResult.None : LastSaveLoadResult.Failure);
+                                LastSaveLoadMessage = resultMessage;
+                                Task.Run(() =>
+                                {
+                                    Task.Delay(3000).Wait();
+                                    LastSaveLoadStatus = LastSaveLoadResult.None;
+                                });
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Id = 1,
+                        OptionText = "Table configuration",
+                        DescriptionText = "Save table configuration",
+                        IsSubOption = true,
+                        OptionAction = (_) =>
+                        {
+                            s_saveSettingsDialog.Title = "Save table configuration";
+                            if (s_saveSettingsDialog.ShowDialog() == true)
+                            {
+                                LastSaveLoadStatus = SessionManager.TrySaveTableConfiguration(s_saveSettingsDialog.FileName, out var resultMessage) ?
+                                LastSaveLoadResult.Success : (string.IsNullOrEmpty(resultMessage) ? LastSaveLoadResult.None : LastSaveLoadResult.Failure);
+                                LastSaveLoadMessage = resultMessage;
+                                Task.Run(() =>
+                                {
+                                    Task.Delay(3000).Wait();
+                                    LastSaveLoadStatus = LastSaveLoadResult.None;
+                                });
+                            }
+                        }
+                    },
+                ]
+            });
+            SideMenuOptions.Add(new()
+            {
+                Id = 8,
                 OptionText = "Quit",
                 DescriptionText = "Quit PokerTracker3000",
             });

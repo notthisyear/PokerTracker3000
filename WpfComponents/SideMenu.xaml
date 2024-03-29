@@ -1,7 +1,8 @@
 ﻿<UserControl x:Class="PokerTracker3000.WpfComponents.SideMenu"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents">
+             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+             xmlns:session="clr-namespace:PokerTracker3000.GameSession">
 
     <Grid       DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
                 Margin="20,0,0,0">
@@ -18,10 +19,12 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="5*" />
+            <RowDefinition Height="30" />
             <RowDefinition Height="20" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
+        <!-- Options -->
         <ItemsControl   Grid.Row="1"
                         VerticalAlignment="Center"
                         ItemsSource="{Binding Path=ViewModel.SideMenuOptions}">
@@ -36,16 +39,51 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
+        <!-- Save/load status -->
+        <TextBlock Grid.Row="2">
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="HorizontalAlignment" Value="Left" />
+                    <Setter Property="FontSize" Value="10" />
+                    <Setter Property="TextWrapping" Value="Wrap" />
+                    <Setter Property="Opacity" Value="0" />
+                    <Setter Property="Text" Value="{Binding Path=ViewModel.LastSaveLoadMessage}" />
+                    <!-- Note: There's a similar issue here to the FIXME in PokerTable.xaml. 
+                               When the LastSaveLoadStatus is set to none, the color will 
+                               flicker if the last error was an error message. -->
+                    <Setter Property="Foreground" Value="{StaticResource MainSuccessColor}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=ViewModel.LastSaveLoadStatus}" Value="{x:Static session:SideMenuViewModel+LastSaveLoadResult.Success}">
+                            <Setter Property="Foreground" Value="{StaticResource MainSuccessColor}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=ViewModel.LastSaveLoadStatus}" Value="{x:Static session:SideMenuViewModel+LastSaveLoadResult.Failure}">
+                            <Setter Property="Foreground" Value="{StaticResource MainErrorColor}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=ViewModel.LastSaveLoadStatus}" Value="{x:Static session:SideMenuViewModel+LastSaveLoadResult.None}">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
         <!-- Game progress panel -->
-        <Separator Grid.Row="2"
+        <Separator Grid.Row="3"
                    Margin="0,0,20,0"/>
-        <Grid Grid.Row="3"
+
+        <Grid Grid.Row="4"
               Margin="0,0,0,20"
               VerticalAlignment="Stretch"
               HorizontalAlignment="Stretch">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*" />
+                <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
@@ -145,11 +183,26 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <!-- Est. finish time -->
+            <!-- Total -->
             <TextBlock Style="{StaticResource gameProgressLabel}"
                        Grid.Row="3"
+                       Text="Money in the pot:"/>
+            <TextBlock Style="{StaticResource gameProgressData}"
+                       Grid.Row="3"
+                       Grid.Column="1">
+                <TextBlock.Text>
+                    <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                        <Binding Path="ViewModel.SessionManager.TotalAmountInPot" />
+                        <Binding Path="ViewModel.SessionManager.GameSettings.CurrencyType" />
+                    </MultiBinding>
+                </TextBlock.Text>
+            </TextBlock>
+
+            <!-- Est. finish time -->
+            <TextBlock Style="{StaticResource gameProgressLabel}"
+                       Grid.Row="4"
                        Text="Est. finish time:"/>
-            <TextBlock Grid.Row="3"
+            <TextBlock Grid.Row="4"
                        Grid.Column="1"
                        Text="{Binding Path=ViewModel.SessionManager.StageManager.SecondsUntilEnd, Converter={StaticResource secondsToTimestampConverter}}">
                 <TextBlock.Style>
@@ -163,7 +216,7 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
-            <TextBlock Grid.Row="3"
+            <TextBlock Grid.Row="4"
                        Grid.Column="1"
                        Text="N/a">
                 <TextBlock.Style>
