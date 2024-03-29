@@ -339,7 +339,8 @@ namespace PokerTracker3000.GameSession
                             }
                         }
                         else if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultAddOnAmount ||
-                                 CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultBuyInAmount)
+                                 CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultBuyInAmount ||
+                                 CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultStageLength)
                         {
                             ButtonEvent?.Invoke(this, new() { ButtonEvent = eventType });
                         }

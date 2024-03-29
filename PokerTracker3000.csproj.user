@@ -42,6 +42,9 @@
     <Page Update="MainWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="WpfComponents\EditGameOptions\ChangeStageLengthControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="WpfComponents\EditGameOptions\ChangeBuyInAmountControl.xaml">
       <SubType>Designer</SubType>
     </Page>

@@ -35,6 +35,7 @@
 
             <Style x:Key="timeUnitText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                 <Setter Property="VerticalAlignment" Value="Bottom" />
+                <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize, Converter={StaticResource scaleNumberConverter}, ConverterParameter=/2}" />
                 <Setter Property="Margin" Value="2,0,10,2" />
             </Style>
         </Grid.Resources>
@@ -105,7 +106,7 @@
             <TextBlock FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize, Converter={StaticResource scaleNumberConverter}, ConverterParameter=-2}"
                        VerticalAlignment="Bottom"
                        Foreground="{StaticResource MainTextColor}"
-                       Margin="20,0,0,0">
+                       Margin="10,0,0,0">
                 <TextBlock.Text>
                     <MultiBinding Converter="{StaticResource valueDisplayConverter}">
                         <Binding Path="Currency" />
