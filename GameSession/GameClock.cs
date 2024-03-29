@@ -73,11 +73,12 @@ namespace PokerTracker3000.GameSession
             _tickClockTimer.Change(Timeout.Infinite, Timeout.Infinite);
             NumberOfSeconds = 0;
         }
-        public void RegisterCallbackOnTimeLeft(int trigger, Action<GameClock> action)
+
+        public void RegisterCallbackOnSecondsLeft(int triggerSeconds, Action<GameClock> action)
         {
-            if (!_callbacksOnTimeLeft.TryGetValue(trigger, out var actions))
-                _callbacksOnTimeLeft.Add(trigger, []);
-            _callbacksOnTimeLeft[trigger].Add(action);
+            if (!_callbacksOnTimeLeft.TryGetValue(triggerSeconds, out var actions))
+                _callbacksOnTimeLeft.Add(triggerSeconds, []);
+            _callbacksOnTimeLeft[triggerSeconds].Add(action);
         }
 
         public void RegisterCallbackOnTick(Action action)
@@ -115,7 +116,7 @@ namespace PokerTracker3000.GameSession
             if (!_pauseOnNextTick)
             {
                 _ticksOnLastFire = DateTime.UtcNow.Ticks;
-                _tickClockTimer.Change(Math.Min(1, _ticksUntilNextDecrease < (TickPeriodMs * TicksPerMillisecond) ? (_ticksUntilNextDecrease / TicksPerMillisecond) : TickPeriodMs), Timeout.Infinite);
+                _tickClockTimer.Change(Math.Max(1, _ticksUntilNextDecrease < (TickPeriodMs * TicksPerMillisecond) ? (_ticksUntilNextDecrease / TicksPerMillisecond) : TickPeriodMs), Timeout.Infinite);
             }
             else
             {

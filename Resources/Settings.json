@@ -2,5 +2,6 @@
     "client_id": "36967dcbe7e64a6e923e03c2eff567e2",
     "local_http_listener_port": 3000,
     "pkce_authorization_verifier_length": 128,
-    "default_player_image_path": "default_player.jpg"
+    "default_player_image_path": "default_player.jpg",
+    "riff_sound_effect_path": "blues_riff.wav"
 }

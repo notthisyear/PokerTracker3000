@@ -46,7 +46,7 @@ namespace PokerTracker3000.ViewModels
             _settings = settings;
             _focusManager = focusManager;
 
-            SessionManager = new(settings.DefaultPlayerImagePath, _focusManager);
+            SessionManager = new(settings.DefaultPlayerImagePath, settings.RiffSoundEffectPath, _focusManager);
             SideMenuViewModel = new(focusManager, SessionManager);
 
             // SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);

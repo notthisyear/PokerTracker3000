@@ -109,13 +109,13 @@ namespace PokerTracker3000.GameSession
         private readonly PlayerEditOption _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
-
+        private readonly AudioManager _audioManager;
         private record PlayerConfiguration(int SpotIndex, PlayerModel PlayerModel);
 
         private record TableConfiguration(List<PlayerConfiguration> PlayerConfigurations);
         #endregion
 
-        public GameSessionManager(string pathToDefaultPlayerImage, MainWindowFocusManager focusManager)
+        public GameSessionManager(string pathToDefaultPlayerImage, string pathToRiffEffect, MainWindowFocusManager focusManager)
         {
             FocusManager = focusManager;
             GameSettings = new();
@@ -166,6 +166,7 @@ namespace PokerTracker3000.GameSession
 
             Clock = new();
             StageManager = new(Clock, GameSettings);
+            _audioManager = new(pathToRiffEffect, Clock);
         }
 
         #region Public methods

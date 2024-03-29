@@ -26,6 +26,7 @@ namespace PokerTracker3000.Common
                 throw e;
 
             app!.DefaultPlayerImagePath = GetFullPathToResource(app!.DefaultPlayerImagePath, subfolder: "Images");
+            app!.RiffSoundEffectPath = GetFullPathToResource(app!.RiffSoundEffectPath);
             s_appSettings = app!;
             s_isInitialized = true;
         }
@@ -49,5 +50,7 @@ namespace PokerTracker3000.Common
         public int PkceAuthorizationVerifierLength { get; init; }
 
         public string DefaultPlayerImagePath { get; set; } = string.Empty;
+
+        public string RiffSoundEffectPath { get; set; } = string.Empty;
     }
 }

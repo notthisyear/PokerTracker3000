@@ -84,7 +84,7 @@ namespace PokerTracker3000.GameSession
                     CurrentStage.LengthSecondsRemaining--;
             });
 
-            _clock.RegisterCallbackOnTimeLeft(0, (clock) =>
+            _clock.RegisterCallbackOnSecondsLeft(0, (clock) =>
             {
                 if (CurrentStage == default)
                     return;
