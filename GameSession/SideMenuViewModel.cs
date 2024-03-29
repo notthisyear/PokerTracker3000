@@ -33,6 +33,7 @@ namespace PokerTracker3000.GameSession
             get => _currentStageNumber;
             private set => SetProperty(ref _currentStageNumber, value);
         }
+
         public GameSessionManager SessionManager { get; }
 
         public List<SideMenuOptionModel> SideMenuOptions { get; }
@@ -45,7 +46,11 @@ namespace PokerTracker3000.GameSession
         private readonly Stack<List<SideMenuOptionModel>> _currentFocusParentOptionListStack;
         private readonly List<(SideMenuOptionModel target, Action<SideMenuOptionModel> action)> _onOpenCallbacks;
         private List<SideMenuOptionModel> _currentFocusOptionList;
+
         private readonly int _startPauseGameOptionId;
+        private readonly int _goToOptionId;
+        private readonly int _previousStageOptionId;
+        private readonly int _nextStageOptionId;
         private readonly int _gameSettingsOptionId;
         private readonly int _editStagesOptionId;
         private readonly int _resetStageOptionId;
@@ -64,7 +69,10 @@ namespace PokerTracker3000.GameSession
             InitializeOptionsList();
 
             _startPauseGameOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Start game", StringComparison.InvariantCulture)).Id;
+            _goToOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Go to...", StringComparison.InvariantCulture)).Id;
             _gameSettingsOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Game settings...", StringComparison.InvariantCulture)).Id;
+            _previousStageOptionId = SideMenuOptions[_goToOptionId].SubOptions.First(x => x.OptionText.Equals("Previous stage", StringComparison.InvariantCulture)).Id;
+            _nextStageOptionId = SideMenuOptions[_goToOptionId].SubOptions.First(x => x.OptionText.Equals("Next stage", StringComparison.InvariantCulture)).Id;
             _editStagesOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Edit stages", StringComparison.InvariantCulture)).Id;
             _resetStageOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Reset current stage", StringComparison.InvariantCulture)).Id;
             _resetAllStagesOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Reset all stages", StringComparison.InvariantCulture)).Id;
@@ -146,7 +154,11 @@ namespace PokerTracker3000.GameSession
             SessionManager.StageManager.CurrentStageChanged += (s, e) =>
             {
                 if (e != default)
+                {
                     CurrentStageNumber = e.Number;
+                    SideMenuOptions[_goToOptionId].SubOptions[_previousStageOptionId].IsAvailable = SessionManager.StageManager.TryGetStageByNumber(e.Number - 1, out _);
+                    SideMenuOptions[_goToOptionId].SubOptions[_nextStageOptionId].IsAvailable = SessionManager.StageManager.TryGetStageByNumber(e.Number + 1, out _);
+                }
             };
             SessionManager.StageManager.AllStagesDone += (s, e) =>
             {
@@ -194,17 +206,32 @@ namespace PokerTracker3000.GameSession
                 HasSubOptions = true,
                 SubOptions =
                 [
-                    new() { Id = 0, OptionText = "Next stage", IsSubOption = true, OptionAction = (SideMenuOptionModel opt) =>
+                    new()
+                    {
+                        Id = 0,
+                        OptionText = "Next stage",
+                        IsAvailable = SessionManager.StageManager.Stages.Count > 1,
+                        UnavaliableDescriptionText = "No next stage",
+                        IsSubOption = true,
+                        OptionAction = (SideMenuOptionModel opt) =>
                     {
                         SessionManager.StageManager.TryGotoNextStage();
                     }},
-                    new() { Id = 1, OptionText = "Previous stage", IsSubOption = true, OptionAction = (SideMenuOptionModel opt) =>
+                    new()
+                    {
+                        Id = 1,
+                        OptionText = "Previous stage",
+                        IsAvailable = false,
+                        UnavaliableDescriptionText = "No previous stage",
+                        IsSubOption = true,
+                        OptionAction = (SideMenuOptionModel opt) =>
                     {
                         SessionManager.StageManager.TryGotoPreviousStage();
                     }},
                     new() { Id = 2, OptionText = "Stage...", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" }
                 ],
             });
+
             SideMenuOptionModel addPlayerOption = new()
             {
                 Id = 2,
@@ -228,7 +255,6 @@ namespace PokerTracker3000.GameSession
                 DescriptionText = "Removes all empty slots",
                 OptionAction = (_) => SessionManager.ConsolidateLayout(),
             });
-
             SideMenuOptions.Add(new()
             {
                 Id = 4,
@@ -342,6 +368,10 @@ namespace PokerTracker3000.GameSession
             SideMenuOptions[_startPauseGameOptionId].IsAvailable = hasStages;
             SideMenuOptions[_gameSettingsOptionId].SubOptions[_resetStageOptionId].IsAvailable = hasStages;
             SideMenuOptions[_gameSettingsOptionId].SubOptions[_resetAllStagesOptionId].IsAvailable = hasStages;
+
+            var currentStage = SessionManager.StageManager.CurrentStage;
+            SideMenuOptions[_goToOptionId].SubOptions[_previousStageOptionId].IsAvailable = currentStage != default && SessionManager.StageManager.TryGetStageByNumber(currentStage.Number - 1, out _);
+            SideMenuOptions[_goToOptionId].SubOptions[_nextStageOptionId].IsAvailable = currentStage != default && SessionManager.StageManager.TryGetStageByNumber(currentStage.Number + 1, out _);
         }
         #endregion
     }
