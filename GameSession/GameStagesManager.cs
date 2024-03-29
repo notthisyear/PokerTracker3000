@@ -56,23 +56,45 @@ namespace PokerTracker3000.GameSession
         #region Events
         public event EventHandler? StageAdded;
         public event EventHandler? StageRemoved;
-        public event EventHandler<(GameStage? oldStage, GameStage? newStage)>? CurrentStageChanged;
+        public event EventHandler<GameStage>? CurrentStageChanged;
         public event EventHandler? AllStagesDone;
         #endregion
 
         #region Private fields
         private int _secondsInOtherStagesUntilPause;
         private int _secondsInOtherStagesUntilEnd;
+        private readonly GameClock _clock;
         private readonly List<GameStage> _stages;
         private readonly object _stagesAccessLock = new();
         private readonly int _defaultStageLengthSeconds = 10; // TODO: Should be editable
         #endregion
 
-        public GameStagesManager()
+        public GameStagesManager(GameClock clock)
         {
             Stages = [];
             _stages = [];
             BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
+            _clock = clock;
+
+            clock.RegisterCallbackOnTick(() =>
+            {
+                if (CurrentStage != default)
+                    CurrentStage.LengthSecondsRemaining--;
+            });
+
+            _clock.RegisterCallbackOnTimeLeft(0, (clock) =>
+            {
+                if (CurrentStage == default)
+                    return;
+
+                if (!TryGetNextStage(CurrentStage, out var nextStage))
+                {
+                    OnLastStage = false;
+                    AllStagesDone?.Invoke(this, EventArgs.Empty);
+                    return;
+                }
+                ChangeStage(nextStage!);
+            });
         }
 
         #region Public methods
@@ -149,7 +171,7 @@ namespace PokerTracker3000.GameSession
         {
             var stageName = string.Empty;
             lock (Stages)
-                stageName = index < Stages.Count ? Stages[index] : string.Empty;
+                stageName = index >= 0 && index < Stages.Count ? Stages[index] : string.Empty;
 
             stage = default;
             if (string.IsNullOrEmpty(stageName))
@@ -177,39 +199,22 @@ namespace PokerTracker3000.GameSession
                 ChangeStage(previousStage!);
         }
 
+        public void ResetCurrentStage()
+        {
+            if (CurrentStage != default)
+            {
+                CurrentStage.ResetStage();
+                _clock.UpdateNumberOfSeconds(CurrentStage.LengthSecondsRemaining);
+            }
+        }
+
         public void ResetAllStages()
         {
             foreach (var stage in _stages)
                 stage.ResetStage();
 
             if (CurrentStage != default)
-                CurrentStageChanged?.Invoke(this, (default, CurrentStage));
-        }
-
-        public void SetClockCallbacks(GameClock clock)
-        {
-            clock.RegisterCallbackOnTimeLeft(0, (clock) =>
-            {
-                if (CurrentStage == default)
-                    return;
-
-                if (!TryGetNextStage(CurrentStage, out var nextStage))
-                {
-                    var lastStage = CurrentStage;
-                    OnLastStage = false;
-                    CurrentStage = default;
-                    AllStagesDone?.Invoke(this, EventArgs.Empty);
-                    CurrentStageChanged?.Invoke(this, (lastStage, default));
-                    return;
-                }
-                ChangeStage(nextStage!);
-            });
-
-            clock.RegisterCallbackOnTick(() =>
-            {
-                if (CurrentStage != default)
-                    CurrentStage.LengthSecondsRemaining--;
-            });
+                _clock.UpdateNumberOfSeconds(CurrentStage.LengthSecondsRemaining);
         }
 
         public static int GetIndexForNumber(int number)
@@ -219,11 +224,11 @@ namespace PokerTracker3000.GameSession
         #region Private methods
         private void ChangeStage(GameStage newStage)
         {
-            var lastStage = CurrentStage;
             CurrentStage = newStage!;
             CalculateTimeUntilPauseAndEnd(CurrentStage);
             OnLastStage = CurrentStage.Number == Stages.Count;
-            CurrentStageChanged?.Invoke(this, (lastStage, CurrentStage));
+            _clock.UpdateNumberOfSeconds(CurrentStage.LengthSecondsRemaining);
+            CurrentStageChanged?.Invoke(this, CurrentStage);
         }
 
         private void StagePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -240,7 +245,7 @@ namespace PokerTracker3000.GameSession
                 if (sender is GameStage stage)
                 {
                     stage.ResetStage();
-                    CurrentStageChanged?.Invoke(this, (default, stage));
+                    _clock.UpdateNumberOfSeconds(stage.LengthSecondsRemaining);
                 }
                 CalculateTimeUntilPauseAndEnd(CurrentStage);
             }

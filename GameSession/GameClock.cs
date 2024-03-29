@@ -43,23 +43,20 @@ namespace PokerTracker3000.GameSession
         private bool _disposedValue;
         #endregion
 
-        public GameClock(GameStagesManager stageManager)
+        public GameClock()
         {
             _tickClockTimer = new(TickClock, default, Timeout.Infinite, Timeout.Infinite);
-            stageManager.CurrentStageChanged += (s, e) =>
-            {
-                if (e.oldStage != default)
-                    e.oldStage.LengthSecondsRemaining = NumberOfSeconds;
-                if (e.newStage != default)
-                    NumberOfSeconds = e.newStage!.LengthSeconds;
-            };
+        }
+
+        public void UpdateNumberOfSeconds(int numberOfSeconds)
+        {
+            if (numberOfSeconds > 0)
+                NumberOfSeconds = numberOfSeconds;
         }
 
         public void Start(int numberOfSeconds = -1)
         {
-            if (numberOfSeconds > 0)
-                NumberOfSeconds = numberOfSeconds;
-
+            UpdateNumberOfSeconds(numberOfSeconds);
             _ticksOnLastFire = DateTime.UtcNow.Ticks;
             _tickClockTimer.Change(TickPeriodMs, Timeout.Infinite);
             IsRunning = true;

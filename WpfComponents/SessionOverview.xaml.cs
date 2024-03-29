@@ -73,13 +73,13 @@ namespace PokerTracker3000.WpfComponents
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (e.newStage == default)
+                    if (e == default)
                     {
                         NextStage = default;
                         return;
                     }
 
-                    _ = StageManager.TryGetNextStage(e.newStage, out var stage);
+                    _ = StageManager.TryGetNextStage(e, out var stage);
                     NextStage = stage;
                 });
             };

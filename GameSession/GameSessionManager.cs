@@ -163,10 +163,8 @@ namespace PokerTracker3000.GameSession
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
 
-            StageManager = new();
-            Clock = new(StageManager);
-            StageManager.SetClockCallbacks(Clock);
-            StageManager.AllStagesDone += (s, e) => Clock.Stop();
+            Clock = new();
+            StageManager = new(Clock);
         }
 
         #region Public methods

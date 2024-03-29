@@ -84,6 +84,18 @@
                            Text="/"/>
                 <TextBlock Style="{StaticResource gameProgressData}"
                            Text="{Binding Path=ViewModel.SessionManager.StageManager.Stages.Count}"/>
+
+                <TextBlock Style="{StaticResource gameProgressData}"
+                           Margin="10,0,0,0"
+                           Text="("/>
+                <TextBlock Style="{StaticResource gameProgressData}"
+                           Text="{Binding Path=ViewModel.SessionManager.StageManager.CurrentStage.LengthSecondsRemaining, Converter={StaticResource secondsToTimeStringConverter}}"/>
+                <TextBlock Style="{StaticResource gameProgressData}"
+                           Text="/"/>
+                <TextBlock Style="{StaticResource gameProgressData}"
+                           Text="{Binding Path=ViewModel.SessionManager.StageManager.CurrentStage.LengthSeconds, Converter={StaticResource secondsToTimeStringConverter}}"/>
+                <TextBlock Style="{StaticResource gameProgressData}"
+                           Text=")" />
             </StackPanel>
             <TextBlock Grid.Row="1"
                        Grid.Column="1"
