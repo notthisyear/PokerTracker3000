@@ -360,7 +360,6 @@ namespace PokerTracker3000.GameSession
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
 
                     case PlayerEditOption.EditOption.BuyIn:
-                        SetOptionsFor(eliminatedPlayer: false);
                         SelectedSpot = activeSpot;
                         SelectedSpot.BuyInOrAddOnAmount = GameSettings.DefaultBuyInAmount;
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
@@ -382,6 +381,11 @@ namespace PokerTracker3000.GameSession
                     SelectedSpot.PlayerData.MoneyInThePot += SelectedSpot.BuyInOrAddOnAmount;
                     TotalAmountInPot += SelectedSpot.BuyInOrAddOnAmount;
                     SelectedSpot.BuyInOrAddOnAmount = 0;
+                    if (SelectedSpot.IsEliminated)
+                    {
+                        SelectedSpot.IsEliminated = false;
+                        SetOptionsFor(eliminatedPlayer: false);
+                    }
                     return true;
                 }
 
