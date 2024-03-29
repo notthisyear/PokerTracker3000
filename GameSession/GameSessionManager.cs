@@ -89,6 +89,8 @@ namespace PokerTracker3000.GameSession
         public NavigationManager NavigationManager { get; }
 
         public GameSettings GameSettings { get; }
+
+        public ChipManager ChipManager { get; }
         #endregion
 
         #region Events
@@ -117,8 +119,15 @@ namespace PokerTracker3000.GameSession
         {
             FocusManager = focusManager;
             GameSettings = new();
-
+            ChipManager = new();
             _pathToDefaultPlayerImage = pathToDefaultPlayerImage;
+
+            ChipManager.AddChip("#FFF8F8FF", "#FF000000", 1);
+            ChipManager.AddChip("#FFDE4235", "#FFDC7633", 5);
+            ChipManager.AddChip("#FF0A3E41", "#FF2DA38F", 25);
+            ChipManager.AddChip("#FF412DA3", "#FF1C8086", 100);
+            ChipManager.AddChip("#FF273243", "#FFEB674D", 500);
+
             for (var i = 0; i < NumberOfPlayerSpots; i++)
                 PlayerSpots.Add(new() { SpotIndex = i });
 

@@ -162,41 +162,25 @@
 
 
                     <!-- Poker chips -->
-                    <StackPanel HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Orientation="Vertical">
-                        <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                   Text="Chip value" />
-                        <components:PokerChip MainColor="GhostWhite"
-                                              AccentColor="Black"
-                                              ChipValue="1"
-                                              Margin="10"
-                                              Width="80"
-                                              Height="80"
-                                              RenderTransformOrigin="0.5,0.5">
-                            <components:PokerChip.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform ScaleX="1.2"
-                                                    ScaleY="1.2"/>
-                                    <TranslateTransform Y="-10" />
-                                </TransformGroup>
-                            </components:PokerChip.RenderTransform>
-                        </components:PokerChip>
-
-                        <components:PokerChip MainColor="IndianRed"
-                                              AccentColor="DarkRed"
-                                              ChipValue="5"
-                                              Margin="10"
-                                              Width="80"
-                                              Height="80"/>
-
-                        <components:PokerChip MainColor="DarkSlateGray"
-                                              AccentColor="DarkSeaGreen"
-                                              ChipValue="10"
-                                              Margin="10"
-                                              Width="80"
-                                              Height="80"/>
-                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Path=ViewModel.SessionManager.ChipManager.Chips}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <components:PokerChip MainColor="{Binding Path=MainColorHexString}"
+                                                      AccentColor="{Binding Path=AccentColorHexString}"
+                                                      ChipValue="{Binding Path=Value}"
+                                                      Margin="10"
+                                                      Width="80"
+                                                      Height="80"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </Border>
 
             </Grid>

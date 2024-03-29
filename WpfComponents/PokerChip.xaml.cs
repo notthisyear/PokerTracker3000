@@ -28,16 +28,16 @@ namespace PokerTracker3000.WpfComponents
             typeof(PokerChip),
             new FrameworkPropertyMetadata(Brushes.Blue, FrameworkPropertyMetadataOptions.AffectsRender));
 
-        public int ChipValue
+        public decimal ChipValue
         {
-            get => (int)GetValue(ChipValueProperty);
+            get => (decimal)GetValue(ChipValueProperty);
             set => SetValue(ChipValueProperty, value);
         }
         public static readonly DependencyProperty ChipValueProperty = DependencyProperty.Register(
             nameof(ChipValue),
-            typeof(int),
+            typeof(decimal),
             typeof(PokerChip),
-            new FrameworkPropertyMetadata(10, FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata((decimal)10, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public PokerChip()
         {
