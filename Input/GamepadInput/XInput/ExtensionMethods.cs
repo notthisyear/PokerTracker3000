@@ -11,7 +11,7 @@ namespace PokerTracker3000.GamepadInput.XInput
 
         public static XInputControllerType ToControllerType(this byte number)
              => !Enum.IsDefined(typeof(XInputControllerType), number) ? XInputControllerType.Undefined : (XInputControllerType)number;
-        
+
         public static XInputControllerSubtype ToControllerSubtype(this byte number)
             => !Enum.IsDefined(typeof(XInputControllerSubtype), number) ? XInputControllerSubtype.Undefined : (XInputControllerSubtype)number;
 
@@ -26,7 +26,7 @@ namespace PokerTracker3000.GamepadInput.XInput
             var flags = new List<XInputControllerFeatureFlag>();
             var numberAsEnum = (XInputControllerFeatureFlag)number;
             foreach (var f in Enum.GetValues<XInputControllerFeatureFlag>())
-            { 
+            {
                 if (numberAsEnum.HasFlag(f))
                     flags.Add(f);
             }
