@@ -69,6 +69,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="WpfComponents\EditGameOptions\ChangeAddOnAmountControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
   
   <ItemGroup>
     <None Update="Resources\Images\default_player.jpg">

@@ -86,6 +86,17 @@ namespace PokerTracker3000.WpfComponents
             typeof(NumericalScrollingEditor),
             new FrameworkPropertyMetadata(Mode.Money, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public int VerticalSpacing
+        {
+            get { return (int)GetValue(VerticalSpacingProperty); }
+            set { SetValue(VerticalSpacingProperty, value); }
+        }
+        public static readonly DependencyProperty VerticalSpacingProperty = DependencyProperty.Register(
+            nameof(VerticalSpacing),
+            typeof(int),
+            typeof(NumericalScrollingEditor),
+            new FrameworkPropertyMetadata(15, FrameworkPropertyMetadataOptions.AffectsRender));
+
         private static void IsSelectedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is NumericalScrollingEditor editor && e.OldValue is bool oldValue && e.NewValue is bool newValue && oldValue != newValue)
@@ -188,12 +199,6 @@ namespace PokerTracker3000.WpfComponents
         public NumericalScrollingEditor()
         {
             InitializeComponent();
-            Loaded += NumericalScrollingEditorLoaded;
-        }
-
-        private void NumericalScrollingEditorLoaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= NumericalScrollingEditorLoaded;
 
             _timeScrollers.Add((TensHourDigit, tensHourBox));
             _timeScrollers.Add((OnesHourDigit, onesHourBox));
@@ -215,6 +220,12 @@ namespace PokerTracker3000.WpfComponents
                 Digits.Last().IsSelected = true;
             }
 
+            Loaded += NumericalScrollingEditorLoaded;
+        }
+
+        private void NumericalScrollingEditorLoaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= NumericalScrollingEditorLoaded;
             SetDigitsFromCurrentValue();
 
             if (NavigatorRelay != default)
@@ -227,7 +238,6 @@ namespace PokerTracker3000.WpfComponents
                         var isUpOrDown = e == InputEvent.NavigationDirection.Up || e == InputEvent.NavigationDirection.Down;
                         if (isUpOrDown)
                         {
-                            // Note: It feels more natural to invert the direction here
                             selectedDigit.FireNavigationEvent(e);
                         }
                         else

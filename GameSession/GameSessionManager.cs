@@ -82,7 +82,7 @@ namespace PokerTracker3000.GameSession
         public decimal DefaultAddOnAmount
         {
             get => _defaultAddOnAmount;
-            private set => SetProperty(ref _defaultAddOnAmount, value);
+            set => SetProperty(ref _defaultAddOnAmount, value);
         }
 
         public bool TableFull
@@ -355,6 +355,10 @@ namespace PokerTracker3000.GameSession
                             {
                                 ButtonEvent?.Invoke(this, new() { ButtonEvent = eventType });
                             }
+                        }
+                        else if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultAddOnAmount)
+                        {
+                            ButtonEvent?.Invoke(this, new() { ButtonEvent = eventType });
                         }
                         return true;
 

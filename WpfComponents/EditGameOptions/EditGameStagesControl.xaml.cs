@@ -52,7 +52,9 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         #region Events
         public event EventHandler<InputEvent.NavigationDirection>? Navigate;
+#pragma warning disable CS0067
         public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
+#pragma warning restore CS0067
         #endregion
 
         #region Private fields
@@ -204,6 +206,9 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             SessionManager.Navigate += (s, e) =>
             {
+                if (SessionManager == default || SessionManager.CurrentGameEditOption != SideMenuViewModel.GameEditOption.GameStages)
+                    return;
+
                 if (!TrySelectStageIfNeeded())
                     return;
 
@@ -235,6 +240,9 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             };
             SessionManager.ButtonEvent += (s, e) =>
             {
+                if (SessionManager == default || SessionManager.CurrentGameEditOption != SideMenuViewModel.GameEditOption.GameStages)
+                    return;
+
                 if (!TrySelectStageIfNeeded())
                     return;
 

@@ -12,7 +12,8 @@ namespace PokerTracker3000.GameSession
         public enum GameEditOption
         {
             None,
-            GameStages
+            GameStages,
+            ChangeDefaultAddOnAmount
         };
 
         #region Public properties
@@ -310,9 +311,21 @@ namespace PokerTracker3000.GameSession
                         }
                     },
                     new() { Id = 4, OptionText = "Pay-out ratios", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
-                    new() { Id = 5, OptionText = "Add-on amount", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
+                    new()
+                    {
+                        Id = 5,
+                        OptionText = "Add-on amount",
+                        IsSubOption = true,
+                        DescriptionText = "Change default add-on amount",
+                        OptionAction = (_) =>
+                        {
+                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeDefaultAddOnAmount;
+                            _focusManager.SideMenuEditOptionSelected();
+                        }
+                    },
                     new() { Id = 6, OptionText = "Buy-in amount", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
-                    new() { Id = 7, OptionText = "Reset all amounts", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" }
+                    new() { Id = 7, OptionText = "Stage length", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
+                    new() { Id = 8, OptionText = "Reset all amounts", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" }
                 ],
             });
             SideMenuOptions.Add(new()

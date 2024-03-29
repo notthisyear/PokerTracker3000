@@ -19,6 +19,8 @@
         <Grid.Resources>
             <editgameoptions:EditGameStagesControl x:Key="editGameStages"
                                                    SessionManager="{Binding Path=ViewModel}"/>
+            <editgameoptions:ChangeAddOnAmountControl x:Key="changeAddOnAmount"
+                                       SessionManager="{Binding Path=ViewModel}"/>
             <Storyboard x:Key="animateCoffeeMug"
                         PresentationOptions:Freeze="True"
                         RepeatBehavior="Forever"
@@ -667,11 +669,25 @@
                             <DataTrigger.Setters>
                                 <Setter Property="Content" Value="{StaticResource editGameStages}" />
                             </DataTrigger.Setters>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
+                                     Value="{x:Static session:SideMenuViewModel+GameEditOption.ChangeDefaultAddOnAmount}">
+                            <DataTrigger.Setters>
+                                <Setter Property="Content" Value="{StaticResource changeAddOnAmount}" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+
+                        <!-- FIXME: Currently, the fade-out animation won't work properly as
+                                    the content is cleared as soon as the enum value changes.
+                                    Maybe a custom attached property could solve this...? -->
+                        <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
+                                     Value="{x:Static session:SideMenuViewModel+GameEditOption.None}">
                             <DataTrigger.EnterActions>
-                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
                             </DataTrigger.EnterActions>
                             <DataTrigger.ExitActions>
-                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
                             </DataTrigger.ExitActions>
                         </DataTrigger>
                     </Style.Triggers>

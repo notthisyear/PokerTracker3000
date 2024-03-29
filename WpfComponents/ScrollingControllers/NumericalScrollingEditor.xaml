@@ -9,7 +9,6 @@
             <Style x:Key="scrollerStyleBase" TargetType="{x:Type components:ScrollingSelectorBox}">
                 <Setter Property="WrapAtEnds" Value="True" />
                 <Setter Property="OptionTextAlignment" Value="Center" />
-                <Setter Property="VerticalSpacing" Value="15" />
                 <Setter Property="Visibility" Value="Collapsed" />
                 <Setter Property="ShowNextAndPreviousValue" Value="False" />
                 <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
@@ -17,6 +16,7 @@
             </Style>
 
             <Style x:Key="scrollerStyleMoney" TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleBase}">
+                <Setter Property="VerticalSpacing" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.VerticalSpacing}" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.IsSelected}" Value="True">
                         <Setter Property="Visibility" Value="Visible" />
@@ -30,6 +30,7 @@
 
             <Style x:Key="scrollerStyleTime" TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleBase}">
                 <Setter Property="Visibility" Value="Visible" />
+                <Setter Property="VerticalSpacing" Value="{Binding Path=VerticalSpacing}" />
             </Style>
 
             <Style x:Key="timeUnitText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
@@ -104,7 +105,7 @@
             <TextBlock FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize, Converter={StaticResource scaleNumberConverter}, ConverterParameter=-2}"
                        VerticalAlignment="Bottom"
                        Foreground="{StaticResource MainTextColor}"
-                       Margin="10,0,0,0">
+                       Margin="20,0,0,0">
                 <TextBlock.Text>
                     <MultiBinding Converter="{StaticResource valueDisplayConverter}">
                         <Binding Path="Currency" />
