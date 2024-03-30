@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using PokerTracker3000.Common;
+using PokerTracker3000.Common.Messages;
+using PokerTracker3000.Interfaces;
 using PokerTracker3000.ViewModels;
 using PokerTracker3000.WpfComponents;
 
@@ -25,7 +27,7 @@ namespace PokerTracker3000
         private const string SettingsFileName = "Settings.json";
 
         private readonly InputManager _inputManager;
-
+        private readonly IGameEventBus _eventBus;
         public MainWindow()
         {
             InitializeComponent();
@@ -33,9 +35,8 @@ namespace PokerTracker3000
 
             _inputManager = new();
             InitializeKeyboardMappings();
-
-            ViewModel = new(Settings.App, new());
-
+            _eventBus = new GameEventBus();
+            ViewModel = new(_eventBus, Settings.App, new());
             MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;
         }
 
@@ -55,7 +56,7 @@ namespace PokerTracker3000
                         WindowState = WindowState.Normal;
                         break;
                     case TitleBarButton.Close:
-                        ViewModel.NotifyWindowClosed();
+                        _eventBus.NotifyListeners(GameEventBus.EventType.ApplicationClosing, new ApplicationClosingMessage());
                         Close();
                         break;
                 };

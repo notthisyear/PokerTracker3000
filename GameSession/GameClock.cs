@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PokerTracker3000.Common;
+using PokerTracker3000.Common.Messages;
+using PokerTracker3000.Interfaces;
 
 namespace PokerTracker3000.GameSession
 {
@@ -33,6 +36,7 @@ namespace PokerTracker3000.GameSession
         private const long TicksPerMillisecond = 10000;
         private const long MillisecondsPerSecond = 1000;
 
+        private readonly IGameEventBus _eventBus;
         private readonly Timer _tickClockTimer;
         private readonly List<Action> _callbacksOnTick = [];
         private readonly Dictionary<int, List<Action<GameClock>>> _callbacksOnTimeLeft = [];
@@ -43,8 +47,9 @@ namespace PokerTracker3000.GameSession
         private bool _disposedValue;
         #endregion
 
-        public GameClock()
+        public GameClock(IGameEventBus eventBus)
         {
+            _eventBus = eventBus;
             _tickClockTimer = new(TickClock, default, Timeout.Infinite, Timeout.Infinite);
         }
 
@@ -60,12 +65,14 @@ namespace PokerTracker3000.GameSession
             _ticksOnLastFire = DateTime.UtcNow.Ticks;
             _tickClockTimer.Change(TickPeriodMs, Timeout.Infinite);
             IsRunning = true;
+            _eventBus.NotifyListeners(GameEventBus.EventType.GameStarted, new GameEventMessage());
         }
 
         public void Pause()
         {
             _pauseOnNextTick = true;
             IsRunning = false;
+            _eventBus.NotifyListeners(GameEventBus.EventType.GamePaused, new GameEventMessage());
         }
 
         public void Stop()
@@ -85,6 +92,7 @@ namespace PokerTracker3000.GameSession
         {
             _callbacksOnTick.Add(action);
         }
+
         private void TickClock(object? state = default)
         {
             var ticksNow = DateTime.UtcNow.Ticks;

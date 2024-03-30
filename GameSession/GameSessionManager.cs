@@ -5,6 +5,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common;
 using PokerTracker3000.Common.FileUtilities;
+using PokerTracker3000.Common.Messages;
 using PokerTracker3000.Interfaces;
 
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
@@ -109,24 +110,36 @@ namespace PokerTracker3000.GameSession
         private readonly PlayerEditOption _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
-        private readonly AudioManager _audioManager;
+        private readonly IGameEventBus _eventBus;
+
         private record PlayerConfiguration(int SpotIndex, PlayerModel PlayerModel);
 
         private record TableConfiguration(List<PlayerConfiguration> PlayerConfigurations);
         #endregion
 
-        public GameSessionManager(string pathToDefaultPlayerImage, string pathToRiffEffect, MainWindowFocusManager focusManager)
+        public GameSessionManager(IGameEventBus eventBus,
+            GameSettings settings,
+            MainWindowFocusManager focusManager,
+            GameStagesManager stagesManager,
+            ChipManager chipManager,
+            GameClock clock,
+            string pathToDefaultPlayerImage)
         {
+            _eventBus = eventBus;
+            GameSettings = settings;
             FocusManager = focusManager;
-            GameSettings = new();
-            ChipManager = new();
+            StageManager = stagesManager;
+            ChipManager = chipManager;
+            Clock = clock;
             _pathToDefaultPlayerImage = pathToDefaultPlayerImage;
 
+            // TODO: This should be handled in some other way
             ChipManager.AddChip("#FFF8F8FF", "#FF000000", 1);
             ChipManager.AddChip("#FFDE4235", "#FFDC7633", 5);
             ChipManager.AddChip("#FF0A3E41", "#FF2DA38F", 25);
             ChipManager.AddChip("#FF412DA3", "#FF1C8086", 100);
             ChipManager.AddChip("#FF273243", "#FFEB674D", 500);
+
 
             for (var i = 0; i < NumberOfPlayerSpots; i++)
                 PlayerSpots.Add(new() { SpotIndex = i });
@@ -163,10 +176,6 @@ namespace PokerTracker3000.GameSession
 
             RegisterFocusManagerCallbacks();
             InitializeSpots(8);
-
-            Clock = new();
-            StageManager = new(Clock, GameSettings);
-            _audioManager = new(pathToRiffEffect, Clock);
         }
 
         #region Public methods
@@ -342,6 +351,7 @@ namespace PokerTracker3000.GameSession
                     case PlayerEditOption.EditOption.Eliminate:
                         activeSpot.IsEliminated = true;
                         SetOptionsFor(eliminatedPlayer: true);
+                        Notify(PlayerEventMessage.Type.Eliminated, activeSpot.PlayerData!.Name, playerTotalAmount: activeSpot.PlayerData!.MoneyInThePot);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
                     case PlayerEditOption.EditOption.Remove:
@@ -388,8 +398,15 @@ namespace PokerTracker3000.GameSession
                 var currentOption = GetSelectedOptionIn(AddOnOrBuyInOptions);
                 if (currentOption.Option == PlayerEditOption.EditOption.Ok)
                 {
-                    SelectedSpot.PlayerData.MoneyInThePot += SelectedSpot.BuyInOrAddOnAmount;
                     TotalAmountInPot += SelectedSpot.BuyInOrAddOnAmount;
+                    SelectedSpot.PlayerData.MoneyInThePot += SelectedSpot.BuyInOrAddOnAmount;
+
+                    Notify(SelectedSpot.IsEliminated ? PlayerEventMessage.Type.BuyIn : PlayerEventMessage.Type.AddOn,
+                        SelectedSpot.PlayerData!.Name,
+                        addOnOrBuyInAmount: SelectedSpot.BuyInOrAddOnAmount,
+                        playerTotalAmount: SelectedSpot.PlayerData.MoneyInThePot,
+                        potTotal: TotalAmountInPot);
+
                     SelectedSpot.BuyInOrAddOnAmount = 0;
                     if (SelectedSpot.IsEliminated)
                     {
@@ -477,6 +494,17 @@ namespace PokerTracker3000.GameSession
                 _removeOrEliminateOption.IsAvailable = PlayerSpots.Where(x => x.HasPlayerData).Count() > 1;
             else
                 _removeOrEliminateOption.IsAvailable = true;
+        }
+
+        private void Notify(PlayerEventMessage.Type type, string playerName, decimal addOnOrBuyInAmount = 0, decimal playerTotalAmount = 0, decimal potTotal = 0)
+        {
+            _eventBus.NotifyListeners(type switch
+            {
+                PlayerEventMessage.Type.BuyIn => GameEventBus.EventType.PlayerBuyIn,
+                PlayerEventMessage.Type.AddOn => GameEventBus.EventType.PlayerAddOn,
+                PlayerEventMessage.Type.Eliminated => GameEventBus.EventType.PlayerEliminated,
+                _ => throw new NotImplementedException(),
+            }, new PlayerEventMessage(type, playerName, addOnOrBuyInAmount, playerTotalAmount, potTotal, GameSettings.CurrencyType));
         }
 
         private static PlayerEditOption GetSelectedOptionIn(List<PlayerEditOption> options)

@@ -40,6 +40,7 @@ namespace PokerTracker3000.WpfComponents
             typeof(CurrencyType),
             typeof(SessionOverview),
             new FrameworkPropertyMetadata(CurrencyType.SwedishKrona, FrameworkPropertyMetadataOptions.AffectsRender));
+
         #region Read-only dependency property
         public GameStage? NextStage
         {
