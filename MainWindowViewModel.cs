@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common;
 using PokerTracker3000.GameSession;
-
+using PokerTracker3000.Interfaces;
 using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
 
 namespace PokerTracker3000.ViewModels
@@ -37,20 +37,30 @@ namespace PokerTracker3000.ViewModels
         #endregion
 
         #region Private fields
-        private readonly ApplicationSettings _settings;
         private readonly MainWindowFocusManager _focusManager;
+        private readonly IGameEventBus _eventBus;
+#pragma warning disable IDE0052 // The reference needs to be kept alive
+        private readonly AudioManager _audioManager;
+#pragma warning restore IDE0052
         #endregion
 
-        public MainWindowViewModel(ApplicationSettings settings, MainWindowFocusManager focusManager)
+        public MainWindowViewModel(IGameEventBus eventBus, ApplicationSettings settings, MainWindowFocusManager focusManager)
         {
-            _settings = settings;
             _focusManager = focusManager;
+            _eventBus = eventBus;
 
-            SessionManager = new(settings.DefaultPlayerImagePath, settings.RiffSoundEffectPath, _focusManager);
+            var clock = new GameClock(_eventBus);
+
+            _audioManager = new AudioManager(eventBus, clock, settings.RiffSoundEffectPath);
+            var gameSettings = new GameSettings();
+
+            SessionManager = new(eventBus, gameSettings, focusManager, new GameStagesManager(_eventBus, clock, gameSettings), new(), clock, settings.DefaultPlayerImagePath);
             SideMenuViewModel = new(focusManager, SessionManager);
 
             // SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
             //Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());
+
+            _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(), GameEventBus.EventType.ApplicationClosing);
         }
 
         public void HandleInputEvent(InputEvent inputEvent)
@@ -74,7 +84,7 @@ namespace PokerTracker3000.ViewModels
             }
         }
 
-        public void NotifyWindowClosed()
+        public void ApplicationClosing()
         {
             // TODO: Close Spotify connection if open
         }

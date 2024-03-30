@@ -14,44 +14,44 @@ namespace PokerTracker3000.Common
         public enum EventType
         {
             /// <summary>
-            /// Game started message. Has no data.
+            /// Game started message. Expectes an instance of <see cref="Messages.GameEventMessage"/> as it message data.
             /// </summary>
             GameStarted,
 
             /// <summary>
-            /// Game paused message. Has no data.
+            /// Game paused message. Expectes an instance of <see cref="Messages.GameEventMessage"/> as it message data.
             /// </summary>
             GamePaused,
 
             /// <summary>
-            /// Game pause message. Has no data.
-            /// </summary>
-            GameStopped,
-
-            /// <summary>
-            /// Game pause message. Has no data.
+            /// Game done message. Expectes an instance of <see cref="Messages.GameEventMessage"/> as it message data.
             /// </summary>
             GameDone,
 
             /// <summary>
-            /// Staged changed message. Has the new stage (an instance of the class <see cref="GameSession.GameStage" />) as its data.
+            /// Staged changed message. Expectes an instance of <see cref="Messages.StageChangedMessage"/> as it message data.
             /// </summary>
             StageChanged,
 
             /// <summary>
-            /// Player eliminated message. Has the eliminated player (an instance of the class <see cref="GameSession.PlayerModel" />) as its data.
+            /// Player eliminated message. Expectes an instance of <see cref="Messages.PlayerEventMessage"/> as it message data.
             /// </summary>
             PlayerEliminated,
 
             /// <summary>
-            /// Player add-on message. Has the player that did the add-on (an instance of the class <see cref="GameSession.PlayerModel" />) as its data.
+            /// Player add-on message. Expectes an instance of <see cref="Messages.PlayerEventMessage"/> as it message data.
             /// </summary>
             PlayerAddOn,
 
             /// <summary>
-            /// Player add-on message. Has the player that did the add-on (an instance of the class <see cref="GameSession.PlayerModel" />) as its data.
+            /// Player add-on message. Expectes an instance of <see cref="Messages.PlayerEventMessage"/> as it message data.
             /// </summary>
             PlayerBuyIn,
+
+            /// <summary>
+            /// The application is closing. Expectes an instance of <see cref="Messages.ApplicationClosingMessage"/> as it message data.
+            /// </summary>
+            ApplicationClosing
         }
 
         #region Private fields

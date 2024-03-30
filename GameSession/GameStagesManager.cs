@@ -5,6 +5,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
+using PokerTracker3000.Common.Messages;
+using PokerTracker3000.Common;
+using PokerTracker3000.Interfaces;
 
 namespace PokerTracker3000.GameSession
 {
@@ -63,18 +66,20 @@ namespace PokerTracker3000.GameSession
         #region Private fields
         private int _secondsInOtherStagesUntilPause;
         private int _secondsInOtherStagesUntilEnd;
+        private readonly IGameEventBus _eventBus;
         private readonly GameClock _clock;
         private readonly GameSettings _settings;
         private readonly List<GameStage> _stages;
         private readonly object _stagesAccessLock = new();
         #endregion
 
-        public GameStagesManager(GameClock clock, GameSettings settings)
+        public GameStagesManager(IGameEventBus eventBus, GameClock clock, GameSettings settings)
         {
             Stages = [];
             _stages = [];
             BindingOperations.EnableCollectionSynchronization(Stages, _stagesAccessLock);
 
+            _eventBus = eventBus;
             _clock = clock;
             _settings = settings;
 
@@ -92,6 +97,7 @@ namespace PokerTracker3000.GameSession
                 if (!TryGetNextStage(CurrentStage, out var nextStage))
                 {
                     OnLastStage = false;
+                    _eventBus.NotifyListeners(GameEventBus.EventType.GameDone, new GameEventMessage());
                     AllStagesDone?.Invoke(this, EventArgs.Empty);
                     return;
                 }
@@ -239,6 +245,10 @@ namespace PokerTracker3000.GameSession
             CalculateTimeUntilPauseAndEnd(CurrentStage);
             OnLastStage = CurrentStage.Number == Stages.Count;
             _clock.UpdateNumberOfSeconds(CurrentStage.LengthSecondsRemaining);
+
+            if (_clock.IsRunning)
+                _eventBus.NotifyListeners(GameEventBus.EventType.StageChanged, StageChangedMessage.Create(CurrentStage));
+
             CurrentStageChanged?.Invoke(this, CurrentStage);
         }
 
