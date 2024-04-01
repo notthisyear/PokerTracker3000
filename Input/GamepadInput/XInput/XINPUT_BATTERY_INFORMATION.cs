@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using PokerTracker3000.GamepadInput.XInput.Enumerations;
 
 namespace PokerTracker3000.GamepadInput.XInput
 {

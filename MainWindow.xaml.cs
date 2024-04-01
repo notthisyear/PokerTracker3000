@@ -28,15 +28,19 @@ namespace PokerTracker3000
 
         private readonly InputManager _inputManager;
         private readonly IGameEventBus _eventBus;
+
         public MainWindow()
         {
             InitializeComponent();
             Settings.Initalize(SettingsFileName);
 
-            _inputManager = new();
-            InitializeKeyboardMappings();
             _eventBus = new GameEventBus();
+
             ViewModel = new(_eventBus, Settings.App, new());
+            _inputManager = new(ViewModel.HandleInputEvent);
+            InitializeKeyboardMappings();
+            InitializeGamepadMappings();
+
             MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;
         }
 
@@ -76,9 +80,22 @@ namespace PokerTracker3000
             _inputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Up);
         }
 
+        private void InitializeGamepadMappings()
+        {
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.StartButton, InputEvent.ButtonEventType.Start);
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.AButton, InputEvent.ButtonEventType.Select);
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.BButton, InputEvent.ButtonEventType.GoBack);
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadLeft, InputEvent.NavigationDirection.Left);
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadRight, InputEvent.NavigationDirection.Right);
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadDown, InputEvent.NavigationDirection.Down);
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadUp, InputEvent.NavigationDirection.Up);
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.RightSholderButton, InputEvent.ButtonEventType.InfoButton, GamepadInput.GamepadDigitalInputState.Pressed);
+            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.RightSholderButton, InputEvent.ButtonEventType.InfoButton, GamepadInput.GamepadDigitalInputState.Released);
+        }
+
         private void KeyDownOrUpInWindow(object sender, KeyEventArgs e)
         {
-            ViewModel.HandleInputEvent(_inputManager.GetUserInputEventFromKeyboard(e));
+            _inputManager.OnKeyboardEvent(e);
         }
     }
 }
