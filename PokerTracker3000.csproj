@@ -7,6 +7,7 @@
     <UseWPF>true</UseWPF>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>Resources\Images\poker_table.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +27,10 @@
     <None Remove="Resources\Fonts\Lato-ThinItalic.ttf" />
     <None Remove="Resources\Images\coffee_mug.png" />
     <None Remove="Resources\Images\poker_table.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Images\poker_table.ico" />
   </ItemGroup>
 
   <ItemGroup>
