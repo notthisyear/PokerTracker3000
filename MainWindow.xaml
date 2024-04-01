@@ -52,13 +52,37 @@
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
 
-                    <Storyboard x:Key="movePanelIn"
+                    <Storyboard x:Key="movePanelInX"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
                             <EasingDoubleKeyFrame Value="0"
                                                   KeyTime="0:0:0.6">
                                 <EasingDoubleKeyFrame.EasingFunction>
                                     <QuarticEase EasingMode="EaseOut"/>
+                                </EasingDoubleKeyFrame.EasingFunction>
+                            </EasingDoubleKeyFrame>
+                        </DoubleAnimationUsingKeyFrames>
+                    </Storyboard>
+
+                    <Storyboard x:Key="movePanelInY"
+                                PresentationOptions:Freeze="True">
+                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">
+                            <EasingDoubleKeyFrame Value="0"
+                              KeyTime="0:0:0.6">
+                                <EasingDoubleKeyFrame.EasingFunction>
+                                    <QuarticEase EasingMode="EaseOut"/>
+                                </EasingDoubleKeyFrame.EasingFunction>
+                            </EasingDoubleKeyFrame>
+                        </DoubleAnimationUsingKeyFrames>
+                    </Storyboard>
+
+                    <Storyboard x:Key="movePanelOutUp"
+                                PresentationOptions:Freeze="True">
+                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">
+                            <EasingDoubleKeyFrame Value="-200"
+                                                  KeyTime="0:0:0.4">
+                                <EasingDoubleKeyFrame.EasingFunction>
+                                    <QuarticEase EasingMode="EaseIn"/>
                                 </EasingDoubleKeyFrame.EasingFunction>
                             </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
@@ -112,7 +136,7 @@
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=ViewModel.LeftSideMenuOpen}" Value="True">
                                     <DataTrigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelIn}" />
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelInX}" />
                                         <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
                                     </DataTrigger.EnterActions>
                                     <DataTrigger.ExitActions>
@@ -148,7 +172,7 @@
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=ViewModel.RightSideMenuOpen}" Value="True">
                                     <DataTrigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelIn}" />
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelInX}" />
                                         <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
                                     </DataTrigger.EnterActions>
                                     <DataTrigger.ExitActions>
@@ -183,6 +207,70 @@
                     </ItemsControl>
                 </Border>
 
+                <!-- Controller connection info box -->
+                <Border Grid.Row="1"
+                        Grid.RowSpan="2"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="20,10"
+                        Padding="10"
+                        Background="{StaticResource MainBackgroundColor}"
+                        CornerRadius="5">
+
+                    <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="Opacity" Value="0" />
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform X="0" Y="-200" />
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=InputManager.ShowControllerConnectedInfo}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel Orientation="Vertical"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+
+                        <TextBlock Text="&#xE7FC;"
+                                   FontSize="120"
+                                   Opacity="0.2">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SymbolButtonStyle}">
+                                    <Setter Property="Foreground" Value="{StaticResource MainSuccessColor}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=InputManager.LastControllerConnectedWasDisconnected}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource MainErrorColor}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="{Binding Path=InputManager.ControllerInfo}">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                                    <Setter Property="Foreground" Value="{StaticResource MainSuccessColor}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=InputManager.LastControllerConnectedWasDisconnected}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource MainErrorColor}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
             </Grid>
         </Border>
     </Viewbox>

@@ -23,9 +23,10 @@ namespace PokerTracker3000
             typeof(MainWindow),
             new FrameworkPropertyMetadata(null));
 
+        public InputManager InputManager { get; }
+
         private const string SettingsFileName = "Settings.json";
 
-        private readonly InputManager _inputManager;
         private readonly GameEventBus _eventBus;
 
         public MainWindow()
@@ -36,7 +37,7 @@ namespace PokerTracker3000
             _eventBus = new();
 
             ViewModel = new(_eventBus, Settings.App, new());
-            _inputManager = new(ViewModel.HandleInputEvent);
+            InputManager = new(ViewModel.HandleInputEvent);
             InitializeKeyboardMappings();
             InitializeGamepadMappings();
 
@@ -68,33 +69,33 @@ namespace PokerTracker3000
 
         private void InitializeKeyboardMappings()
         {
-            _inputManager.RegisterKeyboardEvent(Key.Escape, InputEvent.ButtonEventType.Start);
-            _inputManager.RegisterKeyboardEvent(Key.Enter, InputEvent.ButtonEventType.Select);
-            _inputManager.RegisterKeyboardEvent(Key.RightShift, InputEvent.ButtonEventType.GoBack);
-            _inputManager.RegisterKeyboardEvent(Key.Left, InputEvent.NavigationDirection.Left);
-            _inputManager.RegisterKeyboardEvent(Key.Right, InputEvent.NavigationDirection.Right);
-            _inputManager.RegisterKeyboardEvent(Key.Down, InputEvent.NavigationDirection.Down);
-            _inputManager.RegisterKeyboardEvent(Key.Up, InputEvent.NavigationDirection.Up);
-            _inputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Down);
-            _inputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Up);
+            InputManager.RegisterKeyboardEvent(Key.Escape, InputEvent.ButtonEventType.Start);
+            InputManager.RegisterKeyboardEvent(Key.Enter, InputEvent.ButtonEventType.Select);
+            InputManager.RegisterKeyboardEvent(Key.RightShift, InputEvent.ButtonEventType.GoBack);
+            InputManager.RegisterKeyboardEvent(Key.Left, InputEvent.NavigationDirection.Left);
+            InputManager.RegisterKeyboardEvent(Key.Right, InputEvent.NavigationDirection.Right);
+            InputManager.RegisterKeyboardEvent(Key.Down, InputEvent.NavigationDirection.Down);
+            InputManager.RegisterKeyboardEvent(Key.Up, InputEvent.NavigationDirection.Up);
+            InputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Down);
+            InputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Up);
         }
 
         private void InitializeGamepadMappings()
         {
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.StartButton, InputEvent.ButtonEventType.Start);
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.AButton, InputEvent.ButtonEventType.Select);
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.BButton, InputEvent.ButtonEventType.GoBack);
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadLeft, InputEvent.NavigationDirection.Left);
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadRight, InputEvent.NavigationDirection.Right);
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadDown, InputEvent.NavigationDirection.Down);
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadUp, InputEvent.NavigationDirection.Up);
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.RightSholderButton, InputEvent.ButtonEventType.InfoButton, GamepadInput.GamepadDigitalInputState.Pressed);
-            _inputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.RightSholderButton, InputEvent.ButtonEventType.InfoButton, GamepadInput.GamepadDigitalInputState.Released);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.StartButton, InputEvent.ButtonEventType.Start);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.AButton, InputEvent.ButtonEventType.Select);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.BButton, InputEvent.ButtonEventType.GoBack);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadLeft, InputEvent.NavigationDirection.Left);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadRight, InputEvent.NavigationDirection.Right);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadDown, InputEvent.NavigationDirection.Down);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.DPadUp, InputEvent.NavigationDirection.Up);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.RightSholderButton, InputEvent.ButtonEventType.InfoButton, GamepadInput.GamepadDigitalInputState.Pressed);
+            InputManager.RegisterGamepadEvent(GamepadInput.GamepadDigitalInput.RightSholderButton, InputEvent.ButtonEventType.InfoButton, GamepadInput.GamepadDigitalInputState.Released);
         }
 
         private void KeyDownOrUpInWindow(object sender, KeyEventArgs e)
         {
-            _inputManager.OnKeyboardEvent(e);
+            InputManager.OnKeyboardEvent(e);
         }
     }
 }

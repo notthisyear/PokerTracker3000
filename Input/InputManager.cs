@@ -55,6 +55,8 @@ namespace PokerTracker3000.Input
             _gamepadManager.GamepadConnected += (s, e) =>
             {
                 ControllerInfo = $"{(e.IsWireless ? "Wireless" : "Wired")} controller connected on slot {e.Id + 1}";
+                ShowControllerConnectedInfo = true;
+                LastControllerConnectedWasDisconnected = false;
                 Task.Run(async () =>
                 {
                     await Task.Delay(4000);
