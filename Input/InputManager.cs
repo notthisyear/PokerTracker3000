@@ -152,7 +152,9 @@ namespace PokerTracker3000.Input
             if (!_gamepadEvents.TryGetValue(buttonEvent.Button, out var inputEvents))
                 return;
 
-            var action = buttonEvent.State == GamepadDigitalInputState.Pressed ? ButtonAction.Down : ButtonAction.Up;
+            var action = buttonEvent.State == GamepadDigitalInputState.Pressed ? ButtonAction.Down :
+                (buttonEvent.State == GamepadDigitalInputState.Released ? ButtonAction.Up : ButtonAction.None);
+
             if (inputEvents.TryGetValue(action, out var e))
                 Application.Current.Dispatcher.Invoke(() => _inputEventHandler?.Invoke(e));
         }
@@ -181,13 +183,20 @@ namespace PokerTracker3000.Input
                     gamepad.NewGamepadBatteryLevel -= NewBatteryLevelReceived;
                 gamepad.NewGamepadInput -= NewGamepadInput;
                 gamepad.GamepadDisconnected -= LostGamepadConnection;
-                Debug.WriteLine($"Got disconnected event from gamepad {gamepad.Id}");
+                LastControllerConnectedWasDisconnected = true;
+                ControllerInfo = $"{(gamepad.IsWireless ? "Wireless" : "Wired")} controller on slot {gamepad.Id + 1} disconnected";
+                ShowControllerConnectedInfo = true;
+                Task.Run(async () =>
+                {
+                    await Task.Delay(4000);
+                    ShowControllerConnectedInfo = false;
+                });
             }
         }
 
         private void NewBatteryLevelReceived(object? sender, GamepadBatteryLevel e)
         {
-            Debug.WriteLine($"Got battery level {e}");
+            // TODO: Implement
         }
     }
 }
