@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using PokerTracker3000.Interfaces;
 
-using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
+using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.WpfComponents
 {

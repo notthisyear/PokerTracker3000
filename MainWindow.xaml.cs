@@ -2,11 +2,10 @@
 using System.Windows.Input;
 using PokerTracker3000.Common;
 using PokerTracker3000.Common.Messages;
-using PokerTracker3000.Interfaces;
 using PokerTracker3000.ViewModels;
 using PokerTracker3000.WpfComponents;
 
-using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
+using InputEvent = PokerTracker3000.Input.UserInputEvent;
 using InputManager = PokerTracker3000.Input.InputManager;
 
 namespace PokerTracker3000
@@ -27,14 +26,14 @@ namespace PokerTracker3000
         private const string SettingsFileName = "Settings.json";
 
         private readonly InputManager _inputManager;
-        private readonly IGameEventBus _eventBus;
+        private readonly GameEventBus _eventBus;
 
         public MainWindow()
         {
             InitializeComponent();
             Settings.Initalize(SettingsFileName);
 
-            _eventBus = new GameEventBus();
+            _eventBus = new();
 
             ViewModel = new(_eventBus, Settings.App, new());
             _inputManager = new(ViewModel.HandleInputEvent);

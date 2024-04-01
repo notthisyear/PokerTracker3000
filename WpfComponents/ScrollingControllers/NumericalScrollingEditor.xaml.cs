@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using PokerTracker3000.GameComponents;
 using PokerTracker3000.Interfaces;
 
-using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
+using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.WpfComponents
 {

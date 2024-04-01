@@ -1,6 +1,6 @@
 ﻿using System;
 
-using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
+using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.Interfaces
 {

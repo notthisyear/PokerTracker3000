@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-using InputEvent = PokerTracker3000.Input.InputManager.UserInputEvent;
+using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.GameSession
 {

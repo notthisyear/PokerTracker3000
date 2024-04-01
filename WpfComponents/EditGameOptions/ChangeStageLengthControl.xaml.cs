@@ -5,6 +5,8 @@ using PokerTracker3000.GameSession;
 using PokerTracker3000.Input;
 using PokerTracker3000.Interfaces;
 
+using InputEvent = PokerTracker3000.Input.UserInputEvent;
+
 namespace PokerTracker3000.WpfComponents.EditGameOptions
 {
     public partial class ChangeStageLengthControl : UserControl, IInputRelay
@@ -23,7 +25,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         #endregion
 
         #region Events
-        public event EventHandler<InputManager.UserInputEvent.NavigationDirection>? Navigate;
+        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
         public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
         #endregion
 
@@ -50,11 +52,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 if (SessionManager == default || SessionManager.CurrentGameEditOption != SideMenuViewModel.GameEditOption.ChangeDefaultStageLength)
                     return;
 
-                if (e.ButtonEvent == InputManager.UserInputEvent.ButtonEventType.Select)
+                if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
                 {
                     editor.IsSelected = !editor.IsSelected;
                 }
-                else if (e.ButtonEvent == InputManager.UserInputEvent.ButtonEventType.GoBack)
+                else if (e.ButtonEvent == InputEvent.ButtonEventType.GoBack)
                 {
                     if (editor.IsSelected)
                     {

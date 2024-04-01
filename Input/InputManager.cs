@@ -1,98 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.GamepadInput;
 using PokerTracker3000.Input.GamepadInput;
-using static PokerTracker3000.Input.InputManager.UserInputEvent;
+
+using static PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.Input
 {
-    public class InputManager
+    public class InputManager : ObservableObject
     {
-        public record UserInputEvent
+        #region Public properties
+
+        #region Private fields
+        private bool _showControllerConnectedInfo = false;
+        private bool _lastControllerConnectedWasDisconnected = false;
+        private string _controllerInfo = string.Empty;
+        #endregion
+
+        public bool ShowControllerConnectedInfo
         {
-            public enum NavigationDirection
-            {
-                None,
-                Left,
-                Right,
-                Up,
-                Down
-            }
-
-            public enum ButtonEventType
-            {
-                None,
-                Start,
-                Select,
-                GoBack,
-                InfoButton
-            }
-
-            public enum ButtonAction
-            {
-                None,
-                Down,
-                Up
-            };
-
-            public bool IsButtonEvent { get; init; } = false;
-
-            public bool IsNavigationEvent { get; init; } = false;
-
-            public bool AllowRepeat { get; init; } = false;
-
-            public ButtonEventType Button { get; init; } = ButtonEventType.None;
-
-            public ButtonAction Action { get; init; } = ButtonAction.None;
-
-            public NavigationDirection Direction { get; init; } = NavigationDirection.None;
-
-            internal bool Matches(KeyEventArgs e)
-                => e.IsRepeat == AllowRepeat;
-
-            internal static UserInputEvent GetNavigationEvent(NavigationDirection direction, ButtonAction action, bool allowRepeat)
-                => new()
-                {
-                    IsNavigationEvent = true,
-                    Direction = direction,
-                    Action = action,
-                    AllowRepeat = allowRepeat
-                };
-
-            internal static UserInputEvent GetButtonEvent(ButtonEventType button, ButtonAction action, bool allowRepeat)
-                => new()
-                {
-                    IsButtonEvent = true,
-                    Button = button,
-                    Action = action,
-                    AllowRepeat = allowRepeat
-                };
-
-            internal static UserInputEvent GetNavigationEvent(NavigationDirection direction, GamepadDigitalInputState state)
-                => new()
-                {
-                    IsNavigationEvent = true,
-                    Direction = direction,
-                    Action = state == GamepadDigitalInputState.Pressed ? ButtonAction.Down : ButtonAction.Up,
-                };
-
-            internal static UserInputEvent GetButtonEvent(ButtonEventType button, GamepadDigitalInputState state)
-                => new()
-                {
-                    IsButtonEvent = true,
-                    Button = button,
-                    Action = state == GamepadDigitalInputState.Pressed ? ButtonAction.Down : ButtonAction.Up,
-
-                };
+            get => _showControllerConnectedInfo;
+            private set => SetProperty(ref _showControllerConnectedInfo, value);
         }
 
+        public bool LastControllerConnectedWasDisconnected
+        {
+            get => _lastControllerConnectedWasDisconnected;
+            private set => SetProperty(ref _lastControllerConnectedWasDisconnected, value);
+        }
+
+        public string ControllerInfo
+        {
+            get => _controllerInfo;
+            private set => SetProperty(ref _controllerInfo, value);
+        }
+        #endregion
+
+        #region Private fields
         private readonly Dictionary<Key, Dictionary<ButtonAction, UserInputEvent>> _keyboardEvents = [];
         private readonly Dictionary<GamepadDigitalInput, Dictionary<ButtonAction, UserInputEvent>> _gamepadEvents = [];
         private readonly GamepadManager _gamepadManager;
         private readonly Action<UserInputEvent> _inputEventHandler;
+        #endregion
 
         public InputManager(Action<UserInputEvent> inputEventHandler)
         {
@@ -101,7 +54,12 @@ namespace PokerTracker3000.Input
             _gamepadManager = new();
             _gamepadManager.GamepadConnected += (s, e) =>
             {
-                Debug.WriteLine($"Gamepad {e.Id} connected - IsWireless: {e.IsWireless}, CanGetBatteryLevel: {e.CanGetBatteryLevel}");
+                ControllerInfo = $"{(e.IsWireless ? "Wireless" : "Wired")} controller connected on slot {e.Id + 1}";
+                Task.Run(async () =>
+                {
+                    await Task.Delay(4000);
+                    ShowControllerConnectedInfo = false;
+                });
                 e.GamepadDisconnected += LostGamepadConnection;
                 if (e.CanGetBatteryLevel)
                     e.NewGamepadBatteryLevel += NewBatteryLevelReceived;
