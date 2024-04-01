@@ -530,7 +530,7 @@
                      VerticalContentAlignment="Center"
                      FontSize="38">
                 <TextBox.Text>
-                    <Binding Path="ViewModel.SelectedSpot.PlayerData.Information.Name"
+                    <Binding Path="ViewModel.SelectedSpot.PlayerData.Name"
                              Mode="TwoWay"
                              UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>

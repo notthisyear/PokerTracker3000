@@ -43,6 +43,7 @@ namespace PokerTracker3000.GameSession
 
         private long _ticksOnLastFire = DateTime.MinValue.Ticks;
         private bool _pauseOnNextTick = false;
+        private bool _isStopped = false;
         private long _ticksUntilNextDecrease = MillisecondsPerSecond * TicksPerMillisecond;
         private bool _disposedValue;
         #endregion
@@ -65,20 +66,26 @@ namespace PokerTracker3000.GameSession
             _ticksOnLastFire = DateTime.UtcNow.Ticks;
             _tickClockTimer.Change(TickPeriodMs, Timeout.Infinite);
             IsRunning = true;
+            _isStopped = false;
             _eventBus.NotifyListeners(GameEventBus.EventType.GameStarted, new GameEventMessage());
         }
 
         public void Pause()
         {
-            _pauseOnNextTick = true;
             IsRunning = false;
-            _eventBus.NotifyListeners(GameEventBus.EventType.GamePaused, new GameEventMessage());
+            if (!_isStopped)
+            {
+                _pauseOnNextTick = true;
+                _eventBus.NotifyListeners(GameEventBus.EventType.GamePaused, new GameEventMessage());
+            }
+            _isStopped = false;
         }
 
         public void Stop()
         {
-            _tickClockTimer.Change(Timeout.Infinite, Timeout.Infinite);
             NumberOfSeconds = 0;
+            _isStopped = true;
+            _tickClockTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         public void RegisterCallbackOnSecondsLeft(int triggerSeconds, Action<GameClock> action)
