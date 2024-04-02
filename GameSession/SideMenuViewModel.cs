@@ -258,6 +258,7 @@ namespace PokerTracker3000.GameSession
                         OptionText = "Next stage",
                         IsAvailable = SessionManager.StageManager.Stages.Count > 1,
                         UnavaliableDescriptionText = "No next stage",
+                        DescriptionText = "Go to next stage",
                         IsSubOption = true,
                         OptionAction = (SideMenuOptionModel opt) =>
                     {
@@ -269,20 +270,21 @@ namespace PokerTracker3000.GameSession
                         OptionText = "Previous stage",
                         IsAvailable = false,
                         UnavaliableDescriptionText = "No previous stage",
+                        DescriptionText = "Go to previous stage",
                         IsSubOption = true,
                         OptionAction = (SideMenuOptionModel opt) =>
                     {
                         SessionManager.StageManager.TryGotoPreviousStage();
-                    }},
-                    new() { Id = 2, OptionText = "Stage...", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" }
+                    }}
                 ],
             });
 
             SideMenuOptionModel addPlayerOption = new()
             {
-                Id = 2,
+                Id = 0,
                 OptionText = "Add player",
                 DescriptionText = "Add a new player to an empty spot",
+                IsSubOption = true,
                 OnOpenAction = (SideMenuOptionModel opt) => { opt.IsAvailable = !SessionManager.TableFull; },
                 OptionAction = (SideMenuOptionModel opt) =>
                 {
@@ -292,18 +294,29 @@ namespace PokerTracker3000.GameSession
                 UnavaliableDescriptionText = "Cannot add new player - table full"
             };
             _onOpenCallbacks.Add((addPlayerOption, addPlayerOption.OnOpenAction));
-            SideMenuOptions.Add(addPlayerOption);
+            SideMenuOptions.Add(new()
+            {
+                Id = 2,
+                OptionText = "Table settings...",
+                DescriptionText = "Change table settings",
+                HasSubOptions = true,
+                SubOptions =
+                [
+                    addPlayerOption,
+                    new()
+                    {
+                        Id = 1,
+                        OptionText = "Remove empty spots",
+                        DescriptionText = "Removes all empty slots",
+                        IsSubOption = true,
+                        OptionAction = (_) => SessionManager.ConsolidateLayout(),
+                    }
+                ]
+            });
 
             SideMenuOptions.Add(new()
             {
                 Id = 3,
-                OptionText = "Remove empty spots",
-                DescriptionText = "Removes all empty slots",
-                OptionAction = (_) => SessionManager.ConsolidateLayout(),
-            });
-            SideMenuOptions.Add(new()
-            {
-                Id = 4,
                 OptionText = "Game settings...",
                 DescriptionText = "Change settings for the current game",
                 HasSubOptions = true,
@@ -395,23 +408,11 @@ namespace PokerTracker3000.GameSession
                             }
                         }
                     },
-                    new() { Id = 8, OptionText = "Reset all amounts", IsSubOption = true, IsAvailable = false, UnavaliableDescriptionText = "Not yet implemented" },
                 ],
             });
             SideMenuOptions.Add(new()
             {
-                Id = 5,
-                OptionText = "Program settings...",
-                DescriptionText = "Change program settings",
-                HasSubOptions = true,
-                SubOptions =
-                [
-                    new() { Id = 0, OptionText = "Player image", IsSubOption = true }
-                ],
-            });
-            SideMenuOptions.Add(new()
-            {
-                Id = 6,
+                Id = 4,
                 OptionText = "Load...",
                 DescriptionText = "Load settings or players",
                 HasSubOptions = true,
@@ -468,7 +469,7 @@ namespace PokerTracker3000.GameSession
             });
             SideMenuOptions.Add(new()
             {
-                Id = 7,
+                Id = 5,
                 OptionText = "Save...",
                 DescriptionText = "Save settings or players",
                 HasSubOptions = true,
@@ -522,7 +523,7 @@ namespace PokerTracker3000.GameSession
             });
             SideMenuOptions.Add(new()
             {
-                Id = 8,
+                Id = 6,
                 OptionText = "Quit",
                 DescriptionText = "Quit PokerTracker3000",
             });
