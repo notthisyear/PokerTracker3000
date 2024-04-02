@@ -25,6 +25,9 @@
                                                       SessionManager="{Binding Path=ViewModel}"/>
             <editgameoptions:ChangeStageLengthControl x:Key="changeStageLength"
                                                      SessionManager="{Binding Path=ViewModel}"/>
+            <editgameoptions:ChangeCurrencyControl x:Key="changeCurrency"
+                                                   SessionManager="{Binding Path=ViewModel}"
+                                                   SelectedCurrency="{Binding Path=ViewModel.GameSettings.CurrencyType}"/>
             <Storyboard x:Key="animateCoffeeMug"
                         PresentationOptions:Freeze="True"
                         RepeatBehavior="Forever"
@@ -688,6 +691,13 @@
                                      Value="{x:Static session:SideMenuViewModel+GameEditOption.ChangeDefaultStageLength}">
                             <DataTrigger.Setters>
                                 <Setter Property="Content" Value="{StaticResource changeStageLength}" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
+                                    Value="{x:Static session:SideMenuViewModel+GameEditOption.ChangeCurrency}">
+                            <DataTrigger.Setters>
+                                <Setter Property="Content" Value="{StaticResource changeCurrency}" />
                             </DataTrigger.Setters>
                         </DataTrigger>
 

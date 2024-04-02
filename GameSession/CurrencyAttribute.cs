@@ -19,8 +19,10 @@ namespace PokerTracker3000.GameComponents
     {
         [Currency("Svenska kronor", "sv-SE", "SEK")]
         SwedishKrona,
+
         [Currency("United States dollar", "en-US", "USD")]
         AmericanDollar,
+
         [Currency("Euro", "en-FR", "EUR")]
         Euro
     }

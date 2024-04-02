@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Ookii.Dialogs.Wpf;
+
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.GameSession
@@ -17,6 +18,7 @@ namespace PokerTracker3000.GameSession
             ChangeDefaultAddOnAmount,
             ChangeDefaultBuyInAmount,
             ChangeDefaultStageLength,
+            ChangeCurrency
         };
 
         public enum LastSaveLoadResult
@@ -377,6 +379,18 @@ namespace PokerTracker3000.GameSession
                     new()
                     {
                         Id = 6,
+                        OptionText = "Currency",
+                        IsSubOption = true,
+                        DescriptionText = "Change the game currency",
+                        OptionAction = (_) =>
+                        {
+                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeCurrency;
+                            _focusManager.SideMenuEditOptionSelected();
+                        }
+                    },
+                    new()
+                    {
+                        Id = 7,
                         OptionText = "Reset current stage",
                         DescriptionText = "Reset time for current stages",
                         IsAvailable = SessionManager.StageManager.CurrentStage != default,
@@ -393,7 +407,7 @@ namespace PokerTracker3000.GameSession
                     },
                     new()
                     {
-                        Id = 7,
+                        Id = 8,
                         OptionText = "Reset all stages",
                         DescriptionText = "Reset time for all stages",
                         IsAvailable = SessionManager.StageManager.Stages.Any(),
