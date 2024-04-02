@@ -65,6 +65,9 @@ namespace PokerTracker3000.WpfComponents
                 _box = default;
             }
         }
+
+        public int InvertValue(int value)
+            => (IsLimitedRange ? 5 : 9) - value;
         #endregion
 
         private void BoxSelectedIndexChanged(object sender, RoutedEventArgs e)
@@ -72,8 +75,5 @@ namespace PokerTracker3000.WpfComponents
             if (e is SelectedIndexChangedEventArgs args)
                 Value = InvertValue(args.NewIndex);
         }
-
-        private int InvertValue(int value)
-            => (IsLimitedRange ? 5 : 9) - value;
     }
 }

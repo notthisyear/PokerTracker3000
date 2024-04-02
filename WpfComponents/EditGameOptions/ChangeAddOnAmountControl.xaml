@@ -5,22 +5,25 @@
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
 
-        <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Center">
+        <StackPanel Orientation="Horizontal"
+            HorizontalAlignment="Center">
 
             <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                       HorizontalAlignment="Center"
-                       Text="Default add-on amount" />
+                Text="Default add-on amount"
+                VerticalAlignment="Center"
+                Margin="0,0,20,0"
+                FontWeight="Bold"/>
             <components:NumericalScrollingEditor x:Name="editor"
-                                                 HorizontalAlignment="Center"
-                                                 FontSize="54"
-                                                 VerticalSpacing="45"
-                                                 NumberOfDigits="4"
-                                                 ScrollerMode="Money"
-                                                 NavigatorRelay="{Binding Path=.}"
-                                                 Foreground="{StaticResource MainTextColor}"
-                                                 Currency="{Binding Path=SessionManager.GameSettings.CurrencyType}"
-                                                 CurrentMoneyValue="{Binding Path=SessionManager.GameSettings.DefaultAddOnAmount}" />
-            </StackPanel>
+                                         HorizontalAlignment="Center"
+                                         FontSize="40"
+                                         VerticalSpacing="38"
+                                         NumberOfDigits="4"
+                                         ScrollerMode="Currency"
+                                         CurrencySelectorBoxLoaded="EditorLoaded"
+                                         NavigatorRelay="{Binding Path=.}"
+                                         Foreground="{StaticResource MainTextColor}"
+                                         Currency="{Binding Path=SessionManager.GameSettings.CurrencyType}"
+                                         CurrentMoneyValue="{Binding Path=SessionManager.GameSettings.DefaultAddOnAmount}" />
+        </StackPanel>
     </Grid>
 </UserControl>

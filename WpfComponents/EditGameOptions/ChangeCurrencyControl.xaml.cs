@@ -64,7 +64,18 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 Currencies.Add(name);
                 _currencyList.Add(t);
             }
+            SessionManager.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName?.Equals(nameof(SessionManager.CurrentGameEditOption), StringComparison.InvariantCulture) ?? false)
+                {
+                    if (SessionManager != default && SessionManager.CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeCurrency)
+                    {
+                        while (_currencyList[editor.CurrentSelectedIndex] != SelectedCurrency)
+                            Navigate?.Invoke(this, InputEvent.NavigationDirection.Down);
+                    }
+                }
 
+            };
             editor.SelectedIndexChanged += (s, e) =>
             {
                 SelectedCurrency = _currencyList[editor.CurrentSelectedIndex];

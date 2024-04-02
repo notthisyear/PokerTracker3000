@@ -40,30 +40,23 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (SessionManager == default)
                 return;
 
+            SessionManager.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName?.Equals(nameof(SessionManager.CurrentGameEditOption), StringComparison.InvariantCulture) ?? false)
+                    editor.IsSelected = SessionManager != default && SessionManager.CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultAddOnAmount;
+
+            };
             SessionManager.Navigate += (s, e) =>
             {
                 if (SessionManager == default || SessionManager.CurrentGameEditOption != SideMenuViewModel.GameEditOption.ChangeDefaultAddOnAmount)
                     return;
                 Navigate?.Invoke(this, e);
             };
-            SessionManager.ButtonEvent += (s, e) =>
-            {
-                if (SessionManager == default || SessionManager.CurrentGameEditOption != SideMenuViewModel.GameEditOption.ChangeDefaultAddOnAmount)
-                    return;
+        }
 
-                if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
-                {
-                    editor.IsSelected = !editor.IsSelected;
-                }
-                else if (e.ButtonEvent == InputEvent.ButtonEventType.GoBack)
-                {
-                    if (editor.IsSelected)
-                    {
-                        editor.IsSelected = false;
-                        e.Handled = true;
-                    }
-                }
-            };
+        private void EditorLoaded(object sender, RoutedEventArgs e)
+        {
+            editor.IsSelected = true;
         }
     }
 }

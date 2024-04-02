@@ -243,7 +243,7 @@
                     <TextBlock DataContext="{Binding Path=SmallBlindModel}"
                                Style="{StaticResource optionTextBlockLabel}" />
                     <components:NumericalScrollingEditor NumberOfDigits="4"
-                                                         ScrollerMode="Money"
+                                                         ScrollerMode="Currency"
                                                          Currency="{Binding Path=SessionManager.GameSettings.CurrencyType}"
                                                          IsSelected="{Binding Path=SmallBlindModel.IsSelected}"
                                                          CurrentMoneyValue="{Binding Path=SelectedStage.SmallBlind}"
@@ -283,7 +283,7 @@
                     <TextBlock DataContext="{Binding Path=BigBlindModel}"
                                 Style="{StaticResource optionTextBlockLabel}" />
                     <components:NumericalScrollingEditor NumberOfDigits="4"
-                                                         ScrollerMode="Money"
+                                                         ScrollerMode="Currency"
                                                          Currency="{Binding Path=SessionManager.GameSettings.CurrencyType}"
                                                          IsSelected="{Binding Path=BigBlindModel.IsSelected}"
                                                          CurrentMoneyValue="{Binding Path=SelectedStage.BigBlind}"

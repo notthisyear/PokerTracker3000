@@ -15,7 +15,7 @@ namespace PokerTracker3000.WpfComponents
     {
         public enum Mode
         {
-            Money,
+            Currency,
             Time
         };
 
@@ -84,7 +84,7 @@ namespace PokerTracker3000.WpfComponents
             nameof(ScrollerMode),
             typeof(Mode),
             typeof(NumericalScrollingEditor),
-            new FrameworkPropertyMetadata(Mode.Money, FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata(Mode.Currency, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public int VerticalSpacing
         {
@@ -104,12 +104,13 @@ namespace PokerTracker3000.WpfComponents
                 if (newValue)
                     editor.SetDigitsFromCurrentValue();
 
-                if (editor.ScrollerMode == Mode.Money)
+                if (editor.ScrollerMode == Mode.Currency)
                 {
                     List<ScrollingSelectorBox> scrollerBoxes = [];
                     if (!editor.selectorControl.TryFindAllChildrenOfType(scrollerBoxes, editor.NumberOfDigits))
                         return;
 
+                    editor._isSyncingCurrencyDigits = true;
                     foreach (var box in scrollerBoxes)
                     {
                         if (box.DataContext is not ScrollDigit digit)
@@ -120,20 +121,20 @@ namespace PokerTracker3000.WpfComponents
                         else
                             digit.UnhookToScrollingSelectorBox();
                     }
+                    editor._isSyncingCurrencyDigits = false;
                 }
                 else if (editor.ScrollerMode == Mode.Time)
                 {
-                    foreach (var (digit, box) in editor._timeScrollers)
+                    editor._isSyncingTimeDigits = true;
+                    foreach (var (digit, box, _) in editor._timeScrollers.Values)
                     {
                         if (newValue)
                             SetSyncToDigit(box, digit);
                         else
                             digit.UnhookToScrollingSelectorBox();
                     }
+                    editor._isSyncingTimeDigits = false;
                 }
-
-                if (!newValue)
-                    editor.SetCurrentValueFromDigits();
             }
         }
 
@@ -152,7 +153,7 @@ namespace PokerTracker3000.WpfComponents
         {
             if (d is NumericalScrollingEditor editor && e.OldValue is int oldValue && e.NewValue is int newValue && oldValue != newValue)
             {
-                if (editor.ScrollerMode == Mode.Money)
+                if (editor.ScrollerMode == Mode.Currency)
                     editor.ChangeDigitsCollection(newValue);
             }
         }
@@ -166,9 +167,37 @@ namespace PokerTracker3000.WpfComponents
         private static readonly DependencyPropertyKey s_digitsPropertyKey = DependencyProperty.RegisterReadOnly(
             nameof(Digits),
             typeof(ObservableCollection<ScrollDigit>),
-            typeof(ScrollingSelectorBox),
+            typeof(NumericalScrollingEditor),
             new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsArrange | FrameworkPropertyMetadataOptions.AffectsRender));
         private static readonly DependencyProperty s_digitsProperty = s_digitsPropertyKey.DependencyProperty;
+
+        #region Routed events
+        public static readonly RoutedEvent CurrencySelectorBoxLoadedEvent = EventManager.RegisterRoutedEvent(
+            nameof(CurrencySelectorBoxLoaded),
+            RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler),
+            typeof(NumericalScrollingEditor));
+
+        public static readonly RoutedEvent TimeSelectorBoxLoadedEvent = EventManager.RegisterRoutedEvent(
+            nameof(TimeSelectorBoxLoaded),
+            RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler),
+            typeof(NumericalScrollingEditor));
+
+        public event RoutedEventHandler CurrencySelectorBoxLoaded
+        {
+            add { AddHandler(CurrencySelectorBoxLoadedEvent, value); }
+            remove { RemoveHandler(CurrencySelectorBoxLoadedEvent, value); }
+        }
+
+        public event RoutedEventHandler TimeSelectorBoxLoaded
+        {
+            add { AddHandler(TimeSelectorBoxLoadedEvent, value); }
+            remove { RemoveHandler(TimeSelectorBoxLoadedEvent, value); }
+        }
+        #endregion
+
+        #endregion
 
         public ScrollDigit TensHourDigit { get; } = new() { Index = 5 };
 
@@ -183,13 +212,17 @@ namespace PokerTracker3000.WpfComponents
         public ScrollDigit OnesSecondDigit { get; } = new() { Index = 0, IsSelected = true };
         #endregion
 
-        #endregion
-
         #region Private fields
-        private readonly List<(ScrollDigit digit, ScrollingSelectorBox box)> _timeScrollers = [];
+        private readonly Dictionary<string, (ScrollDigit digit, ScrollingSelectorBox box, int numberOfSecondsBase)> _timeScrollers = [];
         private const int SecondsPerMinute = 60;
         private const int MinutesPerHour = 60;
         private const int SecondsPerHour = SecondsPerMinute * MinutesPerHour;
+        private int _numberOfCurrencyModeBoxesLoaded = 0;
+        private int _numberOfTimeModeBoxesLoaded = 0;
+        private int _numberOfCurrencyModeBoxes;
+        private int _numberOfTimeModeBoxes;
+        private bool _isSyncingCurrencyDigits = false;
+        private bool _isSyncingTimeDigits = false;
         #endregion
 
         public ObservableCollection<string> NumberOptions { get; } = [];
@@ -200,12 +233,12 @@ namespace PokerTracker3000.WpfComponents
         {
             InitializeComponent();
 
-            _timeScrollers.Add((TensHourDigit, tensHourBox));
-            _timeScrollers.Add((OnesHourDigit, onesHourBox));
-            _timeScrollers.Add((TensMinuteDigit, tensMinuteBox));
-            _timeScrollers.Add((OnesMinuteDigit, onesMinuteBox));
-            _timeScrollers.Add((TensSecondDigit, tensSecondBox));
-            _timeScrollers.Add((OnesSecondDigit, onesSecondBox));
+            _timeScrollers.Add(tensHourBox.Name, (TensHourDigit, tensHourBox, 10 * SecondsPerHour));
+            _timeScrollers.Add(onesHourBox.Name, (OnesHourDigit, onesHourBox, SecondsPerHour));
+            _timeScrollers.Add(tensMinuteBox.Name, (TensMinuteDigit, tensMinuteBox, 10 * SecondsPerMinute));
+            _timeScrollers.Add(onesMinuteBox.Name, (OnesMinuteDigit, onesMinuteBox, SecondsPerMinute));
+            _timeScrollers.Add(tensSecondBox.Name, (TensSecondDigit, tensSecondBox, 10));
+            _timeScrollers.Add(onesSecondBox.Name, (OnesSecondDigit, onesSecondBox, 1));
 
             for (var i = 9; i >= 0; i--)
                 NumberOptions.Add($"{i}");
@@ -214,7 +247,7 @@ namespace PokerTracker3000.WpfComponents
                 NumberOptionsLimited.Add($"{i}");
 
 
-            if (ScrollerMode == Mode.Money)
+            if (ScrollerMode == Mode.Currency)
             {
                 ChangeDigitsCollection(NumberOfDigits);
                 Digits.Last().IsSelected = true;
@@ -223,16 +256,22 @@ namespace PokerTracker3000.WpfComponents
             Loaded += NumericalScrollingEditorLoaded;
         }
 
+        #region Private methods
         private void NumericalScrollingEditorLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= NumericalScrollingEditorLoaded;
             SetDigitsFromCurrentValue();
 
+            _numberOfCurrencyModeBoxes = Digits.Count;
+            _numberOfTimeModeBoxes = _timeScrollers.Count;
+
             if (NavigatorRelay != default)
             {
                 NavigatorRelay.Navigate += (s, e) =>
                 {
-                    var selectedDigit = ScrollerMode == Mode.Money ? Digits.FirstOrDefault(x => x.IsSelected) : _timeScrollers.FirstOrDefault(x => x.digit.IsSelected).digit;
+                    var selectedDigit = ScrollerMode == Mode.Currency ? Digits.FirstOrDefault(x => x.IsSelected) :
+                        _timeScrollers.FirstOrDefault(x => x.Value.digit.IsSelected).Value.digit;
+
                     if (selectedDigit != default)
                     {
                         var isUpOrDown = e == InputEvent.NavigationDirection.Up || e == InputEvent.NavigationDirection.Down;
@@ -244,12 +283,12 @@ namespace PokerTracker3000.WpfComponents
                         {
                             selectedDigit.IsSelected = false;
                             var newIndex = selectedDigit.Index + (e == InputEvent.NavigationDirection.Left ? 1 : -1);
-                            var numberOfDigits = ScrollerMode == Mode.Money ? NumberOfDigits : 6;
+                            var numberOfDigits = ScrollerMode == Mode.Currency ? NumberOfDigits : 6;
                             newIndex = newIndex < 0 ? numberOfDigits - 1 : newIndex % numberOfDigits;
-                            if (ScrollerMode == Mode.Money)
+                            if (ScrollerMode == Mode.Currency)
                                 Digits[NumberOfDigits - 1 - newIndex].IsSelected = true;
                             else if (ScrollerMode == Mode.Time)
-                                _timeScrollers.First(x => x.digit.Index == newIndex)!.digit.IsSelected = true;
+                                _timeScrollers.First(x => x.Value.digit.Index == newIndex)!.Value.digit.IsSelected = true;
                         }
                     }
                 };
@@ -277,7 +316,7 @@ namespace PokerTracker3000.WpfComponents
 
         private void SetDigitsFromCurrentValue()
         {
-            if (ScrollerMode == Mode.Money)
+            if (ScrollerMode == Mode.Currency)
             {
                 var currentDivisor = 1;
                 for (var i = 0; i < NumberOfDigits; i++)
@@ -303,23 +342,6 @@ namespace PokerTracker3000.WpfComponents
             }
         }
 
-        private void SetCurrentValueFromDigits()
-        {
-            if (ScrollerMode == Mode.Money)
-            {
-                CurrentMoneyValue = 0;
-                for (var i = 0; i < NumberOfDigits; i++)
-                    CurrentMoneyValue += ((int)Math.Pow(10, i)) * Digits[NumberOfDigits - 1 - i].Value;
-            }
-            else if (ScrollerMode == Mode.Time)
-            {
-                CurrentTimeValueSeconds =
-                    ((10 * TensHourDigit.Value + OnesHourDigit.Value) * SecondsPerHour) +
-                    ((10 * TensMinuteDigit.Value + OnesMinuteDigit.Value) * SecondsPerMinute) +
-                    10 * TensSecondDigit.Value + OnesSecondDigit.Value;
-            }
-        }
-
         private static void SetSyncToDigit(ScrollingSelectorBox box, ScrollDigit digit)
         {
             digit.SyncScrollerToValue(box);
@@ -327,5 +349,47 @@ namespace PokerTracker3000.WpfComponents
                 digit.HookToScrollingSelectorBox(box);
         }
 
+        #region Event callbacks
+        private void CurrencySelectorControlLoaded(object sender, RoutedEventArgs e)
+        {
+            _numberOfCurrencyModeBoxesLoaded++;
+            if (_numberOfCurrencyModeBoxesLoaded == _numberOfCurrencyModeBoxes)
+                RaiseEvent(new(CurrencySelectorBoxLoadedEvent));
+        }
+
+        private void TimeBoxControlInitialized(object sender, RoutedEventArgs e)
+        {
+            _numberOfTimeModeBoxesLoaded++;
+            if (_numberOfTimeModeBoxesLoaded == _numberOfTimeModeBoxes)
+                RaiseEvent(new(TimeSelectorBoxLoadedEvent));
+        }
+
+        private void CurrencySelectorBoxIndexChanged(object sender, RoutedEventArgs e)
+        {
+            if (_isSyncingCurrencyDigits)
+                return;
+
+            if (sender is not ScrollingSelectorBox box || box.DataContext is not ScrollDigit digit || e is not SelectedIndexChangedEventArgs eventArgs)
+                return;
+
+            CurrentMoneyValue += (digit.InvertValue(eventArgs.NewIndex) - digit.Value) * (int)Math.Pow(10, digit.Index);
+        }
+
+        private void TimeBoxSelectedIndexChanged(object sender, RoutedEventArgs e)
+        {
+            if (_isSyncingTimeDigits)
+                return;
+
+            if (sender is not ScrollingSelectorBox box || e is not SelectedIndexChangedEventArgs eventArgs)
+                return;
+
+            if (!_timeScrollers.TryGetValue(box.Name, out var item))
+                return;
+
+            CurrentTimeValueSeconds += (item.digit.InvertValue(eventArgs.NewIndex) - item.digit.Value) * item.numberOfSecondsBase;
+        }
+        #endregion
+
+        #endregion
     }
 }

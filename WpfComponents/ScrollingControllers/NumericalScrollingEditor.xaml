@@ -40,7 +40,7 @@
             </Style>
         </Grid.Resources>
         
-        <!-- Money mode -->
+        <!-- Currency mode -->
  
         <!-- Display -->
         <TextBlock FontSize="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}"
@@ -58,7 +58,7 @@
                     <Style.Triggers>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
-                                <Condition Binding="{Binding Path=ScrollerMode}" Value="{x:Static components:NumericalScrollingEditor+Mode.Money}" />
+                                <Condition Binding="{Binding Path=ScrollerMode}" Value="{x:Static components:NumericalScrollingEditor+Mode.Currency}" />
                                 <Condition Binding="{Binding Path=IsSelected}" Value="False" />
                             </MultiDataTrigger.Conditions>
                             <MultiDataTrigger.Setters>
@@ -76,7 +76,7 @@
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=ScrollerMode}" Value="{x:Static components:NumericalScrollingEditor+Mode.Money}">
+                        <DataTrigger Binding="{Binding Path=ScrollerMode}" Value="{x:Static components:NumericalScrollingEditor+Mode.Currency}">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
                     </Style.Triggers>
@@ -96,7 +96,9 @@
                         <Grid>
                             <components:ScrollingSelectorBox Style="{StaticResource scrollerStyleMoney}"
                                                              Options="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.NumberOptions}"
-                                                             NavigatorRelay="{Binding Path=.}" />
+                                                             NavigatorRelay="{Binding Path=.}"
+                                                             ControlInitialized="CurrencySelectorControlLoaded"
+                                                             SelectedIndexChanged="CurrencySelectorBoxIndexChanged"/>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -151,7 +153,7 @@
             </TextBlock.Style>
         </TextBlock>
 
-        <!-- Selector -->
+        <!-- Selectors -->
         <StackPanel Orientation="Horizontal">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
@@ -172,8 +174,10 @@
 
             <!-- Hours -->
             <components:ScrollingSelectorBox x:Name="tensHourBox"
-                     Options="{Binding Path=NumberOptions}"
-                     NavigatorRelay="{Binding Path=TensHourDigit}">
+                                             Options="{Binding Path=NumberOptions}"
+                                             NavigatorRelay="{Binding Path=TensHourDigit}"
+                                             ControlInitialized="TimeBoxControlInitialized"
+                                             SelectedIndexChanged="TimeBoxSelectedIndexChanged">
                 <components:ScrollingSelectorBox.Style>
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
@@ -187,7 +191,9 @@
             </components:ScrollingSelectorBox>
             <components:ScrollingSelectorBox x:Name="onesHourBox"
                                              Options="{Binding Path=NumberOptions}"
-                                             NavigatorRelay="{Binding Path=OnesHourDigit}">
+                                             NavigatorRelay="{Binding Path=OnesHourDigit}"
+                                             ControlInitialized="TimeBoxControlInitialized"
+                                             SelectedIndexChanged="TimeBoxSelectedIndexChanged">
                 <components:ScrollingSelectorBox.Style>
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
@@ -205,7 +211,9 @@
             <!-- Minutes -->
             <components:ScrollingSelectorBox x:Name="tensMinuteBox"
                                  Options="{Binding Path=NumberOptionsLimited}"
-                                 NavigatorRelay="{Binding Path=TensMinuteDigit}">
+                                 NavigatorRelay="{Binding Path=TensMinuteDigit}"
+                                 ControlInitialized="TimeBoxControlInitialized"
+                                 SelectedIndexChanged="TimeBoxSelectedIndexChanged">
                 <components:ScrollingSelectorBox.Style>
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
@@ -219,7 +227,9 @@
             </components:ScrollingSelectorBox>
             <components:ScrollingSelectorBox x:Name="onesMinuteBox"
                                              Options="{Binding Path=NumberOptions}"
-                                             NavigatorRelay="{Binding Path=OnesMinuteDigit}">
+                                             NavigatorRelay="{Binding Path=OnesMinuteDigit}"
+                                             ControlInitialized="TimeBoxControlInitialized"
+                                             SelectedIndexChanged="TimeBoxSelectedIndexChanged">
                 <components:ScrollingSelectorBox.Style>
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
@@ -237,7 +247,9 @@
             <!-- Seconds -->
             <components:ScrollingSelectorBox x:Name="tensSecondBox"
                                              Options="{Binding Path=NumberOptionsLimited}"
-                                             NavigatorRelay="{Binding Path=TensSecondDigit}">
+                                             NavigatorRelay="{Binding Path=TensSecondDigit}"
+                                             ControlInitialized="TimeBoxControlInitialized"
+                                             SelectedIndexChanged="TimeBoxSelectedIndexChanged">
                 <components:ScrollingSelectorBox.Style>
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
@@ -250,8 +262,10 @@
                 </components:ScrollingSelectorBox.Style>
             </components:ScrollingSelectorBox>
             <components:ScrollingSelectorBox x:Name="onesSecondBox"
-                                  Options="{Binding Path=NumberOptions}"
-                                  NavigatorRelay="{Binding Path=OnesSecondDigit}">
+                                            Options="{Binding Path=NumberOptions}"
+                                            NavigatorRelay="{Binding Path=OnesSecondDigit}"
+                                            ControlInitialized="TimeBoxControlInitialized"
+                                            SelectedIndexChanged="TimeBoxSelectedIndexChanged">
                 <components:ScrollingSelectorBox.Style>
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>

@@ -146,12 +146,24 @@ namespace PokerTracker3000.WpfComponents
             nameof(SelectedIndexChanged),
             RoutingStrategy.Bubble,
             typeof(RoutedEventHandler),
-            typeof(int));
+            typeof(ScrollingSelectorBox));
+
+        public static readonly RoutedEvent ControlInitializedEvent = EventManager.RegisterRoutedEvent(
+            nameof(ControlInitialized),
+            RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler),
+            typeof(ScrollingSelectorBox));
 
         public event RoutedEventHandler SelectedIndexChanged
         {
             add { AddHandler(SelectedIndexChangedEvent, value); }
             remove { RemoveHandler(SelectedIndexChangedEvent, value); }
+        }
+
+        public event RoutedEventHandler ControlInitialized
+        {
+            add { AddHandler(ControlInitializedEvent, value); }
+            remove { RemoveHandler(ControlInitializedEvent, value); }
         }
 
         private void RaiseSelectedIndexChangedEvent(int newIndex)
@@ -199,6 +211,8 @@ namespace PokerTracker3000.WpfComponents
 
             if (NavigatorRelay != default)
                 NavigatorRelay.Navigate += Navigate;
+
+            RaiseEvent(new(ControlInitializedEvent));
         }
 
         private void Initialize()
