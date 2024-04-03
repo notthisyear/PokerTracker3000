@@ -57,7 +57,7 @@ namespace PokerTracker3000.GameSession
             _eventBus.RegisterListener(this, GameEventReceived,
                 [GameEventBus.EventType.GameStarted, GameEventBus.EventType.GamePaused, GameEventBus.EventType.GameDone]);
             _eventBus.RegisterListener(this, (t, m) => StageEventReceived(m), GameEventBus.EventType.StageChanged);
-            _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(), GameEventBus.EventType.ApplicationClosing);
+            _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
         }
 
         #region Private fields
@@ -146,12 +146,6 @@ namespace PokerTracker3000.GameSession
                 $"Attention players, we're now at stage {msg.StageNumber} and the blinds have changed. The small blind is {GetFormattedDecimal(msg.SmallBlind)} and the big blind is {GetFormattedDecimal(msg.BigBlind)}."));
         }
 
-        private void ApplicationClosing()
-        {
-            _shouldExit = true;
-            _tcs.Task.Wait();
-        }
-
         private static string GetNumberString(int number, string unit)
             => $"{number} {unit}{(number > 1 ? "s" : "")}";
 
@@ -173,6 +167,17 @@ namespace PokerTracker3000.GameSession
             var r = new Random();
             var idx = r.Next(0, options.Length);
             return options[idx];
+        }
+
+
+        private void ApplicationClosing(IInternalMessage m)
+        {
+            if (m is not ApplicationClosingMessage message)
+                return;
+
+            _shouldExit = true;
+            _tcs.Task.Wait();
+            message.NumberOfClosingCallbacksCalled++;
         }
         #endregion
     }

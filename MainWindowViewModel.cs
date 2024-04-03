@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common;
+using PokerTracker3000.Common.Messages;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.Interfaces;
 
@@ -56,12 +57,12 @@ namespace PokerTracker3000.ViewModels
             var gameSettings = new GameSettings();
 
             SessionManager = new(eventBus, gameSettings, focusManager, new GameStagesManager(_eventBus, clock, gameSettings), new(), clock, settings.DefaultPlayerImagePath);
-            SideMenuViewModel = new(focusManager, SessionManager);
+            SideMenuViewModel = new(eventBus, focusManager, SessionManager);
 
             // SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
             //Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());
 
-            _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(), GameEventBus.EventType.ApplicationClosing);
+            _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
         }
 
         public void HandleInputEvent(InputEvent inputEvent)
@@ -85,9 +86,14 @@ namespace PokerTracker3000.ViewModels
             }
         }
 
-        public void ApplicationClosing()
+        public void ApplicationClosing(IInternalMessage m)
         {
+            if (m is not ApplicationClosingMessage message)
+                return;
+
             // TODO: Close Spotify connection if open
+
+            message.NumberOfClosingCallbacksCalled++;
         }
     }
 }

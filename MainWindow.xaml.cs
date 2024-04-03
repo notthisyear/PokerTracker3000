@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using PokerTracker3000.Common;
 using PokerTracker3000.Common.Messages;
+using PokerTracker3000.Interfaces;
 using PokerTracker3000.ViewModels;
 using PokerTracker3000.WpfComponents;
 
@@ -42,6 +43,7 @@ namespace PokerTracker3000
             InitializeGamepadMappings();
 
             MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;
+            _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
         }
 
         private void TitleBarButtonPressed(object sender, RoutedEventArgs e)
@@ -60,8 +62,11 @@ namespace PokerTracker3000
                         WindowState = WindowState.Normal;
                         break;
                     case TitleBarButton.Close:
-                        _eventBus.NotifyListeners(GameEventBus.EventType.ApplicationClosing, new ApplicationClosingMessage());
-                        Close();
+                        _eventBus.NotifyListeners(GameEventBus.EventType.ApplicationClosing,
+                            new ApplicationClosingMessage()
+                            {
+                                TotalNumberOfClosingCallbacks = _eventBus.GetNumberOfListenersForEvent(GameEventBus.EventType.ApplicationClosing)
+                            });
                         break;
                 };
             }
@@ -96,6 +101,28 @@ namespace PokerTracker3000
         private void KeyDownOrUpInWindow(object sender, KeyEventArgs e)
         {
             InputManager.OnKeyboardEvent(e);
+        }
+
+        private void ApplicationClosing(IInternalMessage m)
+        {
+            if (m is not ApplicationClosingMessage msg)
+                return;
+
+            InputManager.Dispose();
+
+            msg.NumberOfClosingCallbacksCalled++;
+            if (msg.NumberOfClosingCallbacksCalled != msg.TotalNumberOfClosingCallbacks)
+            {
+                msg.CallbackOnClosingCallbackCalled = () =>
+                {
+                    if (msg.NumberOfClosingCallbacksCalled == msg.TotalNumberOfClosingCallbacks)
+                        Application.Current.Dispatcher.Invoke(Close);
+                };
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(Close);
+            }
         }
     }
 }

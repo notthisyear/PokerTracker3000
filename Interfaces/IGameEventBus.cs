@@ -12,6 +12,8 @@ namespace PokerTracker3000.Interfaces
 
         public void RegisterListener(object registrator, Action<EventType, IInternalMessage> callbackType, List<EventType> listenTo, bool getMostRecentMessage = false);
 
+        public int GetNumberOfListenersForEvent(EventType eventType);
+
         public void DeregisterListener(object registrator);
     }
 }

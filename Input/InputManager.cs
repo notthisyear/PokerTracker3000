@@ -11,7 +11,7 @@ using static PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.Input
 {
-    public class InputManager : ObservableObject
+    public class InputManager : ObservableObject, IDisposable
     {
         #region Public properties
 
@@ -19,6 +19,7 @@ namespace PokerTracker3000.Input
         private bool _showControllerConnectedInfo = false;
         private bool _lastControllerConnectedWasDisconnected = false;
         private string _controllerInfo = string.Empty;
+        private bool _disposedValue;
         #endregion
 
         public bool ShowControllerConnectedInfo
@@ -158,5 +159,23 @@ namespace PokerTracker3000.Input
         {
             // TODO: Implement
         }
+
+        #region Disposal
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                    _gamepadManager.Dispose();
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

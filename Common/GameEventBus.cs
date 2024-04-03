@@ -108,6 +108,18 @@ namespace PokerTracker3000.Common
             }
         }
 
+        public int GetNumberOfListenersForEvent(EventType eventType)
+        {
+            var result = 0;
+            lock (_listeners)
+            {
+                if (_listeners.TryGetValue(eventType, out var listeners))
+                    result = listeners.Count;
+
+            }
+            return result;
+        }
+
         public void DeregisterListener(object registrator)
         {
             if (Environment.CurrentManagedThreadId == _workerThreadId)

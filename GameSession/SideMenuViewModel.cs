@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Ookii.Dialogs.Wpf;
-
+using PokerTracker3000.Common;
+using PokerTracker3000.Common.Messages;
+using PokerTracker3000.Interfaces;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.GameSession
@@ -27,6 +29,7 @@ namespace PokerTracker3000.GameSession
             Success,
             Failure,
         }
+
         #region Public properties
 
         #region Private fields
@@ -66,6 +69,7 @@ namespace PokerTracker3000.GameSession
         #endregion
 
         #region Private fields
+        private readonly IGameEventBus _eventBus;
         private readonly MainWindowFocusManager _focusManager;
         private int _currentFocusOptionId = 0;
         private readonly Stack<int> _currentFocusParentOptionStack;
@@ -100,8 +104,9 @@ namespace PokerTracker3000.GameSession
         };
         #endregion
 
-        public SideMenuViewModel(MainWindowFocusManager focusManager, GameSessionManager sessionManager)
+        public SideMenuViewModel(IGameEventBus eventBus, MainWindowFocusManager focusManager, GameSessionManager sessionManager)
         {
+            _eventBus = eventBus;
             _focusManager = focusManager;
             _onOpenCallbacks = [];
             _currentFocusParentOptionStack = new();
@@ -540,6 +545,14 @@ namespace PokerTracker3000.GameSession
                 Id = 6,
                 OptionText = "Quit",
                 DescriptionText = "Quit PokerTracker3000",
+                OptionAction = (_) =>
+                {
+                    _eventBus.NotifyListeners(GameEventBus.EventType.ApplicationClosing,
+                        new ApplicationClosingMessage()
+                        {
+                            TotalNumberOfClosingCallbacks = _eventBus.GetNumberOfListenersForEvent(GameEventBus.EventType.ApplicationClosing)
+                        });
+                }
             });
         }
 
