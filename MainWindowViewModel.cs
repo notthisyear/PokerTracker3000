@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common;
 using PokerTracker3000.Common.Messages;
 using PokerTracker3000.GameSession;
@@ -35,7 +36,7 @@ namespace PokerTracker3000.ViewModels
 
         public SideMenuViewModel SideMenuViewModel { get; }
 
-        // public SpotifyClientViewModel SpotifyClientViewModel { get; init; }
+        public SpotifyClientViewModel SpotifyClientViewModel { get; init; }
         #endregion
 
         #region Private fields
@@ -59,8 +60,8 @@ namespace PokerTracker3000.ViewModels
             SessionManager = new(eventBus, gameSettings, focusManager, new GameStagesManager(_eventBus, clock, gameSettings), new(), clock, settings.DefaultPlayerImagePath);
             SideMenuViewModel = new(eventBus, focusManager, SessionManager);
 
-            // SpotifyClientViewModel = new(_settings.ClientId, _settings.LocalHttpListenerPort, _settings.PkceAuthorizationVerifierLength);
-            //Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());
+            SpotifyClientViewModel = new(settings.ClientId, settings.LocalHttpListenerPort, settings.PkceAuthorizationVerifierLength);
+            Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());
 
             _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
         }
