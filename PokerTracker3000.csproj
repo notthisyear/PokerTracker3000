@@ -52,7 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SpotifyApiWrapper\SpotifyApiWrapper.csproj" />
+    <ProjectReference Include="..\DotSpotifyWebWrapper\DotSpotifyWebWrapper.csproj" />
     <ProjectReference Include="Dependencies\DotXInput\DotXInput.csproj" />
   </ItemGroup>
 

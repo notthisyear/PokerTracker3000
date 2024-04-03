@@ -1,7 +1,5 @@
-﻿using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common;
-using PokerTracker3000.Common.Messages;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.Interfaces;
 
@@ -35,8 +33,6 @@ namespace PokerTracker3000.ViewModels
         public GameSessionManager SessionManager { get; }
 
         public SideMenuViewModel SideMenuViewModel { get; }
-
-        public SpotifyClientViewModel SpotifyClientViewModel { get; init; }
         #endregion
 
         #region Private fields
@@ -58,17 +54,8 @@ namespace PokerTracker3000.ViewModels
             var gameSettings = new GameSettings();
 
             SessionManager = new(eventBus, gameSettings, focusManager, new GameStagesManager(_eventBus, clock, gameSettings), new(), clock, settings.DefaultPlayerImagePath);
-            SideMenuViewModel = new(eventBus, focusManager, SessionManager);
+            SideMenuViewModel = new(eventBus, focusManager, SessionManager, new(settings.ClientId, settings.LocalHttpListenerPort, settings.PkceAuthorizationVerifierLength, 5000));
 
-            SpotifyClientViewModel = new(settings.ClientId, settings.LocalHttpListenerPort, settings.PkceAuthorizationVerifierLength);
-            Task.Run(async () =>
-            {
-                await SpotifyClientViewModel.AuthorizeApplication();
-                _ = await SpotifyClientViewModel.TryGetUserName();
-                await SpotifyClientViewModel.TryGetPlaybackState();
-            });
-
-            _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
         }
 
         public void HandleInputEvent(InputEvent inputEvent)
@@ -90,16 +77,6 @@ namespace PokerTracker3000.ViewModels
             {
                 _focusManager.HandleNavigationEvent(inputEvent.Direction);
             }
-        }
-
-        public void ApplicationClosing(IInternalMessage m)
-        {
-            if (m is not ApplicationClosingMessage message)
-                return;
-
-            // TODO: Close Spotify connection if open
-
-            message.NumberOfClosingCallbacksCalled++;
         }
     }
 }

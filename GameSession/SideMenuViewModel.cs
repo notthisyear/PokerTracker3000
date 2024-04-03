@@ -7,6 +7,7 @@ using Ookii.Dialogs.Wpf;
 using PokerTracker3000.Common;
 using PokerTracker3000.Common.Messages;
 using PokerTracker3000.Interfaces;
+
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.GameSession
@@ -66,6 +67,8 @@ namespace PokerTracker3000.GameSession
         public GameSessionManager SessionManager { get; }
 
         public List<SideMenuOptionModel> SideMenuOptions { get; }
+
+        public SpotifyClientViewModel SpotifyViewModel { get; }
         #endregion
 
         #region Private fields
@@ -79,15 +82,16 @@ namespace PokerTracker3000.GameSession
 
         private readonly int _startPauseGameOptionId;
         private readonly int _goToOptionId;
+        private readonly int _gameSettingsOptionId;
+        private readonly int _loadSettingsOptionId;
+        private readonly int _loginSpotifyOption;
         private readonly int _previousStageOptionId;
         private readonly int _nextStageOptionId;
-        private readonly int _gameSettingsOptionId;
         private readonly int _editStagesOptionId;
-        private readonly int _loadSettingsOptionId;
-        private readonly int _loadGameSettingsOptionId;
-        private readonly int _loadPlayerConfigurationOptionId;
         private readonly int _resetStageOptionId;
         private readonly int _resetAllStagesOptionId;
+        private readonly int _loadGameSettingsOptionId;
+        private readonly int _loadPlayerConfigurationOptionId;
 
         private static readonly VistaSaveFileDialog s_saveSettingsDialog = new()
         {
@@ -104,22 +108,25 @@ namespace PokerTracker3000.GameSession
         };
         #endregion
 
-        public SideMenuViewModel(IGameEventBus eventBus, MainWindowFocusManager focusManager, GameSessionManager sessionManager)
+        public SideMenuViewModel(IGameEventBus eventBus, MainWindowFocusManager focusManager, GameSessionManager sessionManager, SpotifyClientViewModel spotifyViewModel)
         {
             _eventBus = eventBus;
             _focusManager = focusManager;
+            SpotifyViewModel = spotifyViewModel;
+
             _onOpenCallbacks = [];
             _currentFocusParentOptionStack = new();
             _currentFocusParentOptionListStack = new();
 
             SessionManager = sessionManager;
             SideMenuOptions = [];
-            InitializeOptionsList();
 
+            InitializeOptionsList();
             _startPauseGameOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Start game", StringComparison.InvariantCulture)).Id;
             _goToOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Go to...", StringComparison.InvariantCulture)).Id;
             _gameSettingsOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Game settings...", StringComparison.InvariantCulture)).Id;
             _loadSettingsOptionId = SideMenuOptions.First(x => x.OptionText.Equals("Load...", StringComparison.InvariantCulture)).Id;
+            _loginSpotifyOption = SideMenuOptions.First(x => x.OptionText.Equals("Link Spotify", StringComparison.InvariantCulture)).Id;
             _previousStageOptionId = SideMenuOptions[_goToOptionId].SubOptions.First(x => x.OptionText.Equals("Previous stage", StringComparison.InvariantCulture)).Id;
             _nextStageOptionId = SideMenuOptions[_goToOptionId].SubOptions.First(x => x.OptionText.Equals("Next stage", StringComparison.InvariantCulture)).Id;
             _editStagesOptionId = SideMenuOptions[_gameSettingsOptionId].SubOptions.First(x => x.OptionText.Equals("Edit stages", StringComparison.InvariantCulture)).Id;
@@ -218,6 +225,14 @@ namespace PokerTracker3000.GameSession
                 SideMenuOptions[_startPauseGameOptionId].IsAvailable = false;
                 SessionManager.Clock.Stop();
             };
+
+            SpotifyViewModel.PropertyChanged += (s, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.PropertyName) && e.PropertyName.Equals(nameof(SpotifyViewModel.AuthenticationStatus), StringComparison.InvariantCulture))
+                    SideMenuOptions[_loginSpotifyOption].IsAvailable = SpotifyViewModel.AuthenticationStatus != AuthenticationStatus.Authenticated;
+            };
+
+            _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
         }
 
         #region Private methods
@@ -558,6 +573,29 @@ namespace PokerTracker3000.GameSession
             SideMenuOptions.Add(new()
             {
                 Id = 6,
+                OptionText = "Link Spotify",
+                DescriptionText = "Log-in a Spotify user",
+                OptionAction = (opt) =>
+                {
+                    if (SpotifyViewModel.AuthenticationStatus != AuthenticationStatus.Authenticated)
+                    {
+                        Task.Run(async () =>
+                        {
+                            await SpotifyViewModel.AuthorizeApplication();
+                            if (SpotifyViewModel.AuthenticationStatus == AuthenticationStatus.Authenticated)
+                            {
+                                await SpotifyViewModel.TrySetUserName();
+                                opt.UnavaliableDescriptionText = $"'{SpotifyViewModel.AuthorizedUser}' already logged in";
+                                SpotifyViewModel.StartTrackMonitoring();
+                            }
+
+                        });
+                    }
+                }
+            });
+            SideMenuOptions.Add(new()
+            {
+                Id = 7,
                 OptionText = "Quit",
                 DescriptionText = "Quit PokerTracker3000",
                 OptionAction = (_) =>
@@ -610,6 +648,16 @@ namespace PokerTracker3000.GameSession
             SideMenuOptions[_goToOptionId].SubOptions[_previousStageOptionId].IsAvailable = currentStage != default && SessionManager.StageManager.TryGetStageByNumber(currentStage.Number - 1, out _);
             SideMenuOptions[_goToOptionId].SubOptions[_nextStageOptionId].IsAvailable = currentStage != default && SessionManager.StageManager.TryGetStageByNumber(currentStage.Number + 1, out _);
         }
+
+        private void ApplicationClosing(IInternalMessage m)
+        {
+            if (m is not ApplicationClosingMessage msg)
+                return;
+
+            SpotifyViewModel.Dispose();
+            msg.NumberOfClosingCallbacksCalled++;
+        }
+
         #endregion
     }
 }
