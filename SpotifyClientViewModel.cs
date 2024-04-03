@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using SpotifyApiWrapper;
-using SpotifyApiWrapper.ApiCalls;
-using SpotifyApiWrapper.Types;
+using DotSpotifyWebWrapper;
+using DotSpotifyWebWrapper.ApiCalls;
+using DotSpotifyWebWrapper.Types;
 
 namespace PokerTracker3000
 {
