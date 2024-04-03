@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SpotifyApiWrapper;
+using SpotifyApiWrapper.ApiCalls;
 using SpotifyApiWrapper.Types;
 
 namespace PokerTracker3000
@@ -59,9 +60,47 @@ namespace PokerTracker3000
                 AccessScopeType.UserReadPrivate,
                 AccessScopeType.UserReadEmail,
                 AccessScopeType.UserReadPlaybackState,
-                AccessScopeType.UserReadCurrentlyPlaying);
+                AccessScopeType.UserReadCurrentlyPlaying,
+                AccessScopeType.UserModifyPlaybackState);
 
             AuthenticationStatus = success ? AuthenticationStatus.Authenticated : AuthenticationStatus.AuthenticationFailed;
+        }
+
+        public async Task<string> TryGetUserName()
+        {
+            if (AuthenticationStatus != AuthenticationStatus.Authenticated)
+                return string.Empty;
+
+            var call = new GetCurrentUserProfile();
+            var result = await _client.SendSpotifyApiCall(call);
+
+            if (!result)
+                return string.Empty;
+
+            return call.Response!.DisplayName ?? string.Empty;
+        }
+
+        public async Task TryGetPlaybackState()
+        {
+            if (AuthenticationStatus != AuthenticationStatus.Authenticated)
+                return;
+
+            var call = new GetPlaybackState();
+            var result = await _client.SendSpotifyApiCall(call);
+            var data = call.Response;
+
+            if (data != default)
+            {
+                var deviceId = data.Device.Id;
+                //var pauseCall = new PausePlayback();
+                //result = await _client.SendSpotifyApiCall(pauseCall);
+
+                //var resumeCall = new StartOrResumePlayback(deviceId!);
+                //result = await _client.SendSpotifyApiCall(resumeCall);
+
+                var setVolumeCall = new SetPlaybackVolume(50, deviceId!);
+                result = await _client.SendSpotifyApiCall(setVolumeCall);
+            }
         }
         #endregion
     }
