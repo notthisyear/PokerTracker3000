@@ -61,7 +61,12 @@ namespace PokerTracker3000.ViewModels
             SideMenuViewModel = new(eventBus, focusManager, SessionManager);
 
             SpotifyClientViewModel = new(settings.ClientId, settings.LocalHttpListenerPort, settings.PkceAuthorizationVerifierLength);
-            Task.Run(async () => await SpotifyClientViewModel.AuthorizeApplication());
+            Task.Run(async () =>
+            {
+                await SpotifyClientViewModel.AuthorizeApplication();
+                _ = await SpotifyClientViewModel.TryGetUserName();
+                await SpotifyClientViewModel.TryGetPlaybackState();
+            });
 
             _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
         }
