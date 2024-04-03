@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PokerTracker3000.Spotify;
+using SpotifyApiWrapper;
+using SpotifyApiWrapper.Types;
 
 namespace PokerTracker3000
 {
@@ -12,7 +14,7 @@ namespace PokerTracker3000
         AuthenticationFailed
     }
 
-    public class SpotifyClientViewModel : ObservableObject
+    public class SpotifyClientViewModel(string clientId, int localListenerPort, int pkceVerifierLength) : ObservableObject
     {
         #region Public properties
 
@@ -35,15 +37,10 @@ namespace PokerTracker3000
         #endregion
 
         #region Private fields
-        private readonly SpotifyClient _client;
-        private readonly int _pkceVerifierLength;
-        #endregion
+        private readonly SpotifyClient _client = new(clientId, localListenerPort);
+        private readonly int _pkceVerifierLength = pkceVerifierLength;
 
-        public SpotifyClientViewModel(string clientId, int localListenerPort, int pkceVerifierLength)
-        {
-            _client = new(clientId, localListenerPort);
-            _pkceVerifierLength = pkceVerifierLength;
-        }
+        #endregion
 
         #region Public methods
         public async Task AuthorizeApplication()
@@ -51,7 +48,19 @@ namespace PokerTracker3000
             if (AuthenticationStatus == AuthenticationStatus.Authenticated)
                 return;
 
-            var success = await _client.TryGetTokenForScopes(Authorizer.AuthorizationFlowType.AuthorizationCodePkce, new Progress<string>(s => AuthenticationProgress = s), _pkceVerifierLength);
+            var success = await _client.TryGetTokenForScopes(
+                AuthorizationFlowType.AuthorizationCodePkce,
+                new Progress<string>(s =>
+                {
+                    AuthenticationProgress = s;
+                    Debug.WriteLine(s);
+                }),
+                _pkceVerifierLength,
+                AccessScopeType.UserReadPrivate,
+                AccessScopeType.UserReadEmail,
+                AccessScopeType.UserReadPlaybackState,
+                AccessScopeType.UserReadCurrentlyPlaying);
+
             AuthenticationStatus = success ? AuthenticationStatus.Authenticated : AuthenticationStatus.AuthenticationFailed;
         }
         #endregion
