@@ -11,6 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Dependencies\**" />
+    <EmbeddedResource Remove="Dependencies\**" />
+    <None Remove="Dependencies\**" />
+    <Page Remove="Dependencies\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EditorConfigFiles Remove="D:\programming\vs\PokerTracker3000\.editorconfig" />
   </ItemGroup>
 
@@ -42,6 +49,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
     <PackageReference Include="System.Speech" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Dependencies\DotXInput\DotXInput.csproj" />
   </ItemGroup>
 
   <ItemGroup>

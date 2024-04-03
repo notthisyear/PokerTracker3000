@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
-using PokerTracker3000.GamepadInput;
-using PokerTracker3000.Input.GamepadInput;
+using DotXInput.GamepadInput;
+using DotXInput.Input.GamepadInput;
 
 using static PokerTracker3000.Input.UserInputEvent;
 

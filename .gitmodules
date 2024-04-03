@@ -1,0 +1,3 @@
+[submodule "Dependencies/DotXInput"]
+	path = Dependencies/DotXInput
+	url = https://github.com/notthisyear/DotXInput.git

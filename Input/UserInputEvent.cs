@@ -1,5 +1,5 @@
 ﻿using System.Windows.Input;
-using PokerTracker3000.GamepadInput;
+using DotXInput.GamepadInput;
 
 namespace PokerTracker3000.Input
 {
