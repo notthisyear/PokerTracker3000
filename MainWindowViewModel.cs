@@ -29,7 +29,7 @@ namespace PokerTracker3000.ViewModels
             private set => SetProperty(ref _rightSideMenuOpen, value);
         }
 
-        public string ProgramDescription { get; init; } = "hello";
+        public string ProgramDescription { get; init; } = string.Empty;
 
         public GameSessionManager SessionManager { get; }
 
