@@ -314,7 +314,7 @@ namespace PokerTracker3000.GameSession
                     {
                         Id = 1,
                         OptionText = "Remove empty spots",
-                        DescriptionText = "Removes all empty slots",
+                        DescriptionText = "Removes all empty spots",
                         IsSubOption = true,
                         OptionAction = (_) => SessionManager.ConsolidateLayout(),
                     }
