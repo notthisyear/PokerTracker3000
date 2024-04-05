@@ -427,6 +427,21 @@ namespace PokerTracker3000.GameSession
                             }
                         }
                     },
+                    new()
+                    {
+                        Id = 9,
+                        OptionText = "Reset all amounts",
+                        DescriptionText = "Reset all player bets and pot total",
+                        IsSubOption = true, OptionAction = (_) =>
+                        {
+                            foreach (var spot in SessionManager.PlayerSpots)
+                            {
+                                if (spot.HasPlayerData)
+                                    spot.PlayerData!.MoneyInThePot = 0;
+                            }
+                            SessionManager.TotalAmountInPot = 0;
+                        }
+                    },
                 ],
             });
             SideMenuOptions.Add(new()

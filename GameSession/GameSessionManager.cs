@@ -66,7 +66,7 @@ namespace PokerTracker3000.GameSession
         public decimal TotalAmountInPot
         {
             get => _totalAmountInPot;
-            private set => SetProperty(ref _totalAmountInPot, value);
+            set => SetProperty(ref _totalAmountInPot, value);
         }
 
         public bool TableFull
