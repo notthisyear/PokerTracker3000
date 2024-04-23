@@ -271,6 +271,22 @@
                         </TextBlock>
                     </StackPanel>
                 </Border>
+
+                <!-- Spotify information box -->
+                <components:SpotifyInformationBox Grid.Row="2"
+                                                  VerticalAlignment="Bottom"
+                                                  HorizontalAlignment="Right"
+                                                  Margin="20"
+                                                  ViewModel="{Binding Path=ViewModel.SpotifyViewModel}">
+                    <components:SpotifyInformationBox.Style>
+                        <Style TargetType="{x:Type components:SpotifyInformationBox}">
+                            <Setter Property="Opacity" Value="1" />
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Setter Property="MinWidth" Value="150" />
+                            <Setter Property="MaxHeight" Value="200" />
+                        </Style>
+                    </components:SpotifyInformationBox.Style>
+                </components:SpotifyInformationBox>
             </Grid>
         </Border>
     </Viewbox>

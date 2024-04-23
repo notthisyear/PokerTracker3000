@@ -1,0 +1,168 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.SpotifyInformationBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:app="clr-namespace:PokerTracker3000"
+             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+             xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters">
+
+    <UserControl.Resources>
+        <Color x:Key="spotifyGreen" A="255" R="30" G="215" B="96" />
+        <Color x:Key="spotifyBlack" A="255" R="255" G="255" B="255" />
+        <SolidColorBrush x:Key="logoColor" Color="{StaticResource spotifyGreen}"/>
+        <SolidColorBrush x:Key="boxBackground" Color="{StaticResource spotifyGreen}" Opacity="0.4"/>
+        <SolidColorBrush x:Key="textColor" Color="{StaticResource spotifyBlack}"/>
+        <SolidColorBrush x:Key="textSemiTransparent" Color="{StaticResource spotifyBlack}" Opacity="0.8"/>
+
+        <converters:EmptyImageConverter x:Key="emptyImageConverter" />
+
+        <Style x:Key="textScrollerBase" TargetType="{x:Type components:TextScrollerFixedWidth}">
+            <Setter Property="TextFontSize" Value="14" />
+            <Setter Property="TextFontFamily" Value="{StaticResource CascadiaCode}" />
+            <Setter Property="TextForeground" Value="{StaticResource textColor}" />
+            <Setter Property="AlwaysScroll" Value="False" />
+            <Setter Property="NumberOfCharacters" Value="25" />
+        </Style>
+
+        <Style x:Key="titleLabelScroller" TargetType="{x:Type components:TextScrollerFixedWidth}" BasedOn="{StaticResource textScrollerBase}">
+            <Setter Property="TextFontWeight" Value="Bold" />
+        </Style>
+
+        <Style x:Key="artistLabelScroller" TargetType="{x:Type components:TextScrollerFixedWidth}" BasedOn="{StaticResource textScrollerBase}">
+            <Setter Property="TextForeground" Value="{StaticResource textSemiTransparent}" />
+        </Style>
+
+        <Style x:Key="songInfoScroller" TargetType="{x:Type components:TextScrollerFixedWidth}" BasedOn="{StaticResource textScrollerBase}">
+            <Setter Property="TextFontStyle" Value="Italic" />
+            <Setter Property="TextForeground" Value="{StaticResource textSemiTransparent}" />
+            <Setter Property="TextFontSize" Value="12" />
+        </Style>
+
+        <Style x:Key="songInfo" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+            <Setter Property="FontStyle" Value="Italic" />
+            <Setter Property="Foreground" Value="{StaticResource textSemiTransparent}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+    </UserControl.Resources>
+  
+    <Border Padding="10"
+            CornerRadius="5"
+            Background="{StaticResource boxBackground}"
+            DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
+
+        <Grid>
+            <!-- Not authorized box -->
+            <StackPanel Orientation="Vertical">
+                <StackPanel.Style>
+                    <Style TargetType="{x:Type StackPanel}">
+                        <Setter Property="HorizontalAlignment" Value="Center" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ViewModel.AuthenticationStatus}" Value="{x:Static app:AuthenticationStatus.Authenticated}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                
+                <TextBlock Text="No account linked"
+                           Style="{StaticResource MainTextBlockStyle}"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"/>
+
+                <TextBlock Text="{Binding Path=ViewModel.AuthenticationProgress}"
+                           Style="{StaticResource songInfo}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- No song info box -->
+            <TextBlock Text="No song info">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                        <Setter Property="HorizontalAlignment" Value="Center" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Setter Property="FontWeight" Value="Bold" />
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Path=ViewModel.HasTrackInfo}" Value="False" />
+                                    <Condition Binding="{Binding Path=ViewModel.AuthenticationStatus}" Value="{x:Static app:AuthenticationStatus.Authenticated}" />
+                                </MultiDataTrigger.Conditions>
+                                <MultiDataTrigger.Setters>
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </MultiDataTrigger.Setters>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <!-- Information box -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="3*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid.Style>
+                    <Style TargetType="{x:Type Grid}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ViewModel.HasTrackInfo}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+
+                <!-- Logo -->
+                <Path Fill="{StaticResource logoColor}"
+                          Data="m 16 0 c -8.85 0 -16 7.1685 -16 16 c 0 8.85 7.1685 16 16 16 c 8.85 0 16 -7.1685 16 -16 s -7.1685 -16 -16 -16 z m 7.34 23.092 c -0.2865 0.478 -0.8985 0.6115 -1.3765 0.325 c -3.766 -2.294 -8.4875 -2.81 -14.07 -1.5485 c -0.535 0.115 -1.07 -0.21 -1.185 -0.745 s 0.21 -1.07 0.745 -1.185 c 6.098 -1.395 11.335 -0.803 15.541 1.778 a 1 1 90 0 1 0.344 1.3765 z m 1.95 -4.3585 c -0.363 0.5925 -1.128 0.765 -1.72 0.42 c -4.301 -2.638 -10.858 -3.4025 -15.9425 -1.8735 c -0.669 0.191 -1.357 -0.172 -1.5485 -0.822 c -0.191 -0.669 0.172 -1.357 0.841 -1.5485 c 5.811 -1.7585 13.037 -0.9175 17.988 2.122 c 0.5735 0.344 0.745 1.1085 0.3825 1.7015 z m 0.172 -4.55 c -5.1615 -3.0585 -13.668 -3.345 -18.6 -1.854 c -0.784 0.2485 -1.625 -0.21 -1.8735 -0.994 s 0.21 -1.625 0.994 -1.8735 c 5.6585 -1.72 15.0635 -1.3765 20.99 2.141 c 0.7075 0.42 0.9365 1.338 0.516 2.045 c -0.3825 0.7265 -1.319 0.956 -2.0265 0.535 z" />
+
+
+                <!-- Current song title -->
+                <components:TextScrollerFixedWidth Grid.Row="1"
+                                                   Text="{Binding Path=ViewModel.CurrentTrackName}"
+                                                   Style="{StaticResource titleLabelScroller}" />
+
+
+                <!-- Current song artist -->
+                <components:TextScrollerFixedWidth Grid.Row="2"
+                                   Text="{Binding Path=ViewModel.CurrentTrackArtist}"
+                                   Style="{StaticResource artistLabelScroller}" />
+                
+                <!-- Current song album -->
+                <components:TextScrollerFixedWidth Grid.Row="3"
+                               Text="{Binding Path=ViewModel.CurrentTrackAlbum}"
+                               Style="{StaticResource songInfoScroller}"/>
+
+                <!-- Time info -->
+                <StackPanel Orientation="Horizontal"
+                                        Grid.Row="4">
+                    <TextBlock Text="{Binding Path=ViewModel.CurrentTrackProgressSeconds, Converter={StaticResource secondsToTimeStringConverter}}"
+                               Style="{StaticResource songInfo}" />
+                    <TextBlock Text="/"
+                               Style="{StaticResource songInfo}" />
+                    <TextBlock Text="{Binding Path=ViewModel.CurrentTrackLengthSeconds, Converter={StaticResource secondsToTimeStringConverter}}"
+                               Style="{StaticResource songInfo}" />
+                </StackPanel>
+
+                <!-- Cover art -->
+                <Image Grid.Column="1"
+                        Grid.RowSpan="5"
+                        Margin="10,0,0,0"
+                        Opacity="0.8"
+                        Source="{Binding ViewModel.CurrentCoverArtPath, Converter={StaticResource emptyImageConverter}}" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
