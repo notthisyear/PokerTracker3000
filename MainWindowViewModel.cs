@@ -33,6 +33,8 @@ namespace PokerTracker3000.ViewModels
         public GameSessionManager SessionManager { get; }
 
         public SideMenuViewModel SideMenuViewModel { get; }
+
+        public SpotifyClientViewModel SpotifyViewModel { get; }
         #endregion
 
         #region Private fields
@@ -53,8 +55,10 @@ namespace PokerTracker3000.ViewModels
             _audioManager = new AudioManager(eventBus, clock, settings.RiffSoundEffectPath);
             var gameSettings = new GameSettings();
 
+
             SessionManager = new(eventBus, gameSettings, focusManager, new GameStagesManager(_eventBus, clock, gameSettings), new(), clock, settings.DefaultPlayerImagePath);
-            SideMenuViewModel = new(eventBus, focusManager, SessionManager, new(settings.ClientId, settings.LocalHttpListenerPort, settings.PkceAuthorizationVerifierLength, 5000));
+            SpotifyViewModel = new(settings.ClientId, settings.LocalHttpListenerPort, settings.PkceAuthorizationVerifierLength, 3000);
+            SideMenuViewModel = new(eventBus, focusManager, SessionManager, SpotifyViewModel);
 
         }
 

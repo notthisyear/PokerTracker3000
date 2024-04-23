@@ -67,13 +67,12 @@ namespace PokerTracker3000.GameSession
         public GameSessionManager SessionManager { get; }
 
         public List<SideMenuOptionModel> SideMenuOptions { get; }
-
-        public SpotifyClientViewModel SpotifyViewModel { get; }
         #endregion
 
         #region Private fields
         private readonly IGameEventBus _eventBus;
         private readonly MainWindowFocusManager _focusManager;
+        private readonly SpotifyClientViewModel _spotifyViewModel;
         private int _currentFocusOptionId = 0;
         private readonly Stack<int> _currentFocusParentOptionStack;
         private readonly Stack<List<SideMenuOptionModel>> _currentFocusParentOptionListStack;
@@ -112,7 +111,7 @@ namespace PokerTracker3000.GameSession
         {
             _eventBus = eventBus;
             _focusManager = focusManager;
-            SpotifyViewModel = spotifyViewModel;
+            _spotifyViewModel = spotifyViewModel;
 
             _onOpenCallbacks = [];
             _currentFocusParentOptionStack = new();
@@ -226,10 +225,10 @@ namespace PokerTracker3000.GameSession
                 SessionManager.Clock.Stop();
             };
 
-            SpotifyViewModel.PropertyChanged += (s, e) =>
+            _spotifyViewModel.PropertyChanged += (s, e) =>
             {
-                if (!string.IsNullOrEmpty(e.PropertyName) && e.PropertyName.Equals(nameof(SpotifyViewModel.AuthenticationStatus), StringComparison.InvariantCulture))
-                    SideMenuOptions[_loginSpotifyOption].IsAvailable = SpotifyViewModel.AuthenticationStatus != AuthenticationStatus.Authenticated;
+                if (!string.IsNullOrEmpty(e.PropertyName) && e.PropertyName.Equals(nameof(_spotifyViewModel.AuthenticationStatus), StringComparison.InvariantCulture))
+                    SideMenuOptions[_loginSpotifyOption].IsAvailable = _spotifyViewModel.AuthenticationStatus != AuthenticationStatus.Authenticated;
             };
 
             _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
@@ -562,16 +561,16 @@ namespace PokerTracker3000.GameSession
                 DescriptionText = "Log-in a Spotify user",
                 OptionAction = (opt) =>
                 {
-                    if (SpotifyViewModel.AuthenticationStatus != AuthenticationStatus.Authenticated)
+                    if (_spotifyViewModel.AuthenticationStatus != AuthenticationStatus.Authenticated)
                     {
                         Task.Run(async () =>
                         {
-                            await SpotifyViewModel.AuthorizeApplication();
-                            if (SpotifyViewModel.AuthenticationStatus == AuthenticationStatus.Authenticated)
+                            await _spotifyViewModel.AuthorizeApplication();
+                            if (_spotifyViewModel.AuthenticationStatus == AuthenticationStatus.Authenticated)
                             {
-                                await SpotifyViewModel.TrySetUserName();
-                                opt.UnavaliableDescriptionText = $"'{SpotifyViewModel.AuthorizedUser}' already logged in";
-                                SpotifyViewModel.StartTrackMonitoring();
+                                await _spotifyViewModel.TrySetUserName();
+                                opt.UnavaliableDescriptionText = $"'{_spotifyViewModel.AuthorizedUser}' already logged in";
+                                _spotifyViewModel.StartTrackMonitoring();
                             }
 
                         });
@@ -639,7 +638,7 @@ namespace PokerTracker3000.GameSession
             if (m is not ApplicationClosingMessage msg)
                 return;
 
-            SpotifyViewModel.Dispose();
+            _spotifyViewModel.Dispose();
             msg.NumberOfClosingCallbacksCalled++;
         }
 
