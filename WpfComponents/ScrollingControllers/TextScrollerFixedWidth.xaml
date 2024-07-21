@@ -1,21 +1,23 @@
 ﻿<UserControl x:Class="PokerTracker3000.WpfComponents.TextScrollerFixedWidth"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Canvas Background="Transparent"
+            HorizontalAlignment="Left"
             Name="rootCanvas"
             DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
+        
         <Canvas ClipToBounds="True"
                 Name="mainScrollerCanvas"
+                Background="Transparent"
                 Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Canvas}}, Path=ActualHeight}">
-            
+
             <TextBlock Name="scroller1"
                        Text="{Binding Path=Text}" 
                        FontSize="{Binding Path=TextFontSize}"
                        FontFamily="{Binding Path=TextFontFamily}"
                        FontWeight="{Binding Path=TextFontWeight}"
                        FontStyle="{Binding Path=TextFontStyle}"
-                       Foreground="{Binding Path=TextForeground}"/>
+                       Foreground="{Binding Path=TextForeground}" />
             <TextBlock Name="scroller2"
                        Text="{Binding Path=Text}" 
                        FontSize="{Binding Path=TextFontSize}"

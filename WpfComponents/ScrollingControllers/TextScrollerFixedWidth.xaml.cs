@@ -123,6 +123,34 @@ namespace PokerTracker3000.WpfComponents
             typeof(TextScrollerFixedWidth),
             new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender, AlwaysScrollPropertyChanged));
 
+        public double ScrollSequenceLengthSeconds
+        {
+            get { return (double)GetValue(ScrollSequenceLengthSecondsProperty); }
+            set { SetValue(ScrollSequenceLengthSecondsProperty, value); }
+        }
+        public static readonly DependencyProperty ScrollSequenceLengthSecondsProperty = DependencyProperty.Register(
+            nameof(ScrollSequenceLengthSeconds),
+            typeof(double),
+            typeof(TextScrollerFixedWidth),
+            new FrameworkPropertyMetadata(30.0, FrameworkPropertyMetadataOptions.AffectsRender, SequenceLengthOrOverlapFactorPropertyChanged));
+
+        public double OverlapFactor
+        {
+            get { return (double)GetValue(OverlapFactorProperty); }
+            set { SetValue(OverlapFactorProperty, value); }
+        }
+        public static readonly DependencyProperty OverlapFactorProperty = DependencyProperty.Register(
+            nameof(OverlapFactor),
+            typeof(double),
+            typeof(TextScrollerFixedWidth),
+            new FrameworkPropertyMetadata(0.2, FrameworkPropertyMetadataOptions.AffectsRender, SequenceLengthOrOverlapFactorPropertyChanged, ForceOverlapFactorBetweenZeroAndOne));
+
+        private static object ForceOverlapFactorBetweenZeroAndOne(DependencyObject d, object baseValue)
+        {
+            if (baseValue is double val)
+                return val < 0.0 ? 0.0 : (val > 1.0 ? 1.0 : val);
+            return baseValue;
+        }
 
         private static void PropertyAffectingSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -159,6 +187,15 @@ namespace PokerTracker3000.WpfComponents
             if (d is TextScrollerFixedWidth control && e.NewValue is bool newValue && e.OldValue is bool oldValue && newValue != oldValue)
                 control.UpdateTextScroller(control.MeasureString(control.Text), newValue);
         }
+        private static void SequenceLengthOrOverlapFactorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is TextScrollerFixedWidth control && e.NewValue is double newValue && e.OldValue is double oldValue && newValue != oldValue)
+                control.UpdateTextScroller(control.MeasureString(control.Text), control.AlwaysScroll);
+        }
+        #endregion
+
+        #region Private fields
+        private (DoubleAnimationUsingKeyFrames first, DoubleAnimationUsingKeyFrames second) _scrollerAnimation = (new(), new());
         #endregion
 
         public TextScrollerFixedWidth()
@@ -215,30 +252,37 @@ namespace PokerTracker3000.WpfComponents
 
         private void UpdateTextScroller(double textWidth, bool alwaysScroll)
         {
+            // Note: Setting BeginTime to null removes any active animations
+            _scrollerAnimation.first.BeginTime = null;
+            _scrollerAnimation.second.BeginTime = null;
+            scroller2.BeginAnimation(OpacityProperty, default);
+
             var shouldScroll = textWidth > 0 && mainScrollerCanvas.Width > 0 && (textWidth > mainScrollerCanvas.Width || alwaysScroll);
             if (shouldScroll)
             {
-                scroller1.BeginAnimation(Canvas.LeftProperty, new DoubleAnimationUsingKeyFrames()
-                {
-                    KeyFrames =
-                    [
-                        new LinearDoubleKeyFrame() { Value = mainScrollerCanvas.Width, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0)) },
-                        new LinearDoubleKeyFrame() { Value = -textWidth, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(30)) },
-                        new LinearDoubleKeyFrame() { Value = -textWidth, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(50)) },
-                    ],
-                    RepeatBehavior = RepeatBehavior.Forever
-                });
+                _scrollerAnimation.first.KeyFrames = GetKeyFrames(textWidth);
+                _scrollerAnimation.first.RepeatBehavior = RepeatBehavior.Forever;
+                _scrollerAnimation.first.BeginTime = TimeSpan.FromSeconds(0);
+                scroller1.BeginAnimation(Canvas.LeftProperty, _scrollerAnimation.first);
 
-                scroller2.Visibility = Visibility.Visible;
-                scroller2.BeginAnimation(Canvas.LeftProperty, new DoubleAnimationUsingKeyFrames()
+                // Note: The second scroller should behave identically, but the start of the animation
+                //       should be delayed with (1 - OverlapFactor) * L.
+                var secondScrollerDelay = (1 - OverlapFactor) * ScrollSequenceLengthSeconds;
+                _scrollerAnimation.second.KeyFrames = GetKeyFrames(textWidth);
+                _scrollerAnimation.second.RepeatBehavior = RepeatBehavior.Forever;
+                _scrollerAnimation.second.BeginTime = TimeSpan.FromSeconds(secondScrollerDelay);
+
+                scroller2.Opacity = 0.0;
+                scroller2.BeginAnimation(Canvas.LeftProperty, _scrollerAnimation.second);
+                scroller2.BeginAnimation(OpacityProperty, new DoubleAnimationUsingKeyFrames()
                 {
-                    KeyFrames =
-                    [
-                        new LinearDoubleKeyFrame() { Value = mainScrollerCanvas.Width, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0)) },
-                        new LinearDoubleKeyFrame() { Value = mainScrollerCanvas.Width, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(25)) },
-                        new LinearDoubleKeyFrame() { Value = -textWidth, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(55)) },
-                    ],
-                    RepeatBehavior = RepeatBehavior.Forever
+                    KeyFrames = [
+                        new LinearDoubleKeyFrame
+                        {
+                            Value = 1.0,
+                            KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0))
+                        }],
+                    BeginTime = TimeSpan.FromSeconds(secondScrollerDelay)
                 });
             }
             else
@@ -248,8 +292,21 @@ namespace PokerTracker3000.WpfComponents
                     From = 0,
                     To = 0
                 });
-                scroller2.Visibility = Visibility.Collapsed;
+                scroller2.Opacity = 0.0;
             }
+        }
+
+        private DoubleKeyFrameCollection GetKeyFrames(double textWidth)
+        {
+            // Note: The first scroller should overlap with OverlapFactor in the start and end,
+            //       so the pause length should be (1 - 2 * OverlapFactor) * L, where L is the
+            //       animation length.
+            var animationPauseLength = (1 - (2 * OverlapFactor)) * ScrollSequenceLengthSeconds;
+            return [
+                new LinearDoubleKeyFrame() { Value = mainScrollerCanvas.Width, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0)) },
+                new LinearDoubleKeyFrame() { Value = -textWidth, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(ScrollSequenceLengthSeconds)) },
+                new LinearDoubleKeyFrame() { Value = -textWidth, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(ScrollSequenceLengthSeconds + animationPauseLength)) },
+            ];
         }
         #endregion
     }
