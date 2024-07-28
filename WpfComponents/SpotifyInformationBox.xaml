@@ -1,7 +1,7 @@
 ﻿<UserControl x:Class="PokerTracker3000.WpfComponents.SpotifyInformationBox"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:app="clr-namespace:PokerTracker3000"
+             xmlns:session="clr-namespace:PokerTracker3000.GameSession"
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
              xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters">
 
@@ -60,7 +60,7 @@
                         <Setter Property="VerticalAlignment" Value="Center" />
                         <Setter Property="Visibility" Value="Visible" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Path=ViewModel.AuthenticationStatus}" Value="{x:Static app:AuthenticationStatus.Authenticated}">
+                            <DataTrigger Binding="{Binding Path=ViewModel.AuthenticationStatus}" Value="{x:Static session:AuthenticationStatus.Authenticated}">
                                 <Setter Property="Visibility" Value="Collapsed" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -89,7 +89,7 @@
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
                                     <Condition Binding="{Binding Path=ViewModel.HasTrackInfo}" Value="False" />
-                                    <Condition Binding="{Binding Path=ViewModel.AuthenticationStatus}" Value="{x:Static app:AuthenticationStatus.Authenticated}" />
+                                    <Condition Binding="{Binding Path=ViewModel.AuthenticationStatus}" Value="{x:Static session:AuthenticationStatus.Authenticated}" />
                                 </MultiDataTrigger.Conditions>
                                 <MultiDataTrigger.Setters>
                                     <Setter Property="Visibility" Value="Visible" />

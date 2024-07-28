@@ -10,7 +10,7 @@ using DotSpotifyWebWrapper.ApiCalls;
 using DotSpotifyWebWrapper.ApiCalls.Shared;
 using DotSpotifyWebWrapper.Types;
 
-namespace PokerTracker3000
+namespace PokerTracker3000.GameSession
 {
     public enum AuthenticationStatus
     {
@@ -232,7 +232,7 @@ namespace PokerTracker3000
                         _progressAtLastFetchMs = data.ProgressMs ?? 0;
 
                         _nextServerQueryMs = Math.Min(_lastQueryMs + _maxPlaybackQueryPeriodMs,
-                            _lastQueryMs + ((CurrentTrackLengthSeconds - CurrentTrackProgressSeconds) * MillisecondsPerSecond));
+                            _lastQueryMs + (CurrentTrackLengthSeconds - CurrentTrackProgressSeconds) * MillisecondsPerSecond);
 
                         if (string.IsNullOrEmpty(CurrentCoverArtPath))
                             CurrentCoverArtPath = await GetAlbumArt(track);
