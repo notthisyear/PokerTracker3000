@@ -266,8 +266,26 @@ namespace PokerTracker3000.WpfComponents
                 scroller1.BeginAnimation(Canvas.LeftProperty, _scrollerAnimation.first);
 
                 // Note: The second scroller should behave identically, but the start of the animation
-                //       should be delayed with (1 - OverlapFactor) * L.
-                var secondScrollerDelay = (1 - OverlapFactor) * ScrollSequenceLengthSeconds;
+                //       should be delayed appropriately.
+                //       It can be expressed as the sum if the the time it takes for the entire text
+                //       to move its width (T_text) and the time it takes for the text to move 
+                //       the the correct overlap spot (T_rem):
+                //
+                //       T_delay = T_text + T_rem
+                //
+                //       , where:
+                //       T_text = textWidth / V
+                //       T_rem = mainScrollerCanvas.Width * (1 - OverlapFactor) / V
+                //       V = (mainScrollerCanvas.Width + textWidth) / ScrollSequenceLengthSeconds
+                //
+                //       , which yields
+                //       T_delay = 1/ V * (textWidth + (mainScrollerCanvas.Width * (1 - OverlapFactor)))
+                //               = ScrollSequenceLengthSeconds / (mainScrollerCanvas.Width + textWidth) *
+                //                  (textWidth + (mainScrollerCanvas.Width * (1 - OverlapFactor)))
+
+                var scrollSpeedInverse = ScrollSequenceLengthSeconds / (textWidth + mainScrollerCanvas.Width);
+                var secondScrollerDelay = scrollSpeedInverse * (textWidth + (mainScrollerCanvas.Width * (1 - OverlapFactor)));
+
                 _scrollerAnimation.second.KeyFrames = GetKeyFrames(textWidth);
                 _scrollerAnimation.second.RepeatBehavior = RepeatBehavior.Forever;
                 _scrollerAnimation.second.BeginTime = TimeSpan.FromSeconds(secondScrollerDelay);
@@ -298,10 +316,27 @@ namespace PokerTracker3000.WpfComponents
 
         private DoubleKeyFrameCollection GetKeyFrames(double textWidth)
         {
-            // Note: The first scroller should overlap with OverlapFactor in the start and end,
-            //       so the pause length should be (1 - 2 * OverlapFactor) * L, where L is the
-            //       animation length.
-            var animationPauseLength = (1 - (2 * OverlapFactor)) * ScrollSequenceLengthSeconds;
+            // Note: The pause length should be such that the first scroller starts when OverlapFactor
+            //       of the second scroller is still occuping the visible screen space.
+            //       The length of that pause should be the sum of the time taken for the entire text
+            //       to shift over (so that the endpoint of the second scroller is at its startpoint)
+            //       and the remainder so that the correct overlap is on screen when the first scroller
+            //       restarts.
+            //
+            //       This can be expressed as:
+            //       T_pause = T_text + (T_visible - T_overlap) - T_overlap
+            //               = T_text + T_visible - 2 * T_overlap
+
+            //       If the speed of the text is V, we get:
+            //       T_pause = textWidth / V + mainScrollerCanvas.Width / V - 2 * (-mainScrollerCanvas.Width * OverlapFactor / V)
+            //               = 1 / V * (textWidth + mainScrollerCanvas.Width - 2 * mainScrollerCanvas.Width * OverlapFactor)
+            //               = 1 / V * (textWidth + mainScrollerCanvas.Width * (1 - 2 * OverlapFactor))
+            //       V is equal to (mainScrollerCanvas.Width + textWidth) / ScrollSequenceLengthSeconds
+
+            var scrollSpeed = (mainScrollerCanvas.Width + textWidth) / ScrollSequenceLengthSeconds;
+            var pauseLength = textWidth + mainScrollerCanvas.Width * (1 - 2 * OverlapFactor);
+            var animationPauseLength = pauseLength / scrollSpeed;
+
             return [
                 new LinearDoubleKeyFrame() { Value = mainScrollerCanvas.Width, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0)) },
                 new LinearDoubleKeyFrame() { Value = -textWidth, KeyTime = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(ScrollSequenceLengthSeconds)) },

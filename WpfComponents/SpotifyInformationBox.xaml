@@ -21,7 +21,7 @@
             <Setter Property="TextForeground" Value="{StaticResource textColor}" />
             <Setter Property="AlwaysScroll" Value="False" />
             <Setter Property="NumberOfCharacters" Value="25" />
-            <Setter Property="OverlapFactor" Value="0.3" />
+            <Setter Property="OverlapFactor" Value="0.5" />
             <Setter Property="ScrollSequenceLengthSeconds" Value="30" />
         </Style>
 
