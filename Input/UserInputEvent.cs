@@ -20,7 +20,8 @@ namespace PokerTracker3000.Input
             Start,
             Select,
             GoBack,
-            InfoButton
+            InfoButton,
+            SecondInfoButton
         }
 
         public enum ButtonAction

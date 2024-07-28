@@ -83,6 +83,8 @@ namespace PokerTracker3000
             InputManager.RegisterKeyboardEvent(Key.Up, InputEvent.NavigationDirection.Up);
             InputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Down);
             InputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Up);
+            InputManager.RegisterKeyboardEvent(Key.P, InputEvent.ButtonEventType.SecondInfoButton, InputEvent.ButtonAction.Down);
+            InputManager.RegisterKeyboardEvent(Key.P, InputEvent.ButtonEventType.SecondInfoButton, InputEvent.ButtonAction.Up);
         }
 
         private void InitializeGamepadMappings()

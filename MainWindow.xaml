@@ -87,6 +87,17 @@
                             </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
+                    <Storyboard x:Key="movePanelOutDown"
+                                PresentationOptions:Freeze="True">
+                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">
+                            <EasingDoubleKeyFrame Value="200"
+                                                  KeyTime="0:0:0.4">
+                                <EasingDoubleKeyFrame.EasingFunction>
+                                    <QuarticEase EasingMode="EaseIn"/>
+                                </EasingDoubleKeyFrame.EasingFunction>
+                            </EasingDoubleKeyFrame>
+                        </DoubleAnimationUsingKeyFrames>
+                    </Storyboard>
                 </Grid.Resources>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -280,10 +291,27 @@
                                                   ViewModel="{Binding Path=ViewModel.SpotifyViewModel}">
                     <components:SpotifyInformationBox.Style>
                         <Style TargetType="{x:Type components:SpotifyInformationBox}">
-                            <Setter Property="Opacity" Value="1" />
+                            <Setter Property="Opacity" Value="0" />
                             <Setter Property="Visibility" Value="Visible" />
                             <Setter Property="MinWidth" Value="150" />
                             <Setter Property="MaxHeight" Value="200" />
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform X="0" Y="200"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=ViewModel.SpotifyInfoOpen}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard Storyboard="{StaticResource movePanelOutDown}" />
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
                         </Style>
                     </components:SpotifyInformationBox.Style>
                 </components:SpotifyInformationBox>

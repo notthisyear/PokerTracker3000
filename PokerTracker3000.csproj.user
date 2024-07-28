@@ -37,7 +37,7 @@
     <Compile Update="WpfComponents\SideMenuOption.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="WpfComponents\SpotifyInformationBox.xaml.cs">
+    <Compile Update="WpfComponents\Spotify\SpotifyInformationBox.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="WpfComponents\ScrollingControllers\TextScrollerFixedWidth.xaml.cs">
@@ -90,7 +90,10 @@
     <Page Update="WpfComponents\SideMenuOption.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="WpfComponents\SpotifyInformationBox.xaml">
+    <Page Update="WpfComponents\Spotify\IconBox.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="WpfComponents\Spotify\SpotifyInformationBox.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="WpfComponents\ScrollingControllers\TextScrollerFixedWidth.xaml">

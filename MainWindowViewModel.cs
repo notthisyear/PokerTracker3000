@@ -14,6 +14,7 @@ namespace PokerTracker3000.ViewModels
         #region Backing fields
         public bool _leftSideMenuOpen = false;
         public bool _rightSideMenuOpen = false;
+        public bool _spotifyInfoOpen = false;
         #endregion
 
         public bool LeftSideMenuOpen
@@ -29,6 +30,12 @@ namespace PokerTracker3000.ViewModels
         }
 
         public string ProgramDescription { get; init; } = string.Empty;
+
+        public bool SpotifyInfoOpen
+        {
+            get => _spotifyInfoOpen;
+            private set => SetProperty(ref _spotifyInfoOpen, value);
+        }
 
         public GameSessionManager SessionManager { get; }
 
@@ -66,15 +73,21 @@ namespace PokerTracker3000.ViewModels
         {
             if (inputEvent.IsButtonEvent)
             {
-                if (inputEvent.Button == InputEvent.ButtonEventType.InfoButton)
+                switch (inputEvent.Button)
                 {
-                    RightSideMenuOpen = !RightSideMenuOpen;
-                }
-                else
-                {
-                    _focusManager.HandleButtonPressedEvent(inputEvent.Button);
-                    LeftSideMenuOpen = _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu ||
-                        _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.SideMenuEditOption;
+                    case InputEvent.ButtonEventType.InfoButton:
+                        RightSideMenuOpen = !RightSideMenuOpen;
+                        break;
+
+                    case InputEvent.ButtonEventType.SecondInfoButton:
+                        SpotifyInfoOpen = !SpotifyInfoOpen;
+                        break;
+
+                    default:
+                        _focusManager.HandleButtonPressedEvent(inputEvent.Button);
+                        LeftSideMenuOpen = _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu ||
+                            _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.SideMenuEditOption;
+                        break;
                 }
             }
             else if (inputEvent.IsNavigationEvent)

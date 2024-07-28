@@ -21,7 +21,8 @@ namespace PokerTracker3000
             AddOnOrBuyInBox,
             ConfirmationDialog,
             MovementInProgress,
-            SideMenuEditOption
+            SideMenuEditOption,
+            SpotifyInformationBox
         }
 
         #region Public properties
