@@ -49,6 +49,7 @@ namespace PokerTracker3000
         public delegate void EditMenuLostFocusCallback();
         public delegate bool BuyInOrAddOnOptionSelectedCallback();
         public delegate void PlayerMovementDoneCallback(PlayerSpot spot);
+        public delegate void SelectOrBackPressedWhileSpotifyBoxOpenCallback();
         #endregion
 
         #region Private fields
@@ -70,6 +71,7 @@ namespace PokerTracker3000
         private PlayerMovementDoneCallback? _playerMovementDoneCallback;
         private NavigationCallback? _sideMenuEditOptionNavigationCallback;
         private SideMenuButtonCallback? _sideMenuEditOptionActionCallback;
+        private SelectOrBackPressedWhileSpotifyBoxOpenCallback? _selectOrBackPressedWhileSpotifyBoxOpenCallback;
 
         private readonly Dictionary<InputEvent.ButtonEventType, Action> _buttonPressedHandlers;
         #endregion
@@ -81,6 +83,7 @@ namespace PokerTracker3000
                 { InputEvent.ButtonEventType.Start, HandleStartButtonPressed },
                 { InputEvent.ButtonEventType.Select, HandleSelectButtonPressed },
                 { InputEvent.ButtonEventType.GoBack, HandleGoBackButtonPressed },
+                { InputEvent.ButtonEventType.SecondInfoButton, HandleSecondInformationButtonPressed },
             };
         }
 
@@ -156,6 +159,12 @@ namespace PokerTracker3000
         {
             _sideMenuEditOptionActionCallback = callback;
         }
+
+        public void RegisterSelectOrBackPressedWhileSpotifyBoxOpenCallback(SelectOrBackPressedWhileSpotifyBoxOpenCallback callback)
+        {
+            _selectOrBackPressedWhileSpotifyBoxOpenCallback = callback;
+        }
+
         #endregion
 
         public void HandleButtonPressedEvent(InputEvent.ButtonEventType button)
@@ -273,6 +282,10 @@ namespace PokerTracker3000
                             SetNewFocusArea(FocusArea.LeftSideMenu, false);
                     }
                     break;
+
+                case FocusArea.SpotifyInformationBox:
+                    _selectOrBackPressedWhileSpotifyBoxOpenCallback?.Invoke();
+                    break;
             }
         }
 
@@ -322,6 +335,23 @@ namespace PokerTracker3000
                 case FocusArea.SideMenuEditOption:
                     _ = _sideMenuEditOptionActionCallback?.Invoke(InputEvent.ButtonEventType.Select);
                     break;
+
+                case FocusArea.SpotifyInformationBox:
+                    _selectOrBackPressedWhileSpotifyBoxOpenCallback?.Invoke();
+                    break;
+            }
+        }
+
+        private void HandleSecondInformationButtonPressed()
+        {
+            if (CurrentFocusArea == FocusArea.SpotifyInformationBox)
+            {
+                CurrentFocusArea = _lastFocusArea;
+            }
+            else
+            {
+                _lastFocusArea = CurrentFocusArea;
+                CurrentFocusArea = FocusArea.SpotifyInformationBox;
             }
         }
 

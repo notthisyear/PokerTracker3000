@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DotSpotifyWebWrapper;
 using DotSpotifyWebWrapper.ApiCalls;
@@ -105,10 +106,12 @@ namespace PokerTracker3000.GameSession
         #endregion
 
         #region Private fields
+        private readonly MainWindowFocusManager _focusManager;
         private readonly SpotifyClient _client;
         private readonly int _pkceVerifierLength;
         private readonly long _maxPlaybackQueryPeriodMs;
         private readonly Timer _queryStateTimer;
+        private readonly AutoResetEvent _queryOngoingEvent = new(true);
 
         private long _nextServerQueryMs = 0L;
         private long _lastQueryMs = 0L;
@@ -122,8 +125,9 @@ namespace PokerTracker3000.GameSession
         private const int MillisecondsPerSecond = 1000;
         #endregion
 
-        public SpotifyClientViewModel(string clientId, int localListenerPort, int pkceVerifierLength, int maxPlaybackQueryPeriodMs)
+        public SpotifyClientViewModel(MainWindowFocusManager focusManager, string clientId, int localListenerPort, int pkceVerifierLength, int maxPlaybackQueryPeriodMs)
         {
+            _focusManager = focusManager;
             _client = new(clientId, localListenerPort, true);
             _pkceVerifierLength = pkceVerifierLength;
             _maxPlaybackQueryPeriodMs = maxPlaybackQueryPeriodMs;
@@ -141,6 +145,19 @@ namespace PokerTracker3000.GameSession
                     }
                 });
             }
+
+            _focusManager.RegisterSelectOrBackPressedWhileSpotifyBoxOpenCallback(async () =>
+            {
+                if (AuthenticationStatus != AuthenticationStatus.Authenticated)
+                    return;
+
+                var result = await _client.SendSpotifyApiCall(CurrentTrackIsPlaying ?
+                    new PausePlayback(_currentDeviceId) :
+                    new StartOrResumePlayback(_currentDeviceId));
+
+                if (result)
+                    await QuerySongState();
+            });
         }
 
         #region Public methods
@@ -181,7 +198,6 @@ namespace PokerTracker3000.GameSession
 
             _queryStateTimer.Change(10, Timeout.Infinite);
         }
-
         #endregion
 
         #region Private methods
@@ -190,9 +206,12 @@ namespace PokerTracker3000.GameSession
             var msCount = Environment.TickCount & int.MaxValue;
             if (msCount < _nextServerQueryMs)
             {
-                var msPassed = msCount - _lastQueryMs;
-                var currentProgressMs = (int)(_progressAtLastFetchMs + msPassed);
-                SetTrackProgress(currentProgressMs);
+                if (CurrentTrackIsPlaying)
+                {
+                    var msPassed = msCount - _lastQueryMs;
+                    var currentProgressMs = (int)(_progressAtLastFetchMs + msPassed);
+                    SetTrackProgress(currentProgressMs);
+                }
             }
             else
             {
@@ -205,16 +224,20 @@ namespace PokerTracker3000.GameSession
 
         private async Task QuerySongState()
         {
+            _queryOngoingEvent.WaitOne();
             var call = new GetPlaybackState();
             var result = await _client.SendSpotifyApiCall(call);
 
+            _lastQueryMs = Environment.TickCount & int.MaxValue;
+            var nextDefaultFetch = _lastQueryMs + _maxPlaybackQueryPeriodMs;
+            _nextServerQueryMs = nextDefaultFetch;
+
             if (result)
             {
-                _lastQueryMs = Environment.TickCount & int.MaxValue;
                 var data = call.Response;
                 CurrentTrackIsPlaying = data?.IsPlaying ?? false;
 
-                if (data != default && data.TrackOrEpisode.HasValue && CurrentTrackIsPlaying)
+                if (data != default && data.TrackOrEpisode.HasValue)
                 {
                     _currentDeviceId = data.Device.Id ?? string.Empty;
                     _currentDeviceVolume = data.Device.VolumePercent ?? 0;
@@ -231,8 +254,11 @@ namespace PokerTracker3000.GameSession
                         SetTrackProgress(data.ProgressMs ?? 0);
                         _progressAtLastFetchMs = data.ProgressMs ?? 0;
 
-                        _nextServerQueryMs = Math.Min(_lastQueryMs + _maxPlaybackQueryPeriodMs,
-                            _lastQueryMs + (CurrentTrackLengthSeconds - CurrentTrackProgressSeconds) * MillisecondsPerSecond);
+                        if (CurrentTrackIsPlaying)
+                        {
+                            _nextServerQueryMs = Math.Min(nextDefaultFetch,
+                                _lastQueryMs + (CurrentTrackLengthSeconds - CurrentTrackProgressSeconds) * MillisecondsPerSecond);
+                        }
 
                         if (string.IsNullOrEmpty(CurrentCoverArtPath))
                             CurrentCoverArtPath = await GetAlbumArt(track);
@@ -245,6 +271,7 @@ namespace PokerTracker3000.GameSession
             }
 
             HasTrackInfo = !string.IsNullOrEmpty(CurrentTrackName);
+            _queryOngoingEvent.Set();
         }
 
         private void SetBasicTrackInfo(TrackObject track)

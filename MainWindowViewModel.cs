@@ -64,7 +64,7 @@ namespace PokerTracker3000.ViewModels
 
 
             SessionManager = new(eventBus, gameSettings, focusManager, new GameStagesManager(_eventBus, clock, gameSettings), new(), clock, settings.DefaultPlayerImagePath);
-            SpotifyViewModel = new(settings.ClientId, settings.LocalHttpListenerPort, settings.PkceAuthorizationVerifierLength, 3000);
+            SpotifyViewModel = new(focusManager, settings.ClientId, settings.LocalHttpListenerPort, settings.PkceAuthorizationVerifierLength, 3000);
             SideMenuViewModel = new(eventBus, focusManager, SessionManager, SpotifyViewModel);
 
         }
@@ -73,21 +73,16 @@ namespace PokerTracker3000.ViewModels
         {
             if (inputEvent.IsButtonEvent)
             {
-                switch (inputEvent.Button)
+                if (inputEvent.Button == InputEvent.ButtonEventType.InfoButton)
                 {
-                    case InputEvent.ButtonEventType.InfoButton:
-                        RightSideMenuOpen = !RightSideMenuOpen;
-                        break;
-
-                    case InputEvent.ButtonEventType.SecondInfoButton:
-                        SpotifyInfoOpen = !SpotifyInfoOpen;
-                        break;
-
-                    default:
-                        _focusManager.HandleButtonPressedEvent(inputEvent.Button);
-                        LeftSideMenuOpen = _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu ||
-                            _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.SideMenuEditOption;
-                        break;
+                    RightSideMenuOpen = !RightSideMenuOpen;
+                }
+                else
+                {
+                    _focusManager.HandleButtonPressedEvent(inputEvent.Button);
+                    LeftSideMenuOpen = _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.LeftSideMenu ||
+                        _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.SideMenuEditOption;
+                    SpotifyInfoOpen = _focusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.SpotifyInformationBox;
                 }
             }
             else if (inputEvent.IsNavigationEvent)
