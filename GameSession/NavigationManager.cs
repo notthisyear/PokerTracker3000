@@ -206,8 +206,8 @@ namespace PokerTracker3000.GameSession
                     new(X: 3, Y: 1),
                     new(X: 2, Y: 1),
                     new(X: 1, Y: 1),
-                    new(X: 0, Y: 0.33F),
-                    new(X: 0, Y: 0.66F)
+                    new(X: 0, Y: 0.66F),
+                    new(X: 0, Y: 0.33F)
                 ]);
 
             /* Layout:
