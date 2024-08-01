@@ -83,8 +83,8 @@ namespace PokerTracker3000
             InputManager.RegisterKeyboardEvent(Key.Up, InputEvent.NavigationDirection.Up);
             InputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Down);
             InputManager.RegisterKeyboardEvent(Key.LeftCtrl, InputEvent.ButtonEventType.InfoButton, InputEvent.ButtonAction.Up);
-            InputManager.RegisterKeyboardEvent(Key.P, InputEvent.ButtonEventType.SecondInfoButton, InputEvent.ButtonAction.Down);
-            InputManager.RegisterKeyboardEvent(Key.P, InputEvent.ButtonEventType.SecondInfoButton, InputEvent.ButtonAction.Up);
+            InputManager.RegisterKeyboardEvent(Key.RightCtrl, InputEvent.ButtonEventType.SecondInfoButton, InputEvent.ButtonAction.Down);
+            InputManager.RegisterKeyboardEvent(Key.RightCtrl, InputEvent.ButtonEventType.SecondInfoButton, InputEvent.ButtonAction.Up);
         }
 
         private void InitializeGamepadMappings()
@@ -98,6 +98,9 @@ namespace PokerTracker3000
             InputManager.RegisterGamepadEvent(DotXInput.GamepadInput.GamepadDigitalInput.DPadUp, InputEvent.NavigationDirection.Up);
             InputManager.RegisterGamepadEvent(DotXInput.GamepadInput.GamepadDigitalInput.RightSholderButton, InputEvent.ButtonEventType.InfoButton, DotXInput.GamepadInput.GamepadDigitalInputState.Pressed);
             InputManager.RegisterGamepadEvent(DotXInput.GamepadInput.GamepadDigitalInput.RightSholderButton, InputEvent.ButtonEventType.InfoButton, DotXInput.GamepadInput.GamepadDigitalInputState.Released);
+            InputManager.RegisterGamepadEvent(DotXInput.GamepadInput.GamepadDigitalInput.LeftShoulderButton, InputEvent.ButtonEventType.SecondInfoButton, DotXInput.GamepadInput.GamepadDigitalInputState.Pressed);
+            InputManager.RegisterGamepadEvent(DotXInput.GamepadInput.GamepadDigitalInput.LeftShoulderButton, InputEvent.ButtonEventType.SecondInfoButton, DotXInput.GamepadInput.GamepadDigitalInputState.Released);
+
         }
 
         private void KeyDownOrUpInWindow(object sender, KeyEventArgs e)
