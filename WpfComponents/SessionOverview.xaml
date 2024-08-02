@@ -143,7 +143,8 @@
 
                 <!-- Break text -->
                 <TextBlock Text="- break -"
-                           HorizontalAlignment="Center">
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center">
                     <TextBlock.Style>
                         <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource infoText}">
                             <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
@@ -166,6 +167,21 @@
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                            <Setter Property="Opacity" Value="1" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=StageManager.CurrentStage.IsPause}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                     <TextBlock Style="{StaticResource currentBlindsText}">
                         <TextBlock.Text>
                             <MultiBinding Converter="{StaticResource valueDisplayConverter}">
@@ -247,6 +263,9 @@
                                         <DataTrigger Binding="{Binding Path=StageManager.HasPauseStage}" Value="False">
                                             <Setter Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=StageManager.CurrentStage.IsPause}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </StackPanel.Style>
@@ -278,9 +297,9 @@
                 <!-- When on last stage -->
                 <TextBlock Text="no more stages">
                     <TextBlock.Style>
-                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource infoText}">
                             <Setter Property="Visibility" Value="Collapsed" />
-                            <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
+                            <Setter Property="Foreground" Value="{StaticResource MainInfoColor}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=StageManager.OnLastStage}" Value="True">
                                     <Setter Property="Visibility" Value="Visible" />
@@ -327,8 +346,10 @@
                 <!-- Pot total -->
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="total"
-                               Style="{StaticResource MainTextBlockStyle}" />
-                    <TextBlock Style="{StaticResource infoText}">
+                               Style="{StaticResource MainTextBlockStyle}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Style="{StaticResource infoText}"
+                               HorizontalAlignment="Center">
                     <TextBlock.Text>
                         <MultiBinding Converter="{StaticResource valueDisplayConverter}">
                             <Binding Path="SessionManager.TotalAmountInPot" />
@@ -343,10 +364,12 @@
                 <!-- Average pot size -->
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="average"
-                               Style="{StaticResource MainTextBlockStyle}" />
-                    <TextBlock Style="{StaticResource infoText}">
+                               Style="{StaticResource MainTextBlockStyle}"
+                               HorizontalAlignment="Right"/>
+                    <TextBlock Style="{StaticResource infoText}"
+                               HorizontalAlignment="Right">
                         <TextBlock.Text>
-                            <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                            <MultiBinding Converter="{StaticResource valueDisplayConverter}" ConverterParameter="0">
                                 <Binding Path="SessionManager.AveragePotSize" />
                                 <Binding Path="SessionManager.GameSettings.CurrencyType" />
                             </MultiBinding>

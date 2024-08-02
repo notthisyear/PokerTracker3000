@@ -26,7 +26,10 @@ namespace PokerTracker3000.WpfComponents.Converters
             if (e != default)
                 return string.Empty;
 
-            return v.ToString(decimal.IsInteger(v) ? "C0" : "C", CultureInfo.CreateSpecificCulture(attr!.CultureTag));
+            if (parameter is string s && int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var numberOfDecimals))
+                return v.ToString($"C{numberOfDecimals}", CultureInfo.CreateSpecificCulture(attr!.CultureTag));
+            else
+                return v.ToString(decimal.IsInteger(v) ? "C0" : "C", CultureInfo.CreateSpecificCulture(attr!.CultureTag));
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => throw new NotImplementedException();
