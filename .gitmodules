@@ -1,3 +1,6 @@
-[submodule "Dependencies/DotXInput"]
-	path = Dependencies/DotXInput
+[submodule "DotSpotifyWebWrapper"]
+	path = DotSpotifyWebWrapper
+	url = https://github.com/notthisyear/DotSpotifyWebWrapper.git
+[submodule "DotXInput"]
+	path = DotXInput
 	url = https://github.com/notthisyear/DotXInput.git
