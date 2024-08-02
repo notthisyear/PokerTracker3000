@@ -10,7 +10,8 @@
         <FontFamily x:Key="CascadiaCode">pack://application:,,,/Resources/Fonts/#Cascadia Code</FontFamily>
         <FontFamily x:Key="Lato">pack://application:,,,/Resources/Fonts/#Lato</FontFamily>
 
-        <BitmapImage x:Key="pokerTable" UriSource="/PokerTracker3000;component/Resources/Images/poker_table.png"/>
+        <BitmapImage x:Key="pokerTableOld" UriSource="/PokerTracker3000;component/Resources/Images/poker_table.png"/>
+        <BitmapImage x:Key="pokerTable" UriSource="/PokerTracker3000;component/Resources/Images/poker_table_2.png"/>
         <BitmapImage x:Key="coffeeMug" UriSource="/PokerTracker3000;component/Resources/Images/coffee_mug.png"/>
 
         <!-- Converters -->
@@ -93,8 +94,8 @@
         <RadialGradientBrush x:Key="MainBackgroundGradient"
                              GradientOrigin="0.5,0.5" 
                              Center="0.5,0.5"
-                             RadiusX="0.5"
-                             RadiusY="0.5">
+                             RadiusX="0.6"
+                             RadiusY="0.6">
             <RadialGradientBrush.GradientStops>
                 <GradientStop Color="{StaticResource PrimaryColorDisabledRaw}" Offset="0" />
                 <GradientStop Color="{StaticResource BackgroundDarkerShadeRaw}" Offset="1" />
@@ -131,7 +132,7 @@
             <Setter Property="FontFamily" Value="{StaticResource CascadiaCode}" />
         </Style>
         <Style x:Key="MainTextBlockStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TextBlockStyleBase}">
-            <Setter Property="Foreground" Value="{DynamicResource MainTextColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource MainTextColor}"/>
             <Setter Property="FontWeight" Value="Regular" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="Opacity" Value="0.9" />

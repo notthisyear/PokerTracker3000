@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+        xmlns:app="clr-namespace:PokerTracker3000"
         xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
         Title="PokerTracker3000"
         Background="Transparent"
@@ -16,14 +17,13 @@
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="32" 
-                        ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
+                      ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
     </WindowChrome.WindowChrome>
 
     <Viewbox Stretch="Uniform"
              StretchDirection="Both"
              DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=.}">
-        <Border Background="{StaticResource MainBackgroundGradient}">
-    
+        <Border>
             <Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=ActualWidth}"
                   Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=ActualHeight}">
 
@@ -39,7 +39,6 @@
                             </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
-
                     <Storyboard x:Key="movePanelOutToRight"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
@@ -51,7 +50,6 @@
                             </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
-
                     <Storyboard x:Key="movePanelInX"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
@@ -63,7 +61,6 @@
                             </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
-
                     <Storyboard x:Key="movePanelInY"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">
@@ -75,7 +72,6 @@
                             </EasingDoubleKeyFrame>
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
-
                     <Storyboard x:Key="movePanelOutUp"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">

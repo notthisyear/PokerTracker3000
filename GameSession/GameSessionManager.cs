@@ -175,7 +175,7 @@ namespace PokerTracker3000.GameSession
                 ]);
 
             RegisterFocusManagerCallbacks();
-            InitializeSpots(8);
+            InitializeSpots(10);
         }
 
         #region Public methods

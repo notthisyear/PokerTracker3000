@@ -4,7 +4,6 @@ using PokerTracker3000.Common;
 using PokerTracker3000.Common.Messages;
 using PokerTracker3000.Interfaces;
 using PokerTracker3000.ViewModels;
-using PokerTracker3000.WpfComponents;
 
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 using InputManager = PokerTracker3000.Input.InputManager;
@@ -44,32 +43,6 @@ namespace PokerTracker3000
 
             MaxWidth = SystemParameters.MaximizedPrimaryScreenWidth;
             _eventBus.RegisterListener(this, (t, m) => ApplicationClosing(m), GameEventBus.EventType.ApplicationClosing);
-        }
-
-        private void TitleBarButtonPressed(object sender, RoutedEventArgs e)
-        {
-            if (e is TitleBarButtonClickedEventArgs eventArgs)
-            {
-                switch (eventArgs.ButtonClicked)
-                {
-                    case TitleBarButton.Minimize:
-                        WindowState = WindowState.Minimized;
-                        break;
-                    case TitleBarButton.Maximize:
-                        WindowState = WindowState.Maximized;
-                        break;
-                    case TitleBarButton.Restore:
-                        WindowState = WindowState.Normal;
-                        break;
-                    case TitleBarButton.Close:
-                        _eventBus.NotifyListeners(GameEventBus.EventType.ApplicationClosing,
-                            new ApplicationClosingMessage()
-                            {
-                                TotalNumberOfClosingCallbacks = _eventBus.GetNumberOfListenersForEvent(GameEventBus.EventType.ApplicationClosing)
-                            });
-                        break;
-                };
-            }
         }
 
         private void InitializeKeyboardMappings()

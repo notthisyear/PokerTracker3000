@@ -182,7 +182,7 @@
                     <Setter Property="HorizontalAlignment" Value="Left"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static components:Player+SpotAlignment.TopCenter}">
-                    <Setter Property="VerticalAlignment" Value="Top" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
                     <Setter Property="HorizontalAlignment" Value="Center"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static components:Player+SpotAlignment.TopRight}">
@@ -194,7 +194,7 @@
                     <Setter Property="HorizontalAlignment" Value="Left"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static components:Player+SpotAlignment.BottomCenter}">
-                    <Setter Property="VerticalAlignment" Value="Bottom" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
                     <Setter Property="HorizontalAlignment" Value="Center"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static components:Player+SpotAlignment.BottomRight}">
@@ -237,17 +237,18 @@
         <Style x:Key="imageBorderBase" TargetType="{x:Type Border}">
             <Setter Property="Visibility" Value="Collapsed" />
             <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
             <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
             <Setter Property="RenderTransform">
                 <Setter.Value>
                     <TranslateTransform X="0" Y="0" />
                 </Setter.Value>
             </Setter>
-            <Setter Property="Height"
+            <Setter Property="Width"
                     Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
-                                Path=ActualHeight,
+                                Path=ActualWidth,
                                 Converter={StaticResource scaleNumberConverter},
-                                ConverterParameter=*0.75}" />
+                                ConverterParameter=*0.6}" />
         </Style>
 
         <Style x:Key="imageBorderAboveText" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBorderBase}">
@@ -289,6 +290,7 @@
                 <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static components:Player+SpotAlignment.TopCenter}">
                     <Setter Property="Visibility" Value="Visible" />
                     <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Bottom" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static components:Player+SpotAlignment.TopRight}">
                     <Setter Property="Visibility" Value="Visible" />
@@ -360,7 +362,7 @@
             <Setter Property="Opacity" Value="{Binding Path=AlwaysShowPlayerImage,
                 Converter={StaticResource boolToZeroOrNumberConverter},
                 ConverterParameter=0.6}" />
-            <Setter Property="IsEnabled" Value="True" />
+            <Setter Property="IsEnabled" Value="True"/>
             <Style.Triggers>
                 <MultiDataTrigger>
                     <MultiDataTrigger.Conditions>
@@ -461,7 +463,8 @@
             <Border Style="{StaticResource playerBeingMovedMarker}" />
 
             <!-- Vertically oriented spot info -->
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical"
+                        VerticalAlignment="Stretch">
                 <StackPanel.Style>
                     <Style TargetType="{x:Type StackPanel}">
                         <Setter Property="Visibility" Value="Visible" />
@@ -495,11 +498,6 @@
                     <!-- Money in the pot -->
                     <StackPanel Orientation="Horizontal"
                                 Style="{StaticResource aligningStackPanel}">
-                        <TextBlock  Style="{StaticResource playerNameStyle}"
-                                    Text="MONEY IN THE POT: "
-                                    FontSize="10"
-                                    VerticalAlignment="Bottom"
-                                    Margin="0,0,0,3"/>
                         <TextBlock  Style="{StaticResource playerNameStyle}"
                                     FontSize="16">
                             <TextBlock.Text>
@@ -559,11 +557,6 @@
                     <!-- Money in the pot -->
                     <StackPanel Orientation="Horizontal"
                                 Style="{StaticResource aligningStackPanel}">
-                        <TextBlock  Style="{StaticResource playerNameStyle}"
-                                    Text="MONEY IN THE POT: "
-                                    FontSize="10"
-                                    VerticalAlignment="Bottom"
-                                    Margin="0,0,0,3"/>
                         <TextBlock  Style="{StaticResource playerNameStyle}"
                                     FontSize="16">
                             <TextBlock.Text>

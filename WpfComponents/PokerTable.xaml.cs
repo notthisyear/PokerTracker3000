@@ -216,7 +216,7 @@ namespace PokerTracker3000.WpfComponents
             {
                 if (e.PropertyName?.Equals(nameof(ViewModel.FocusManager.CurrentFocusArea), StringComparison.InvariantCulture) ?? false)
                 {
-                    if (ViewModel.FocusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.EditNameBox)
+                    if (ViewModel != default && ViewModel.FocusManager.CurrentFocusArea == MainWindowFocusManager.FocusArea.EditNameBox)
                     {
                         changeNameBox.Focus();
                         changeNameBox.Select(changeNameBox.Text.Length, 0);

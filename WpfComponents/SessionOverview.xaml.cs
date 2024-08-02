@@ -80,8 +80,11 @@ namespace PokerTracker3000.WpfComponents
                         return;
                     }
 
-                    _ = StageManager.TryGetNextStage(e, out var stage);
-                    NextStage = stage;
+                    if (StageManager != null)
+                    {
+                        _ = StageManager.TryGetNextStage(e, out var stage);
+                        NextStage = stage;
+                    }
                 });
             };
 
