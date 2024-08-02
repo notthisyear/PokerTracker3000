@@ -41,6 +41,17 @@ namespace PokerTracker3000.WpfComponents
             typeof(SessionOverview),
             new FrameworkPropertyMetadata(CurrencyType.SwedishKrona, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public GameSessionManager SessionManager
+        {
+            get => (GameSessionManager)GetValue(SessionManagerProperty);
+            set => SetValue(SessionManagerProperty, value);
+        }
+        public static readonly DependencyProperty SessionManagerProperty = DependencyProperty.Register(
+            nameof(SessionManager),
+            typeof(GameSessionManager),
+            typeof(SessionOverview),
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
+
         #region Read-only dependency property
         public GameStage? NextStage
         {

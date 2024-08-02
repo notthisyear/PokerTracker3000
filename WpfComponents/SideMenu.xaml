@@ -88,7 +88,6 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
@@ -185,26 +184,11 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <!-- Total -->
-            <TextBlock Style="{StaticResource gameProgressLabel}"
-                       Grid.Row="3"
-                       Text="Money in the pot:"/>
-            <TextBlock Style="{StaticResource gameProgressData}"
-                       Grid.Row="3"
-                       Grid.Column="1">
-                <TextBlock.Text>
-                    <MultiBinding Converter="{StaticResource valueDisplayConverter}">
-                        <Binding Path="ViewModel.SessionManager.TotalAmountInPot" />
-                        <Binding Path="ViewModel.SessionManager.GameSettings.CurrencyType" />
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
-
             <!-- Est. finish time -->
             <TextBlock Style="{StaticResource gameProgressLabel}"
-                       Grid.Row="4"
+                       Grid.Row="3"
                        Text="Est. finish time:"/>
-            <TextBlock Grid.Row="4"
+            <TextBlock Grid.Row="3"
                        Grid.Column="1"
                        Text="{Binding Path=ViewModel.SessionManager.StageManager.SecondsUntilEnd, Converter={StaticResource secondsToTimestampConverter}}">
                 <TextBlock.Style>
@@ -218,7 +202,7 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
-            <TextBlock Grid.Row="4"
+            <TextBlock Grid.Row="3"
                        Grid.Column="1"
                        Text="N/a">
                 <TextBlock.Style>

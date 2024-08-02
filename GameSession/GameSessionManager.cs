@@ -30,6 +30,9 @@ namespace PokerTracker3000.GameSession
         private PlayerSpot? _selectedSpot;
         private bool _tableFull = false;
         private decimal _totalAmountInPot = 0;
+        private decimal _averagePotSize = 0;
+        private int _numberOfPlayers = 0;
+        private int _numberOfPlayersNotEliminated = 0;
         private SideMenuViewModel.GameEditOption _currentGameEditOption = SideMenuViewModel.GameEditOption.None;
         #endregion
 
@@ -67,6 +70,24 @@ namespace PokerTracker3000.GameSession
         {
             get => _totalAmountInPot;
             set => SetProperty(ref _totalAmountInPot, value);
+        }
+
+        public decimal AveragePotSize
+        {
+            get => _averagePotSize;
+            private set => SetProperty(ref _averagePotSize, value);
+        }
+
+        public int NumberOfPlayers
+        {
+            get => _numberOfPlayers;
+            private set => SetProperty(ref _numberOfPlayers, value);
+        }
+
+        public int NumberOfPlayersNotEliminated
+        {
+            get => _numberOfPlayersNotEliminated;
+            private set => SetProperty(ref _numberOfPlayersNotEliminated, value);
         }
 
         public bool TableFull
@@ -191,9 +212,10 @@ namespace PokerTracker3000.GameSession
                 return;
 
             targetSpot.AddPlayer(_pathToDefaultPlayerImage);
-            var numberOfActivePlayers = PlayerSpots.Where(x => x.HasPlayerData).Count();
-            LayoutMightHaveChangedEvent?.Invoke(this, numberOfActivePlayers);
-            TableFull = numberOfActivePlayers == NumberOfPlayerSpots;
+            NumberOfPlayers = PlayerSpots.Where(x => x.HasPlayerData).Count();
+            NumberOfPlayersNotEliminated++;
+            LayoutMightHaveChangedEvent?.Invoke(this, NumberOfPlayers);
+            TableFull = NumberOfPlayers == NumberOfPlayerSpots;
         }
 
         public void ConsolidateLayout()
@@ -297,6 +319,8 @@ namespace PokerTracker3000.GameSession
         {
             for (var i = 0; i < numberOfSpots; i++)
                 PlayerSpots[i].AddPlayer(_pathToDefaultPlayerImage);
+            NumberOfPlayers = numberOfSpots;
+            NumberOfPlayersNotEliminated = NumberOfPlayers;
         }
 
         private void RegisterFocusManagerCallbacks()
@@ -351,6 +375,8 @@ namespace PokerTracker3000.GameSession
                     case PlayerEditOption.EditOption.Eliminate:
                         activeSpot.IsEliminated = true;
                         SetOptionsFor(eliminatedPlayer: true);
+                        NumberOfPlayersNotEliminated--;
+                        AveragePotSize = NumberOfPlayersNotEliminated > 0 ? TotalAmountInPot / NumberOfPlayersNotEliminated : TotalAmountInPot;
                         Notify(PlayerEventMessage.Type.Eliminated, activeSpot.PlayerData!.Name, playerTotalAmount: activeSpot.PlayerData!.MoneyInThePot);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
@@ -366,6 +392,7 @@ namespace PokerTracker3000.GameSession
 
                         if (TableFull)
                             TableFull = false;
+                        NumberOfPlayers--;
 
                         return MainWindowFocusManager.FocusArea.Players;
 
@@ -411,8 +438,10 @@ namespace PokerTracker3000.GameSession
                     if (SelectedSpot.IsEliminated)
                     {
                         SelectedSpot.IsEliminated = false;
+                        NumberOfPlayersNotEliminated++;
                         SetOptionsFor(eliminatedPlayer: false);
                     }
+                    AveragePotSize = TotalAmountInPot / NumberOfPlayersNotEliminated;
                     return true;
                 }
 

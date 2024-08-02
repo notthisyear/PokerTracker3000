@@ -95,222 +95,258 @@
                         </DoubleAnimationUsingKeyFrames>
                     </Storyboard>
                 </Grid.Resources>
+
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="150" />
+                    <RowDefinition Height="34" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="34" />
                 </Grid.RowDefinitions>
 
-                <!-- Title bar -->
-                <components:CustomTitleBar x:Name="titleBar"
-                                        Grid.Row="0" 
-                                        Title="PokerTracker3000"
-                                        ApplicationDescription="{Binding Path=ViewModel.ProgramDescription}"
-                                        CurrentWindowState="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=WindowState}"
-                                        ShowMaximizeButton="True"
-                                        TitleBarButtonPressed="TitleBarButtonPressed"/>
+                <Grid Grid.Row="0"
+                      Background="{StaticResource BackgroundColorDarkerShade}" />
+                <Grid Grid.Row="1"
+                      Background="{StaticResource MainBackgroundGradient}">
 
-            
-                <!-- Clock -->
-                <components:SessionOverview Grid.Row="1"
-                                            HorizontalAlignment="Center"
-                                            StageManager="{Binding Path=ViewModel.SessionManager.StageManager}"
-                                            Clock="{Binding Path=ViewModel.SessionManager.Clock}"
-                                            Currency="{Binding Path=ViewModel.SessionManager.GameSettings.CurrencyType}"/>
+                    <!-- Players -->
+                    <components:PokerTable HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Stretch"
+                                           ViewModel="{Binding Path=ViewModel.SessionManager}" />
 
-                <!-- Players -->
-                <components:PokerTable Grid.Row="2"
-                                       HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Stretch"
-                                       Margin="0,10,0,20"
-                                       ViewModel="{Binding Path=ViewModel.SessionManager}"/>
+                    <!-- Clock -->
+                    <components:SessionOverview HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                SessionManager="{Binding Path=ViewModel.SessionManager}"
+                                                StageManager="{Binding Path=ViewModel.SessionManager.StageManager}"
+                                                Clock="{Binding Path=ViewModel.SessionManager.Clock}"
+                                                Currency="{Binding Path=ViewModel.SessionManager.GameSettings.CurrencyType}">
+                        <components:SessionOverview.Style>
+                            <Style TargetType="{x:Type components:SessionOverview}">
+                                <Setter Property="Opacity" Value="1" />
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform X="0" Y="0"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.FocusManager.CurrentFocusArea}" Value="{x:Static app:MainWindowFocusManager+FocusArea.EditNameBox}">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.FocusManager.CurrentFocusArea}" Value="{x:Static app:MainWindowFocusManager+FocusArea.AddOnOrBuyInBox}">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.FocusManager.CurrentFocusArea}" Value="{x:Static app:MainWindowFocusManager+FocusArea.SideMenuEditOption}">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </components:SessionOverview.Style>
+                    </components:SessionOverview>
 
-                <!-- Side menu (left) -->
-                <Border Grid.Row="1"
-                        Grid.RowSpan="2">
-                    <Border.Style>
-                        <Style TargetType="{x:Type Border}">
-                            <Setter Property="Background" Value="{StaticResource BackgroundColorDarkerShadeWithOpacity}" />
-                            <Setter Property="Width" Value="300" />
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Setter Property="Opacity" Value="0" />
-                            <Setter Property="HorizontalAlignment" Value="Left" />
-                            <Setter Property="RenderTransform">
-                                <Setter.Value>
-                                    <TranslateTransform X="-300" Y="0"/>
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=ViewModel.LeftSideMenuOpen}" Value="True">
-                                    <DataTrigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelInX}" />
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                                    </DataTrigger.EnterActions>
-                                    <DataTrigger.ExitActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelOutToLeft}" />
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                                    </DataTrigger.ExitActions>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
+                    <!-- Side menu (left) -->
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="Background" Value="{StaticResource BackgroundColorDarkerShadeWithOpacity}" />
+                                <Setter Property="Width" Value="300" />
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter Property="Opacity" Value="0" />
+                                <Setter Property="HorizontalAlignment" Value="Left" />
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform X="-300" Y="0"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=ViewModel.LeftSideMenuOpen}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelInX}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutToLeft}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
 
-                    <components:SideMenu VerticalAlignment="Stretch"
-                                         HorizontalAlignment="Stretch"
-                                         ViewModel="{Binding Path=ViewModel.SideMenuViewModel}"/>
-                </Border>
+                        <components:SideMenu VerticalAlignment="Stretch"
+                                             HorizontalAlignment="Stretch"
+                                             ViewModel="{Binding Path=ViewModel.SideMenuViewModel}"/>
+                    </Border>
 
-
-                <!-- Side menu (right) -->
-                <Border Grid.Row="1"
-                        Grid.RowSpan="2">
-                    <Border.Style>
-                        <Style TargetType="{x:Type Border}">
-                            <Setter Property="Background" Value="{StaticResource BackgroundColorDarkerShadeWithOpacity}" />
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Setter Property="Width" Value="150" />
-                            <Setter Property="Opacity" Value="0" />
-                            <Setter Property="HorizontalAlignment" Value="Right" />
-                            <Setter Property="RenderTransform">
-                                <Setter.Value>
-                                    <TranslateTransform X="150" Y="0"/>
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=ViewModel.RightSideMenuOpen}" Value="True">
-                                    <DataTrigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelInX}" />
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                                    </DataTrigger.EnterActions>
-                                    <DataTrigger.ExitActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelOutToRight}" />
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                                    </DataTrigger.ExitActions>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
+                    <!-- Side menu (right) -->
+                    <Border>
+                        <Border.Style>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="Background" Value="{StaticResource BackgroundColorDarkerShadeWithOpacity}" />
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter Property="Width" Value="150" />
+                                <Setter Property="Opacity" Value="0" />
+                                <Setter Property="HorizontalAlignment" Value="Right" />
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform X="150" Y="0"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=ViewModel.RightSideMenuOpen}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelInX}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutToRight}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
 
 
-                    <!-- Poker chips -->
-                    <ItemsControl ItemsSource="{Binding Path=ViewModel.SessionManager.ChipManager.Chips}"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Vertical" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <components:PokerChip MainColor="{Binding Path=MainColorHexString}"
-                                                      AccentColor="{Binding Path=AccentColorHexString}"
-                                                      ChipValue="{Binding Path=Value}"
-                                                      Margin="10"
-                                                      Width="80"
-                                                      Height="80"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Border>
+                        <!-- Poker chips -->
+                        <ItemsControl ItemsSource="{Binding Path=ViewModel.SessionManager.ChipManager.Chips}"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Vertical" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <components:PokerChip MainColor="{Binding Path=MainColorHexString}"
+                                                          AccentColor="{Binding Path=AccentColorHexString}"
+                                                          ChipValue="{Binding Path=Value}"
+                                                          Margin="10"
+                                                          Width="80"
+                                                          Height="80"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
 
-                <!-- Controller connection info box -->
-                <Border Grid.Row="1"
-                        Grid.RowSpan="2"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Margin="20,10"
-                        Padding="10"
-                        Background="{StaticResource MainBackgroundColor}"
-                        CornerRadius="5">
+                    <!-- Controller connection info box -->
+                    <Border HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="20,10"
+                            Padding="10"
+                            Background="{StaticResource MainBackgroundColor}"
+                            CornerRadius="5">
 
-                    <Border.Style>
-                        <Style TargetType="{x:Type Border}">
-                            <Setter Property="Opacity" Value="0" />
-                            <Setter Property="RenderTransform">
-                                <Setter.Value>
-                                    <TranslateTransform X="0" Y="-200" />
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=InputManager.ShowControllerConnectedInfo}" Value="True">
-                                    <DataTrigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
-                                    </DataTrigger.EnterActions>
-                                    <DataTrigger.ExitActions>
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
-                                    </DataTrigger.ExitActions>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <StackPanel Orientation="Vertical"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
+                        <Border.Style>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="Opacity" Value="0" />
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform X="0" Y="-200" />
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=InputManager.ShowControllerConnectedInfo}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel Orientation="Vertical"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
 
-                        <TextBlock Text="&#xE7FC;"
-                                   FontSize="120"
-                                   Opacity="0.2">
-                            <TextBlock.Style>
-                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SymbolButtonStyle}">
-                                    <Setter Property="Foreground" Value="{StaticResource MainSuccessColor}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=InputManager.LastControllerConnectedWasDisconnected}" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource MainErrorColor}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        <TextBlock Text="{Binding Path=InputManager.ControllerInfo}">
-                            <TextBlock.Style>
-                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
-                                    <Setter Property="Foreground" Value="{StaticResource MainSuccessColor}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=InputManager.LastControllerConnectedWasDisconnected}" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource MainErrorColor}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                </Border>
+                            <TextBlock Text="&#xE7FC;"
+                                       FontSize="120"
+                                       Opacity="0.2">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SymbolButtonStyle}">
+                                        <Setter Property="Foreground" Value="{StaticResource MainSuccessColor}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=InputManager.LastControllerConnectedWasDisconnected}" Value="True">
+                                                <Setter Property="Foreground" Value="{StaticResource MainErrorColor}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="{Binding Path=InputManager.ControllerInfo}">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                                        <Setter Property="Foreground" Value="{StaticResource MainSuccessColor}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=InputManager.LastControllerConnectedWasDisconnected}" Value="True">
+                                                <Setter Property="Foreground" Value="{StaticResource MainErrorColor}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
 
-                <!-- Spotify information box -->
-                <components:SpotifyInformationBox Grid.Row="2"
-                                                  VerticalAlignment="Bottom"
-                                                  HorizontalAlignment="Right"
-                                                  Margin="20"
-                                                  ViewModel="{Binding Path=ViewModel.SpotifyViewModel}">
-                    <components:SpotifyInformationBox.Style>
-                        <Style TargetType="{x:Type components:SpotifyInformationBox}">
-                            <Setter Property="Opacity" Value="0" />
-                            <Setter Property="Visibility" Value="Visible" />
-                            <Setter Property="MinWidth" Value="150" />
-                            <Setter Property="MaxHeight" Value="200" />
-                            <Setter Property="RenderTransform">
-                                <Setter.Value>
-                                    <TranslateTransform X="0" Y="200"/>
-                                </Setter.Value>
-                            </Setter>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=ViewModel.SpotifyInfoOpen}" Value="True">
-                                    <DataTrigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                                    </DataTrigger.EnterActions>
-                                    <DataTrigger.ExitActions>
-                                        <BeginStoryboard Storyboard="{StaticResource movePanelOutDown}" />
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                                    </DataTrigger.ExitActions>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </components:SpotifyInformationBox.Style>
-                </components:SpotifyInformationBox>
+                    <!-- Spotify information box -->
+                    <components:SpotifyInformationBox VerticalAlignment="Bottom"
+                                                      HorizontalAlignment="Right"
+                                                      Margin="20"
+                                                      ViewModel="{Binding Path=ViewModel.SpotifyViewModel}">
+                        <components:SpotifyInformationBox.Style>
+                            <Style TargetType="{x:Type components:SpotifyInformationBox}">
+                                <Setter Property="Opacity" Value="0" />
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter Property="MinWidth" Value="150" />
+                                <Setter Property="MaxHeight" Value="200" />
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TranslateTransform X="0" Y="200"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=ViewModel.SpotifyInfoOpen}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutDown}" />
+                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </components:SpotifyInformationBox.Style>
+                    </components:SpotifyInformationBox>
+                </Grid>
+
+                <Grid Grid.Row="2"
+                      Background="{StaticResource BackgroundColorDarkerShade}" />
             </Grid>
         </Border>
     </Viewbox>

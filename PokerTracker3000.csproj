@@ -34,6 +34,7 @@
     <None Remove="Resources\Fonts\Lato-ThinItalic.ttf" />
     <None Remove="Resources\Images\coffee_mug.png" />
     <None Remove="Resources\Images\poker_table.png" />
+    <None Remove="Resources\Images\poker_table2.png" />
   </ItemGroup>
 
   <ItemGroup>

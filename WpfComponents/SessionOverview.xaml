@@ -6,12 +6,21 @@
         AncestorType={x:Type UserControl}}, Path=.}">
 
         <Grid.Resources>
+            <Style x:Key="currentBlindsText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                <Setter Property="FontSize" Value="68" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="infoText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                <Setter Property="FontSize" Value="35" />
+            </Style>
+
             <Style x:Key="nextBlindsPanel" TargetType="{x:Type StackPanel}">
                 <Setter Property="Opacity" Value="0" />
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="Orientation" Value="Horizontal" />
-                <Style.Triggers>
 
+                <Style.Triggers>
                     <DataTrigger Binding="{Binding Path=StageManager.CurrentStage.IsPause}" Value="True">
                         <DataTrigger.EnterActions>
                             <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
@@ -53,87 +62,35 @@
             <Style x:Key="blindsText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
-                <Setter Property="FontSize" Value="8" />
+                <Setter Property="FontSize" Value="30" />
             </Style>
         </Grid.Resources>
 
-        <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Center">
+        <Grid HorizontalAlignment="Center">
 
-            <!-- Current stage -->
-            <Grid Margin="0,10,0,0">
-                <TextBlock Text="- break -"
-                           HorizontalAlignment="Center">
-                    <TextBlock.Style>
-                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
-                            <Setter Property="FontSize" Value="28" />
-                            <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
-                            <Setter Property="Opacity" Value="0" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=StageManager.CurrentStage.IsPause}" Value="True">
-                                    <DataTrigger.EnterActions>
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                                    </DataTrigger.EnterActions>
-                                    <DataTrigger.ExitActions>
-                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                                    </DataTrigger.ExitActions>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-                <Grid Style="{StaticResource currentBlindsGrid}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="180" />
+                <RowDefinition Height="10" />
+                <RowDefinition Height="80" />
+                <RowDefinition Height="10" />
+                <RowDefinition Height="60" />
+                <RowDefinition Height="10" />
+                <RowDefinition Height="60" />
+            </Grid.RowDefinitions>
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="20" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Vertical"
-                                Grid.Column="0">
-                        <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                   HorizontalAlignment="Center"
-                                   FontSize="18">
-                            <TextBlock.Text>
-                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
-                                    <Binding Path="StageManager.CurrentStage.SmallBlind" />
-                                    <Binding Path="Currency" />
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                        <TextBlock Style="{StaticResource blindsText}"
-                                   Text="small blind" />
-                    </StackPanel>
-                    <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                               Grid.Column="1"
-                               HorizontalAlignment="Center"
-                               FontSize="18"
-                               Text="|" />
-                    <StackPanel Orientation="Vertical"
-                                Grid.Column="2">
-                        <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                   HorizontalAlignment="Center"
-                                   FontSize="18">
-                            <TextBlock.Text>
-                                <MultiBinding Converter="{StaticResource valueDisplayConverter}">
-                                    <Binding Path="StageManager.CurrentStage.BigBlind" />
-                                    <Binding Path="Currency" />
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                        <TextBlock Style="{StaticResource blindsText}"
-                                   Text="big blind" />
-                    </StackPanel>
-                </Grid>
-            </Grid>
             <!-- Clock -->
-            <Grid>
+            <Grid Grid.Row="0"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+
+                <!-- Timer -->
                 <TextBlock Text="{Binding Path=Clock.NumberOfSeconds,
-                            Converter={StaticResource secondsToTimeStringConverter}}">
+                           Converter={StaticResource secondsToTimeStringConverter}}"
+                           VerticalAlignment="Center">
                     <TextBlock.Style>
                         <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                             <Setter Property="HorizontalAlignment" Value="Center" />
-                            <Setter Property="FontSize" Value="80" />
+                            <Setter Property="FontSize" Value="200" />
                             <Setter Property="FontWeight" Value="Bold" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=Clock.IsRunning}" Value="False">
@@ -143,6 +100,8 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
+
+                <!-- Pause text -->
                 <Border Background="{StaticResource BackgroundColorDarkerShadeWithOpacity}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -172,15 +131,79 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                FontWeight="Bold"
-                               FontSize="30"
+                               FontSize="40"
                                Foreground="{StaticResource MainHighlightColor}" />
                 </Border>
             </Grid>
 
+            <!-- Current stage -->
+            <Grid Grid.Row="2"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+
+                <!-- Break text -->
+                <TextBlock Text="- break -"
+                           HorizontalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource infoText}">
+                            <Setter Property="Foreground" Value="{StaticResource MainTextSemiTransparent}" />
+                            <Setter Property="Opacity" Value="0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=StageManager.CurrentStage.IsPause}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <!-- Current blinds -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource currentBlindsText}">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                <Binding Path="StageManager.CurrentStage.SmallBlind" />
+                                <Binding Path="Currency" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock Text=" / ">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource currentBlindsText}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=StageManager.CurrentStage}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Hidden" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource currentBlindsText}">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                <Binding Path="StageManager.CurrentStage.BigBlind" />
+                                <Binding Path="Currency" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+
             <!-- Next stage -->
-            <Grid HorizontalAlignment="Center">
+            <Grid Grid.Row="4"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Opacity="0.8">
                 <StackPanel Style="{StaticResource nextBlindsPanel}">
-                    <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                    <TextBlock Style="{StaticResource infoText}"
                                Text="next: " />
 
                     <!-- Next stage is not pause -->
@@ -196,7 +219,7 @@
                             </Style>
                         </StackPanel.Style>
 
-                        <TextBlock Style="{StaticResource MainTextBlockStyle}">
+                        <TextBlock Style="{StaticResource infoText}">
                             <TextBlock.Text>
                                 <MultiBinding Converter="{StaticResource valueDisplayConverter}">
                                     <Binding Path="NextStage.SmallBlind" />
@@ -204,9 +227,9 @@
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
-                        <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                        <TextBlock Style="{StaticResource infoText}"
                                    Text=" / " />
-                        <TextBlock Style="{StaticResource MainTextBlockStyle}">
+                        <TextBlock Style="{StaticResource infoText}">
                             <TextBlock.Text>
                                 <MultiBinding Converter="{StaticResource valueDisplayConverter}">
                                     <Binding Path="NextStage.BigBlind" />
@@ -228,19 +251,19 @@
                                 </Style>
                             </StackPanel.Style>
 
-                            <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                   Text=" (next break in " />
-                            <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                   Text="{Binding Path=StageManager.SecondsUntilPause, Converter={StaticResource secondsToTimeStringConverter}, ConverterParameter=longformat}" />
-                            <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                   Text=")" />
+                            <TextBlock Style="{StaticResource infoText}"
+                                       Text=" (break in "/>
+                            <TextBlock Style="{StaticResource infoText}"
+                                       Text="{Binding Path=StageManager.SecondsUntilPause, Converter={StaticResource secondsToTimeStringConverter}, ConverterParameter=longformat}"/>
+                            <TextBlock Style="{StaticResource infoText}"
+                                       Text=")"/>
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Next stage is pause -->
                     <TextBlock Text="break">
                         <TextBlock.Style>
-                            <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                            <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource infoText}">
                                 <Setter Property="Visibility" Value="Visible" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Path=NextStage.IsPause}" Value="False">
@@ -267,6 +290,71 @@
                     </TextBlock.Style>
                 </TextBlock>
             </Grid>
-        </StackPanel>
+
+            <!-- Game stats -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Grid.Row="6"
+                        Opacity="0.8">
+                <StackPanel.Style>
+                    <Style TargetType="{x:Type StackPanel}">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=StageManager.CurrentStage}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <!-- Number of players left-->
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="players"
+                               Style="{StaticResource MainTextBlockStyle}" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource infoText}"
+                           Text="{Binding Path=SessionManager.NumberOfPlayersNotEliminated}"/>
+                        <TextBlock Style="{StaticResource infoText}"
+                           Text="/" />
+                        <TextBlock Style="{StaticResource infoText}"
+                           Text="{Binding Path=SessionManager.NumberOfPlayers}"/>
+                    </StackPanel>
+                </StackPanel>
+                <TextBlock Style="{StaticResource infoText}"
+                           Text="   "/>
+
+                <!-- Pot total -->
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="total"
+                               Style="{StaticResource MainTextBlockStyle}" />
+                    <TextBlock Style="{StaticResource infoText}">
+                    <TextBlock.Text>
+                        <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                            <Binding Path="SessionManager.TotalAmountInPot" />
+                            <Binding Path="SessionManager.GameSettings.CurrencyType" />
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                </StackPanel>
+                <TextBlock Style="{StaticResource infoText}"
+                           Text="   "/>
+
+                <!-- Average pot size -->
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="average"
+                               Style="{StaticResource MainTextBlockStyle}" />
+                    <TextBlock Style="{StaticResource infoText}">
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                                <Binding Path="SessionManager.AveragePotSize" />
+                                <Binding Path="SessionManager.GameSettings.CurrencyType" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+
+        </Grid>
     </Grid>
 </UserControl>
