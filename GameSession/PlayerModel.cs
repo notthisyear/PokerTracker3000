@@ -7,7 +7,7 @@ namespace PokerTracker3000.GameSession
 {
     public class PlayerModel : ObservableObject
     {
-        #region Public propertoes
+        #region Public properties
 
         #region Backing fields
         private string _name = string.Empty;

@@ -295,6 +295,7 @@ namespace PokerTracker3000.GameSession
             }
 
             TotalAmountInPot = 0;
+            var totalNumberofPlayers = 0;
             foreach (var spot in PlayerSpots)
             {
                 var playerDataOrNull = configuration!.PlayerConfigurations.FirstOrDefault(x => x.SpotIndex == spot.SpotIndex);
@@ -306,9 +307,12 @@ namespace PokerTracker3000.GameSession
                 {
                     spot.AddPlayer(playerDataOrNull.PlayerModel);
                     TotalAmountInPot += playerDataOrNull.PlayerModel.MoneyInThePot;
+                    totalNumberofPlayers++;
                 }
             }
-
+            NumberOfPlayers = totalNumberofPlayers;
+            NumberOfPlayersNotEliminated = NumberOfPlayers;
+            SetAveragePotSize();
             ConsolidateLayout();
             resultMessage = $"Table configuration read from '{Path.GetFileName(filePath)}'!";
             return true;
