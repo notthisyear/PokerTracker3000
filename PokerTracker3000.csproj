@@ -46,10 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="D:\programming\vs\PokerTracker3000\.editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
