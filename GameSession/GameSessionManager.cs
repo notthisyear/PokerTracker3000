@@ -214,6 +214,7 @@ namespace PokerTracker3000.GameSession
             targetSpot.AddPlayer(_pathToDefaultPlayerImage);
             NumberOfPlayers = PlayerSpots.Where(x => x.HasPlayerData).Count();
             NumberOfPlayersNotEliminated++;
+            SetAveragePotSize();
             LayoutMightHaveChangedEvent?.Invoke(this, NumberOfPlayers);
             TableFull = NumberOfPlayers == NumberOfPlayerSpots;
         }
@@ -376,7 +377,7 @@ namespace PokerTracker3000.GameSession
                         activeSpot.IsEliminated = true;
                         SetOptionsFor(eliminatedPlayer: true);
                         NumberOfPlayersNotEliminated--;
-                        AveragePotSize = NumberOfPlayersNotEliminated > 0 ? TotalAmountInPot / NumberOfPlayersNotEliminated : TotalAmountInPot;
+                        SetAveragePotSize();
                         Notify(PlayerEventMessage.Type.Eliminated, activeSpot.PlayerData!.Name, playerTotalAmount: activeSpot.PlayerData!.MoneyInThePot);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
@@ -441,7 +442,7 @@ namespace PokerTracker3000.GameSession
                         NumberOfPlayersNotEliminated++;
                         SetOptionsFor(eliminatedPlayer: false);
                     }
-                    AveragePotSize = TotalAmountInPot / NumberOfPlayersNotEliminated;
+                    SetAveragePotSize();
                     return true;
                 }
 
@@ -534,6 +535,10 @@ namespace PokerTracker3000.GameSession
                 PlayerEventMessage.Type.Eliminated => GameEventBus.EventType.PlayerEliminated,
                 _ => throw new NotImplementedException(),
             }, new PlayerEventMessage(type, playerName, addOnOrBuyInAmount, playerTotalAmount, potTotal, GameSettings.CurrencyType));
+        }
+        private void SetAveragePotSize()
+        {
+            AveragePotSize = NumberOfPlayersNotEliminated > 0 ? TotalAmountInPot / NumberOfPlayersNotEliminated : TotalAmountInPot;
         }
 
         private static PlayerEditOption GetSelectedOptionIn(List<PlayerEditOption> options)
