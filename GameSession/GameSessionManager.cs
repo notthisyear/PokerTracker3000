@@ -211,7 +211,7 @@ namespace PokerTracker3000.GameSession
             if (targetSpot == default)
                 return;
 
-            targetSpot.AddPlayer(_pathToDefaultPlayerImage);
+            targetSpot.AddPlayer($"Player {targetSpot.SpotIndex + 1}", _pathToDefaultPlayerImage);
             NumberOfPlayers = PlayerSpots.Where(x => x.HasPlayerData).Count();
             NumberOfPlayersNotEliminated++;
             SetAveragePotSize();
@@ -323,7 +323,7 @@ namespace PokerTracker3000.GameSession
         private void InitializeSpots(int numberOfSpots)
         {
             for (var i = 0; i < numberOfSpots; i++)
-                PlayerSpots[i].AddPlayer(_pathToDefaultPlayerImage);
+                PlayerSpots[i].AddPlayer($"Player {i + 1}", _pathToDefaultPlayerImage);
             NumberOfPlayers = numberOfSpots;
             NumberOfPlayersNotEliminated = NumberOfPlayers;
         }

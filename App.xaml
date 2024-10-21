@@ -21,6 +21,7 @@
         <converters:ValueDisplayConverter x:Key="valueDisplayConverter" />
         <converters:SecondsToTimeStringConverter x:Key="secondsToTimeStringConverter" />
         <converters:SecondsToTimestampConverter x:Key="secondsToTimestampConverter" />
+        <converters:EmptyImageConverter x:Key="emptyImageConverter" />
 
         <!-- Animation -->
         <Storyboard x:Key="animateOpacityToOne"
@@ -79,7 +80,7 @@
                 </EasingDoubleKeyFrame>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
-        
+
         <!-- Colors -->
         <Color x:Key="NoColor" A="255" R="0" G="0" B="0" />
         <Color x:Key="MainBackgroundRaw" A="255" R="59" G="59" B="59" />
@@ -89,7 +90,7 @@
         <Color x:Key="MainTextColorRaw" A="255" R="255" G="255" B="255" />
         <Color x:Key="MainErrorColorRaw" A="255" R="231" G="76" B="60" />
         <Color x:Key="MainSuccessColorRaw" A="255" R="47" G="194" B="55" />
-        
+
         <!-- Background brushes -->
         <RadialGradientBrush x:Key="MainBackgroundGradient"
                              GradientOrigin="0.5,0.5" 
@@ -101,7 +102,7 @@
                 <GradientStop Color="{StaticResource BackgroundDarkerShadeRaw}" Offset="1" />
             </RadialGradientBrush.GradientStops>
         </RadialGradientBrush>
-        
+
         <SolidColorBrush x:Key="MainBackgroundColor" Color="{StaticResource MainBackgroundRaw}" />
         <SolidColorBrush x:Key="BackgroundColorDarkerShade" Color="{StaticResource BackgroundDarkerShadeRaw}" />
         <SolidColorBrush x:Key="BackgroundColorDarkerShadeWithOpacity" Color="{StaticResource BackgroundDarkerShadeRaw}" Opacity="0.7"/>

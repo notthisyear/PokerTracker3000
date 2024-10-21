@@ -10,7 +10,6 @@ namespace PokerTracker3000.GameSession
         #region Public properties
 
         #region Backing fields
-        private PlayerModel? _playerData = default;
         private bool _isHighlighted = false;
         private bool _isSelected = false;
         private bool _isBeingMoved = false;
@@ -37,11 +36,7 @@ namespace PokerTracker3000.GameSession
         };
         #endregion
 
-        public PlayerModel? PlayerData
-        {
-            get => _playerData;
-            private set => SetProperty(ref _playerData, value);
-        }
+        public PlayerModel PlayerData { get; } = new();
 
         public bool IsHighlighted
         {
@@ -75,18 +70,18 @@ namespace PokerTracker3000.GameSession
 
         public int SpotIndex { get; init; }
 
-        public bool HasPlayerData { get => _playerData != null; }
+        public bool HasPlayerData { get => PlayerData.HasData; }
         #endregion
 
         #region Public methods
-        public void AddPlayer(string pathToImage)
+        public void AddPlayer(string name, string pathToImage)
         {
-            PlayerData = PlayerModel.GetNewPlayer(pathToImage);
+            PlayerData.Set(name, pathToImage, decimal.Zero);
         }
 
         public void AddPlayer(PlayerModel model)
         {
-            PlayerData = model;
+            PlayerData.Set(model);
         }
 
         public void TryLoadPlayer()
@@ -94,7 +89,7 @@ namespace PokerTracker3000.GameSession
             if (s_loadPlayerDialog.ShowDialog() == true)
             {
                 if (PlayerModel.TryLoadPlayerFromFile(s_loadPlayerDialog.FileName, out var model))
-                    PlayerData = model!;
+                    PlayerData.Set(model!);
             }
         }
 
@@ -103,7 +98,7 @@ namespace PokerTracker3000.GameSession
             IsHighlighted = false;
             IsSelected = false;
             IsEliminated = false;
-            PlayerData = default;
+            PlayerData.Clear();
         }
 
         public void ChangeImage()
@@ -130,15 +125,29 @@ namespace PokerTracker3000.GameSession
 
         public void Swap(PlayerSpot other, bool moveInAction = true)
         {
-            var thisPlayerData = PlayerData;
-            var thisIsEliminated = IsEliminated;
-            PlayerData = other.PlayerData;
-            IsEliminated = other.IsEliminated;
             IsBeingMoved = moveInAction;
-
-            other.PlayerData = thisPlayerData;
-            other.IsEliminated = thisIsEliminated;
             other.IsBeingMoved = false;
+
+            if (!PlayerData.HasData && other.PlayerData.HasData)
+            {
+                PlayerData.Set(other.PlayerData);
+                other.PlayerData.Clear();
+            }
+            else if (PlayerData.HasData && !other.PlayerData.HasData)
+            {
+                other.PlayerData.Set(PlayerData);
+                PlayerData.Clear();
+            }
+            else if (PlayerData != default && other.PlayerData != default)
+            {
+                PlayerModel thisPlayerData = new();
+                thisPlayerData.Set(PlayerData);
+
+                PlayerData.Set(other.PlayerData);
+                other.PlayerData.Set(thisPlayerData);
+            }
+
+            (other.IsEliminated, IsEliminated) = (IsEliminated, other.IsEliminated);
         }
         #endregion
     }

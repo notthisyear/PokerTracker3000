@@ -7,6 +7,7 @@
 
     <UserControl.Resources>
         <converters:BoolToZeroOrNumberConverter x:Key="boolToZeroOrNumberConverter" />
+        <converters:GrayableImageConverter x:Key="grayableImageConverter" />
 
         <Storyboard x:Key="bouncingScalingAnimation"
              PresentationOptions:Freeze="True"
@@ -114,7 +115,7 @@
                         <BeginStoryboard Storyboard="{StaticResource scaleDown}" />
                     </DataTrigger.ExitActions>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Path=SpotData.PlayerData}" Value="{x:Null}">
+                <DataTrigger Binding="{Binding Path=SpotData.PlayerData.HasData}" Value="False">
                     <Setter Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
             </Style.Triggers>
@@ -356,13 +357,19 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="playerImage" TargetType="{x:Type components:GreyableImage}">
-            <Setter Property="Source" Value="{Binding Path=SpotData.PlayerData.PathToImage}" />
+        <Style x:Key="playerImage" TargetType="{x:Type Image}">
             <Setter Property="OpacityMask" Value="{StaticResource radialImageMask}" />
             <Setter Property="Opacity" Value="{Binding Path=AlwaysShowPlayerImage,
                 Converter={StaticResource boolToZeroOrNumberConverter},
                 ConverterParameter=0.6}" />
-            <Setter Property="IsEnabled" Value="True"/>
+            <Setter Property="Source">
+                <Setter.Value>
+                    <MultiBinding Converter="{StaticResource grayableImageConverter}">
+                        <Binding Path="SpotData.PlayerData.PathToImage" />
+                        <Binding Path="SpotData.IsEliminated" />
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <MultiDataTrigger>
                     <MultiDataTrigger.Conditions>
@@ -389,10 +396,6 @@
                         <BeginStoryboard Storyboard="{StaticResource animateOpacityToPointSix}" />
                     </MultiDataTrigger.ExitActions>
                 </MultiDataTrigger>
-
-                <DataTrigger Binding="{Binding Path=SpotData.IsEliminated}" Value="True">
-                    <Setter Property="IsEnabled" Value="False" />
-                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -482,7 +485,7 @@
                 <!-- Image above -->
                 <Border Style="{StaticResource imageBorderAboveText}">
                     <Grid>
-                        <components:GreyableImage Style="{StaticResource playerImage}" />
+                        <Image Style="{StaticResource playerImage}" />
                         <TextBlock Style="{StaticResource crossedOutMark}" />
                     </Grid>
                 </Border>
@@ -513,7 +516,7 @@
                 <!-- Image below -->
                 <Border Style="{StaticResource imageBorderBelowText}">
                     <Grid>
-                    <components:GreyableImage Style="{StaticResource playerImage}" />
+                    <Image Style="{StaticResource playerImage}" />
                         <TextBlock Style="{StaticResource crossedOutMark}" />
                     </Grid>
                 </Border>
@@ -541,7 +544,7 @@
                 <!-- Image left of text -->
                 <Border Style="{StaticResource imageBorderLeftOfText}">
                     <Grid>
-                        <components:GreyableImage Style="{StaticResource playerImage}" />
+                        <Image Style="{StaticResource playerImage}" />
                         <TextBlock Style="{StaticResource crossedOutMark}" />
                     </Grid>
                 </Border>
@@ -572,7 +575,7 @@
                 <!-- Image right of text -->
                 <Border Style="{StaticResource imageBorderRightOfText}">
                     <Grid>
-                        <components:GreyableImage Style="{StaticResource playerImage}" />
+                        <Image Style="{StaticResource playerImage}" />
                         <TextBlock Style="{StaticResource crossedOutMark}" />
                     </Grid>
                 </Border>

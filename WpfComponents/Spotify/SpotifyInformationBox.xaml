@@ -13,8 +13,6 @@
         <SolidColorBrush x:Key="textColor" Color="{StaticResource spotifyBlack}"/>
         <SolidColorBrush x:Key="textSemiTransparent" Color="{StaticResource spotifyBlack}" Opacity="0.8"/>
 
-        <converters:EmptyImageConverter x:Key="emptyImageConverter" />
-
         <Style x:Key="textScrollerBase" TargetType="{x:Type components:TextScrollerFixedWidth}">
             <Setter Property="TextFontSize" Value="14" />
             <Setter Property="TextFontFamily" Value="{StaticResource CascadiaCode}" />

@@ -13,6 +13,7 @@ namespace PokerTracker3000.GameSession
         private string _name = string.Empty;
         private string _pathToImage = string.Empty;
         private decimal _moneyInThePot = decimal.Zero;
+        private bool _hasData = false;
         #endregion
 
         public string Name
@@ -32,10 +33,24 @@ namespace PokerTracker3000.GameSession
             get => _moneyInThePot;
             set => SetProperty(ref _moneyInThePot, value);
         }
+
+        public bool HasData
+        {
+            get => _hasData;
+            private set => SetProperty(ref _hasData, value);
+        }
         #endregion
 
-        public static PlayerModel GetNewPlayer(string pathToImage)
-            => new("<NEW PLAYER>", pathToImage);
+        public PlayerModel() : this(string.Empty, string.Empty)
+        {
+            HasData = false;
+        }
+
+        [JsonConstructor]
+        public PlayerModel(string name, string pathToImage, decimal moneyInThePot = decimal.Zero)
+        {
+            Set(name, pathToImage, moneyInThePot);
+        }
 
         public static bool TryLoadPlayerFromFile(string pathToFile, out PlayerModel? player)
         {
@@ -53,12 +68,25 @@ namespace PokerTracker3000.GameSession
             return false;
         }
 
-        [JsonConstructor]
-        private PlayerModel(string name, string pathToImage, decimal moneyInThePot = decimal.Zero)
+        public void Set(PlayerModel model)
+        {
+            Set(model.Name, model.PathToImage, model.MoneyInThePot);
+        }
+
+        public void Clear()
+        {
+            Name = string.Empty;
+            PathToImage = string.Empty;
+            MoneyInThePot = decimal.Zero;
+            HasData = false;
+        }
+
+        public void Set(string name, string pathToImage, decimal moneyInThePot)
         {
             Name = name;
             PathToImage = pathToImage;
             MoneyInThePot = moneyInThePot;
+            HasData = true;
         }
     }
 }
