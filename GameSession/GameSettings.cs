@@ -87,6 +87,18 @@ namespace PokerTracker3000.GameSession
                 return false;
             }
 
+            if (setup!.Settings == default)
+            {
+                resultMessage = $"Reading settings failed - couldn't find any settings";
+                return false;
+            }
+
+            if (setup.Stages == default || setup.Stages.Count == 0)
+            {
+                resultMessage = $"Reading settings failed - couldn't find any valid stages";
+                return false;
+            }
+
             stageManager.SetStages(setup!.Stages);
 
             CurrencyType = setup.Settings.CurrencyType;

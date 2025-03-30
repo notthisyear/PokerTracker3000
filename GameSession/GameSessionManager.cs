@@ -302,13 +302,16 @@ namespace PokerTracker3000.GameSession
                 if (playerDataOrNull == null)
                 {
                     spot.RemovePlayer();
+                    continue;
                 }
-                else
-                {
-                    spot.AddPlayer(playerDataOrNull.PlayerModel);
-                    TotalAmountInPot += playerDataOrNull.PlayerModel.MoneyInThePot;
-                    totalNumberofPlayers++;
-                }
+
+                var playerData = playerDataOrNull!;
+                if (!Path.Exists(playerData.PlayerModel.PathToImage))
+                    playerData.PlayerModel.PathToImage = _pathToDefaultPlayerImage;
+
+                spot.AddPlayer(playerData.PlayerModel);
+                TotalAmountInPot += playerData.PlayerModel.MoneyInThePot;
+                totalNumberofPlayers++;
             }
             NumberOfPlayers = totalNumberofPlayers;
             NumberOfPlayersNotEliminated = NumberOfPlayers;
@@ -418,7 +421,7 @@ namespace PokerTracker3000.GameSession
 
                     default:
                         return MainWindowFocusManager.FocusArea.None;
-                };
+                }
             });
             FocusManager.RegisterBuyInOrAddOnBoxNavigationCallback((InputEvent.NavigationDirection direction) => NavigateOptions(_addOnOrBuyInNavigationId, AddOnOrBuyInOptions, direction));
             FocusManager.RegisterEditMenuLostFocusCallback(() => SelectedSpot = default);
