@@ -10,10 +10,31 @@
     <Compile Update="WpfComponents\EditGameOptions\EditGameStagesControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="WpfComponents\PlayerLayout\EightPlayerLayout.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\PlayerLayout\FourPlayerLayout.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\PlayerLayout\PlayerLayoutControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\PlayerLayout\SixPlayerLayout.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\PlayerLayout\TenPlayerLayout.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\PlayerLayout\TwelvePlayerLayout.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\PlayerLayout\TwoPlayerLayout.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WpfComponents\ScrollingControllers\NumericalScrollingEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="WpfComponents\Player.xaml.cs">
+    <Compile Update="WpfComponents\PlayerLayout\Player.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="WpfComponents\EditPlayerOptionBox.xaml.cs">
@@ -66,7 +87,7 @@
     <Page Update="WpfComponents\ScrollingControllers\NumericalScrollingEditor.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="WpfComponents\Player.xaml">
+    <Page Update="WpfComponents\PlayerLayout\Player.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="WpfComponents\EditPlayerOptionBox.xaml">

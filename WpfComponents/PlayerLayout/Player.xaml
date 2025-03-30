@@ -1,0 +1,697 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.PlayerLayout.Player"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+             xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters"
+             xmlns:playerlayout="clr-namespace:PokerTracker3000.WpfComponents.PlayerLayout">
+
+    <UserControl.Resources>
+        <converters:BoolToZeroOrNumberConverter x:Key="boolToZeroOrNumberConverter" />
+        <converters:GrayableImageConverter x:Key="grayableImageConverter" />
+
+        <Storyboard x:Key="bouncingScalingAnimation"
+             PresentationOptions:Freeze="True"
+                    RepeatBehavior="Forever"
+                    AutoReverse="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)">
+                <EasingDoubleKeyFrame Value="1.15"
+                               KeyTime="0:0:0.7">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <QuadraticEase EasingMode="EaseOut" />
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)">
+                <EasingDoubleKeyFrame Value="1.15"
+                                      KeyTime="0:0:0.7">
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="moveToZero"
+                    PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">
+                <EasingDoubleKeyFrame Value="0"
+                                      KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <CubicEase EasingMode="EaseOut"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
+                <EasingDoubleKeyFrame Value="0"
+                          KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <CubicEase EasingMode="EaseOut"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="moveUp"
+            PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">
+                <EasingDoubleKeyFrame Value="-30"
+                              KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <CubicEase EasingMode="EaseIn"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="moveDown"
+                    PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)">
+                <EasingDoubleKeyFrame Value="30"
+                      KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <CubicEase EasingMode="EaseIn"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="moveRight"
+            PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
+                <EasingDoubleKeyFrame Value="50"
+              KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <CubicEase EasingMode="EaseIn"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Storyboard x:Key="moveLeft"
+                    PresentationOptions:Freeze="True">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
+                <EasingDoubleKeyFrame Value="-50"
+                                      KeyTime="0:0:0.3">
+                    <EasingDoubleKeyFrame.EasingFunction>
+                        <CubicEase EasingMode="EaseIn"/>
+                    </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
+        <Style x:Key="mainPlayerCardBorder" TargetType="{x:Type Border}">
+            <Setter Property="Visibility" Value="Visible" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=SpotData.IsHighlighted}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard Storyboard="{StaticResource scaleUp}" />
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard Storyboard="{StaticResource scaleDown}" />
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=SpotData.PlayerData.HasData}" Value="False">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="verticalBasePanel" TargetType="{x:Type StackPanel}">
+            <Setter Property="Orientation" Value="Vertical" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style x:Key="verticalTopTextPanel" TargetType="{x:Type StackPanel}">
+            <Setter Property="Orientation" Value="Vertical" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+
+        <Style x:Key="verticalBottomTextPanel" TargetType="{x:Type StackPanel}">
+            <Setter Property="Orientation" Value="Vertical" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+
+        <Style x:Key="verticalCenterTextPanel" TargetType="{x:Type StackPanel}">
+            <Setter Property="Orientation" Value="Vertical" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+
+        </Style>
+
+        <Style x:Key="horizontalBasePanel" TargetType="{x:Type StackPanel}">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style x:Key="playerNameStyleBase" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+            <Setter Property="FontSize" Value="21" />
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="Text" Value="{Binding Path=PlayerData.Name}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsHighlighted}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToPointSix}" />
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding Path=IsEliminated}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="moneyInThePotNameStyleBase" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource playerNameStyleBase}">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Text">
+                <Setter.Value>
+                    <MultiBinding Converter="{StaticResource valueDisplayConverter}">
+                        <Binding Path="PlayerData.MoneyInThePot" />
+                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:PlayerLayoutControl}}" Path="ViewModel.GameSettings.CurrencyType" />
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="playerNameTopStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource playerNameStyleBase}">
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+
+        <Style x:Key="playerNameBottomStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource playerNameStyleBase}">
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+
+        <Style x:Key="moneyInThePotNameTopStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource moneyInThePotNameStyleBase}">
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+
+        <Style x:Key="moneyInThePotNameBottomStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource moneyInThePotNameStyleBase}">
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+        
+        <RadialGradientBrush x:Key="radialImageMask"
+                      GradientOrigin="0.5,0.5"
+                      Center="0.5,0.5"
+                      RadiusX="0.5"
+                      RadiusY="0.5">
+            <RadialGradientBrush.GradientStops>
+                <GradientStop Color="{StaticResource NoColor}" Offset="0" />
+                <GradientStop Color="{StaticResource NoColor}" Offset="0.8" />
+                <GradientStop Color="Transparent" Offset="1" />
+            </RadialGradientBrush.GradientStops>
+        </RadialGradientBrush>
+
+        <LinearGradientBrush x:Key="crossOpacityMask"
+                      StartPoint="0,0.5" EndPoint="1,0.5">
+            <LinearGradientBrush.GradientStops>
+                <GradientStop Offset="0" Color="Black" />
+                <GradientStop Offset="0.1" Color="Transparent" />
+                <GradientStop Offset="0.9" Color="Transparent" />
+                <GradientStop Offset="1" Color="Black" />
+            </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+
+        <Style x:Key="imageBorderBase" TargetType="{x:Type Border}">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform X="0" Y="0" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Width"
+                    Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
+                                Path=ActualWidth,
+                                Converter={StaticResource scaleNumberConverter},
+                                ConverterParameter=*0.6}" />
+        </Style>
+
+        <Style x:Key="imageBelowTextBase" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBorderBase}">
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=SpotData.IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}, Path=AlwaysShowPlayerImage}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Storyboard="{StaticResource moveToZero}" />
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <BeginStoryboard Storyboard="{StaticResource moveUp}" />
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="imageAboveTextBase" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBorderBase}">
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=SpotData.IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}, Path=AlwaysShowPlayerImage}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Storyboard="{StaticResource moveToZero}" />
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <BeginStoryboard Storyboard="{StaticResource moveDown}" />
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="imageCenterLeftOfText" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBorderBase}">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}, Path=AlwaysShowPlayerImage}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Storyboard="{StaticResource moveToZero}" />
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <BeginStoryboard Storyboard="{StaticResource moveLeft}" />
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="imageCenterRightOfText" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBorderBase}">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}, Path=AlwaysShowPlayerImage}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Storyboard="{StaticResource moveToZero}" />
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <BeginStoryboard Storyboard="{StaticResource moveRight}" />
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="imageBelowTextLeft" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBelowTextBase}">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+
+        <Style x:Key="imageBelowTextCenter" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBelowTextBase}">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="imageBelowTextRight" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBelowTextBase}">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+
+        <Style x:Key="imageAboveTextLeft" TargetType="{x:Type Border}" BasedOn="{StaticResource imageAboveTextBase}">
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+
+        <Style x:Key="imageAboveTextCenter" TargetType="{x:Type Border}" BasedOn="{StaticResource imageAboveTextBase}">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="imageAboveTextRight" TargetType="{x:Type Border}" BasedOn="{StaticResource imageAboveTextBase}">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+       
+        <Style x:Key="playerImage" TargetType="{x:Type Image}">
+            <Setter Property="OpacityMask" Value="{StaticResource radialImageMask}" />
+            <Setter Property="Opacity" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}},
+                Path=AlwaysShowPlayerImage,
+                Converter={StaticResource boolToZeroOrNumberConverter},
+                ConverterParameter=0.6}" />
+            <Setter Property="Source">
+                <Setter.Value>
+                    <MultiBinding Converter="{StaticResource grayableImageConverter}">
+                        <Binding Path="PlayerData.PathToImage" />
+                        <Binding Path="IsEliminated" />
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}},
+                                            Path=AlwaysShowPlayerImage}" Value="False" />
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}},
+                                            Path=AlwaysShowPlayerImage}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.EnterActions>
+                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                    </MultiDataTrigger.EnterActions>
+                    <MultiDataTrigger.ExitActions>
+                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToPointSix}" />
+                    </MultiDataTrigger.ExitActions>
+                </MultiDataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="crossedOutMark" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SymbolButtonStyle}">
+            <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
+            <Setter Property="Text" Value="&#xE711;" />
+            <Setter Property="FontSize" Value="150" />
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}, Path=AlwaysShowPlayerImage}" Value="False" />
+                        <Condition Binding="{Binding Path=IsEliminated}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Visibility" Value="Visible" />
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}, Path=AlwaysShowPlayerImage}" Value="True" />
+                        <Condition Binding="{Binding Path=IsEliminated}" Value="True" />
+                    </MultiDataTrigger.Conditions>
+                    <MultiDataTrigger.Setters>
+                        <Setter Property="Visibility" Value="Visible" />
+                    </MultiDataTrigger.Setters>
+                </MultiDataTrigger>
+
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="playerBeingMovedMarker" TargetType="{x:Type Border}">
+            <Setter Property="BorderBrush" Value="{StaticResource MainSuccessColorDisabled}" />
+            <Setter Property="OpacityMask" Value="{StaticResource crossOpacityMask}" />
+            <Setter Property="BorderThickness" Value="4" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Opacity" Value="0.8" />
+            <Setter Property="Visibility" Value="{Binding Path=SpotData.IsBeingMoved, Converter={StaticResource booleanToVisibleOrCollapsedConverter}}" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1.0" ScaleY="1.0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=SpotData.IsHighlighted}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard Name="scaleAnimation"
+                                 Storyboard="{StaticResource bouncingScalingAnimation}" />
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="scaleAnimation" />
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Top-left data template -->
+        <DataTemplate x:Key="topLeftDataTemplate">
+            <StackPanel Style="{StaticResource verticalBasePanel}">
+                <!-- Image -->
+                <Border Style="{StaticResource imageBelowTextLeft}">
+                    <Grid>
+                        <Image Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
+                </Border>
+                
+                <!-- Name and money in the pot -->
+                <StackPanel Style="{StaticResource verticalTopTextPanel}"
+                            HorizontalAlignment="Left">
+                    <TextBlock  Style="{StaticResource playerNameTopStyle}"
+                                HorizontalAlignment="Left" />
+                    <TextBlock Style="{StaticResource moneyInThePotNameTopStyle}"
+                               HorizontalAlignment="Left" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Top-center data template -->
+        <DataTemplate x:Key="topCenterDataTemplate">
+            <StackPanel Style="{StaticResource verticalBasePanel}">
+                <!-- Image -->
+                <Border Style="{StaticResource imageBelowTextCenter}">
+                    <Grid>
+                        <Image Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
+                </Border>
+
+                <!-- Name and money in the pot -->
+                <StackPanel Style="{StaticResource verticalTopTextPanel}"
+                            HorizontalAlignment="Center">
+                    <TextBlock  Style="{StaticResource playerNameTopStyle}"
+                                HorizontalAlignment="Center" />
+                    <TextBlock Style="{StaticResource moneyInThePotNameTopStyle}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <!--Top-right data template-->
+        <DataTemplate x:Key="topRightDataTemplate">
+            <StackPanel Style="{StaticResource verticalBasePanel}">
+                <!-- Image -->
+                <Border Style="{StaticResource imageBelowTextRight}">
+                    <Grid>
+                        <Image Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
+                </Border>
+                
+                <!-- Name and money in the pot -->
+                <StackPanel Style="{StaticResource verticalTopTextPanel}"
+                            HorizontalAlignment="Right">
+                    <TextBlock  Style="{StaticResource playerNameTopStyle}"
+                                HorizontalAlignment="Right" />
+                    <TextBlock Style="{StaticResource moneyInThePotNameTopStyle}"
+                               HorizontalAlignment="Right" />
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Bottom-left data template -->
+        <DataTemplate x:Key="bottomLeftDataTemplate">
+            <StackPanel Style="{StaticResource verticalBasePanel}">
+                <!-- Name and money in the pot -->
+                <StackPanel Style="{StaticResource verticalBottomTextPanel}"
+                            HorizontalAlignment="Left">
+                    <TextBlock Style="{StaticResource playerNameBottomStyle}"
+                               HorizontalAlignment="Left" />
+                    <TextBlock Style="{StaticResource moneyInThePotNameBottomStyle}"
+                               HorizontalAlignment="Left" />
+                </StackPanel>
+                
+                <!-- Image -->
+                <Border Style="{StaticResource imageAboveTextLeft}">
+                    <Grid>
+                        <Image Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Bottom-center data template -->
+        <DataTemplate x:Key="bottomCenterDataTemplate">
+            <StackPanel Style="{StaticResource verticalBasePanel}">
+                <!-- Name and money in the pot -->
+                <StackPanel Style="{StaticResource verticalBottomTextPanel}"
+                            HorizontalAlignment="Center">
+                    <TextBlock Style="{StaticResource playerNameBottomStyle}"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Style="{StaticResource moneyInThePotNameBottomStyle}"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <!-- Image -->
+                <Border Style="{StaticResource imageAboveTextCenter}">
+                    <Grid>
+                        <Image Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Bottom-right data template -->
+        <DataTemplate x:Key="bottomRightDataTemplate">
+            <StackPanel Style="{StaticResource verticalBasePanel}">
+                <!-- Name and money in the pot -->
+                <StackPanel Style="{StaticResource verticalBottomTextPanel}"
+                            HorizontalAlignment="Right">
+                    <TextBlock Style="{StaticResource playerNameBottomStyle}"
+                               HorizontalAlignment="Right" />
+                    <TextBlock Style="{StaticResource moneyInThePotNameBottomStyle}"
+                               HorizontalAlignment="Right" />
+                </StackPanel>
+
+                <!-- Image -->
+                <Border Style="{StaticResource imageAboveTextRight}">
+                    <Grid>
+                        <Image Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Center-left data template -->
+        <DataTemplate x:Key="centerLeftDataTemplate">
+            <StackPanel Style="{StaticResource horizontalBasePanel}">
+                <!-- Image -->
+                <Border Style="{StaticResource imageCenterLeftOfText}">
+                    <Grid>
+                        <Image Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
+                </Border>
+                <!-- Name and money in the pot -->
+                <StackPanel Style="{StaticResource verticalBasePanel}"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource playerNameStyleBase}"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Style="{StaticResource moneyInThePotNameStyleBase}"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Center-right data template -->
+        <DataTemplate x:Key="centerRightDataTemplate">
+            <StackPanel Style="{StaticResource horizontalBasePanel}">
+                <!-- Name and money in the pot -->
+                <StackPanel Style="{StaticResource verticalBasePanel}"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource playerNameStyleBase}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"/>
+                    <TextBlock Style="{StaticResource moneyInThePotNameStyleBase}"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Image -->
+                <Border Style="{StaticResource imageCenterRightOfText}">
+                    <Grid>
+                        <Image Style="{StaticResource playerImage}" />
+                        <TextBlock Style="{StaticResource crossedOutMark}" />
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Border DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
+            Style="{StaticResource mainPlayerCardBorder}">
+        <Grid>
+            <!-- Is being moved marker -->
+            <Border Style="{StaticResource playerBeingMovedMarker}" />
+
+            <!-- Spot info -->
+            <ContentControl Content="{Binding Path=SpotData}">
+                <ContentControl.Style>
+                    <Style TargetType="{x:Type ContentControl}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource topLeftDataTemplate}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.TopCenter}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource topCenterDataTemplate}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.TopRight}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource topRightDataTemplate}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.BottomLeft}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource bottomLeftDataTemplate}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.BottomCenter}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource bottomCenterDataTemplate}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.BottomRight}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource bottomRightDataTemplate}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.Left}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource centerLeftDataTemplate}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.Right}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource centerRightDataTemplate}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
+            
+            <!-- Player info box -->
+            <Border Background="{StaticResource BackgroundColorDarkerShadeWithOpacity}"
+                    CornerRadius="10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Padding="10">
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="Opacity" Value="0" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=SpotData.IsSelected}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <ItemsControl ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:PlayerLayoutControl}}, Path=ViewModel.SpotOptions}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="2" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <components:EditPlayerOptionBox OptionModel="{Binding Path=.}"
+                                                            Margin="5"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

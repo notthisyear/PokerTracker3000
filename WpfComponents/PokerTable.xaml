@@ -1,12 +1,13 @@
 ﻿<UserControl x:Class="PokerTracker3000.WpfComponents.PokerTable"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
              xmlns:app="clr-namespace:PokerTracker3000"
              xmlns:session="clr-namespace:PokerTracker3000.GameSession"
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
              xmlns:editgameoptions="clr-namespace:PokerTracker3000.WpfComponents.EditGameOptions"
-             xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules"
-             xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
+             xmlns:playerlayout="clr-namespace:PokerTracker3000.WpfComponents.PlayerLayout"
+             xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules">
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
           HorizontalAlignment="Stretch"
@@ -62,444 +63,25 @@
                 </DoubleAnimationUsingKeyFrames>
             </Storyboard>
         </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="104*"/>
+            <ColumnDefinition Width="83*"/>
+        </Grid.ColumnDefinitions>
 
+        <!-- Poker table image -->
         <Image Source="{StaticResource pokerTable}"
                 Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}},
                   Path=ActualWidth,
                   Converter={StaticResource scaleNumberConverter},
-                  ConverterParameter=*0.85}" />
+                  ConverterParameter=*0.85}" Grid.ColumnSpan="2" />
 
-        <!-- Player slots (12 players) -->
-        <Grid>
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=CurrentTableLayout}"
-                                     Value="{x:Static session:TableLayout.TwelvePlayers}">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="8*" />
-                <RowDefinition Height="8*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="8*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="8*" />
-                <RowDefinition Height="8*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- Top row-->
-            <components:Player Grid.Row="0"
-                               Grid.Column="3"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot1}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopLeft}"
-                               AlwaysShowPlayerImage="False"/>
-            <components:Player Grid.Row="0"
-                               Grid.Column="5"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot2}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
-                               AlwaysShowPlayerImage="False"/>
-            <components:Player Grid.Row="0"
-                               Grid.Column="7"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot3}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopRight}"
-                               AlwaysShowPlayerImage="False"/>
-            <!-- Right column -->
-            <components:Player Grid.Row="1"
-                               Grid.Column="9"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot4}"
-                               Alignment="{x:Static components:Player+SpotAlignment.Right}"
-                               AlwaysShowPlayerImage="False"/>
-            <components:Player Grid.Row="3"
-                               Grid.Column="10"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot5}"
-                               Alignment="{x:Static components:Player+SpotAlignment.Right}"
-                               AlwaysShowPlayerImage="False"/>
-            <components:Player Grid.Row="5"
-                               Grid.Column="9"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot6}"
-                               Alignment="{x:Static components:Player+SpotAlignment.Right}"
-                               AlwaysShowPlayerImage="False"/>
-
-            <!-- Bottom row-->
-            <components:Player Grid.Row="6"
-                               Grid.Column="7"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot7}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomRight}"
-                               AlwaysShowPlayerImage="False"/>
-            <components:Player Grid.Row="6"
-                               Grid.Column="5"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot8}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"
-                               AlwaysShowPlayerImage="False"/>
-            <components:Player Grid.Row="6"
-                               Grid.Column="3"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot9}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"
-                               AlwaysShowPlayerImage="False"/>
-
-            <!-- Left column -->
-            <components:Player Grid.Row="5"
-                               Grid.Column="1"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot10}"
-                               Alignment="{x:Static components:Player+SpotAlignment.Left}"
-                               AlwaysShowPlayerImage="False"/>
-            <components:Player Grid.Row="3"
-                               Grid.Column="0"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot11}"
-                               Alignment="{x:Static components:Player+SpotAlignment.Left}"
-                               AlwaysShowPlayerImage="False"/>
-            <components:Player Grid.Row="1"
-                               Grid.Column="1"
-                               Grid.ColumnSpan="2"
-                               SpotData="{Binding Path=Spot12}"
-                               Alignment="{x:Static components:Player+SpotAlignment.Left}"
-                               AlwaysShowPlayerImage="False"/>
-        </Grid>
-
-        <!-- Player slots (10 players) -->
-        <Grid>
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=CurrentTableLayout}"
-                          Value="{x:Static session:TableLayout.TenPlayers}">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="0.3*" />
-                <RowDefinition Height="3*" />
-                <RowDefinition Height="3*" />
-                <RowDefinition Height="0.5*" />
-                <RowDefinition Height="3*" />
-                <RowDefinition Height="3*" />
-                <RowDefinition Height="0.3*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.4*" />
-                <ColumnDefinition Width="6*" />
-                <ColumnDefinition Width="1.5*" />
-                <ColumnDefinition Width="6*" />
-                <ColumnDefinition Width="1.5*" />
-                <ColumnDefinition Width="6*" />
-                <ColumnDefinition Width="1.5*" />
-                <ColumnDefinition Width="6*" />
-                <ColumnDefinition Width="1.5*" />
-                <ColumnDefinition Width="6*" />
-                <ColumnDefinition Width="0.4*" />
-            </Grid.ColumnDefinitions>
-            
-            <!-- Top row-->
-            <components:Player Grid.Row="1"
-                               Grid.Column="3"
-                               SpotData="{Binding Path=Spot1}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"/>
-            <components:Player Grid.Row="1"
-                               Grid.Column="5"
-                               SpotData="{Binding Path=Spot2}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
-                              />
-            <components:Player Grid.Row="1"
-                               Grid.Column="7"
-                               SpotData="{Binding Path=Spot3}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"
-                              />
-
-            <!-- Right column -->
-            <components:Player Grid.Row="2"
-                               Grid.Column="9"
-                               SpotData="{Binding Path=Spot4}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}" />
-            <components:Player Grid.Row="4"
-                               Grid.Column="9"
-                               SpotData="{Binding Path=Spot5}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}" />
-
-            <!-- Bottom row-->
-            <components:Player Grid.Row="5"
-                               Grid.Column="7"
-                               SpotData="{Binding Path=Spot6}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}" />
-            <components:Player Grid.Row="5"
-                               Grid.Column="5"
-                               SpotData="{Binding Path=Spot7}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}" />
-            <components:Player Grid.Row="5"
-                               Grid.Column="3"
-                               SpotData="{Binding Path=Spot8}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}" />
-
-            <!-- Left column -->
-            <components:Player Grid.Row="4"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot9}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"/>
-            <components:Player Grid.Row="2"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot10}"
-                               VerticalAlignment="Center"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}"/>
-        </Grid>
-
-        <!-- Player slots (8 players) -->
-        <Grid>
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=CurrentTableLayout}"
-                          Value="{x:Static session:TableLayout.EightPlayers}">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="2*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="3*" />
-                <ColumnDefinition Width="3*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- Top row-->
-            <components:Player Grid.Row="0"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot1}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopLeft}" />
-            <components:Player Grid.Row="0"
-                               Grid.Column="3"
-                               SpotData="{Binding Path=Spot2}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}" />
-            <components:Player Grid.Row="0"
-                               Grid.Column="5"
-                               SpotData="{Binding Path=Spot3}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopRight}" />
-
-            <!-- Right column -->
-            <components:Player Grid.Row="2"
-                               Grid.Column="6"
-                               SpotData="{Binding Path=Spot4}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomRight}" />
-
-            <!-- Bottom row-->
-            <components:Player Grid.Row="4"
-                               Grid.Column="5"
-                               SpotData="{Binding Path=Spot5}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomRight}" />
-            <components:Player Grid.Row="4"
-                               Grid.Column="3"
-                               SpotData="{Binding Path=Spot6}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}"/>
-            <components:Player Grid.Row="4"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot7}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}"/>
-
-            <!-- Left column -->
-            <components:Player Grid.Row="2"
-                               Grid.Column="0"
-                               SpotData="{Binding Path=Spot8}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}" />
-        </Grid>
-
-        <!-- Player slots (6 players) -->
-        <Grid>
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=CurrentTableLayout}"
-                          Value="{x:Static session:TableLayout.SixPlayers}">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- Top row-->
-            <components:Player Grid.Row="0"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot1}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopLeft}" />
-            <components:Player Grid.Row="0"
-                               Grid.Column="3"
-                               SpotData="{Binding Path=Spot2}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}" />
-            <components:Player Grid.Row="0"
-                               Grid.Column="5"
-                               SpotData="{Binding Path=Spot3}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopRight}" />
-
-            <!-- Bottom row-->
-            <components:Player Grid.Row="2"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot4}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomLeft}" />
-            <components:Player Grid.Row="2"
-                               Grid.Column="3"
-                               SpotData="{Binding Path=Spot5}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}" />
-            <components:Player Grid.Row="2"
-                               Grid.Column="5"
-                               SpotData="{Binding Path=Spot6}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomRight}" />
-        </Grid>
-
-        <!-- Player slots (4 players) -->
-        <Grid>
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=CurrentTableLayout}"
-                          Value="{x:Static session:TableLayout.FourPlayers}">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- Top row-->
-            <components:Player Grid.Row="0"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot1}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}" />
-            <components:Player Grid.Row="0"
-                               Grid.Column="3"
-                               SpotData="{Binding Path=Spot2}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}" />
-
-            <!-- Bottom row-->
-            <components:Player Grid.Row="2"
-                               Grid.Column="3"
-                               SpotData="{Binding Path=Spot3}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}" />
-            <components:Player Grid.Row="2"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot4}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}" />
-        </Grid>
-
-        <!-- Player slots (2 players) -->
-        <Grid>
-            <Grid.Style>
-                <Style TargetType="{x:Type Grid}">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=CurrentTableLayout}"
-                          Value="{x:Static session:TableLayout.TwoPlayers}">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Grid.Style>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="2*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <!-- Top row-->
-            <components:Player Grid.Row="0"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot1}"
-                               Alignment="{x:Static components:Player+SpotAlignment.TopCenter}" />
-
-            <!-- Bottom row-->
-            <components:Player Grid.Row="2"
-                               Grid.Column="1"
-                               SpotData="{Binding Path=Spot2}"
-                               Alignment="{x:Static components:Player+SpotAlignment.BottomCenter}" />
-        </Grid>
+        <!-- Players -->
+        <playerlayout:PlayerLayoutControl ViewModel="{Binding Path=ViewModel}" Grid.ColumnSpan="2" />
 
         <!-- Edit name box -->
         <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="29,0,0,0">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Opacity" Value="0" />
@@ -569,8 +151,8 @@
 
         <!-- Buy-in/Add-on box -->
         <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center">
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center" Grid.ColumnSpan="2">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Opacity" Value="0" />
@@ -591,7 +173,7 @@
                 </Style>
             </StackPanel.Style>
 
-             <!-- Text over box -->
+            <!-- Text over box -->
             <StackPanel Orientation="Horizontal"
                   HorizontalAlignment="Center">
                 <TextBlock Style="{StaticResource MainTextBlockStyle}"
@@ -620,7 +202,7 @@
                      FontWeight="Bold"/>
             </StackPanel>
 
-             <!-- Actual box -->
+            <!-- Actual box -->
             <Border Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
                       Path=ActualHeight,
                       Converter={StaticResource scaleNumberConverter},
@@ -671,10 +253,10 @@
                 </Grid>
             </Border>
         </StackPanel>
-        
+
         <!-- Game edit options -->
-        <ContentControl HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center">
+        <ContentControl
+                        VerticalAlignment="Center" Grid.ColumnSpan="2">
             <ContentControl.Style>
                 <Style TargetType="{x:Type ContentControl}">
                     <Setter Property="Opacity" Value="0" />
@@ -734,9 +316,9 @@
 
         <!-- Break stage animation -->
         <Image Source="{StaticResource coffeeMug}"
-               HorizontalAlignment="Center"
+               HorizontalAlignment="Left"
                VerticalAlignment="Center"
-               Width="300">
+               Width="300" Grid.ColumnSpan="2" Margin="-57,0,0,0">
             <Image.Style>
                 <Style TargetType="{x:Type Image}">
                     <Setter Property="Opacity" Value="0.3" />

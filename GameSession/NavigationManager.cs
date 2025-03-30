@@ -131,14 +131,13 @@ namespace PokerTracker3000.GameSession
         {
             /* Layout:
             *
-            *   0
+            * 0   1
             *
-            *   1
             */
             AddToTableLayoutNavigationList(TableLayout.TwoPlayers,
                 [
                     new(X: 0, Y: 0),
-                    new(X: 0, Y: 1)
+                    new(X: 1, Y: 0.1f)
                 ]);
 
             /* Layout:

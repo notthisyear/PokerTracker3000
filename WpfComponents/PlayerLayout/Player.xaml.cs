@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using PokerTracker3000.GameSession;
 
-namespace PokerTracker3000.WpfComponents
+namespace PokerTracker3000.WpfComponents.PlayerLayout
 {
     public partial class Player : UserControl
     {

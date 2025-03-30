@@ -7,7 +7,7 @@ using System.Windows.Media.Imaging;
 
 namespace PokerTracker3000.WpfComponents.Converters
 {
-    class GrayableImageConverter : IMultiValueConverter
+    internal class GrayableImageConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {

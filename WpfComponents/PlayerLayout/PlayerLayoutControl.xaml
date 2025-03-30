@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.PlayerLayout.PlayerLayoutControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:playerlayout="clr-namespace:PokerTracker3000.WpfComponents.PlayerLayout"
+             xmlns:session="clr-namespace:PokerTracker3000.GameSession">
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="twelvePlayerLayout">
+            <playerlayout:TwelvePlayerLayout />
+        </DataTemplate>
+        <DataTemplate x:Key="tenPlayerLayout">
+            <playerlayout:TenPlayerLayout />
+        </DataTemplate>
+        <DataTemplate x:Key="eightPlayerLayout">
+            <playerlayout:EightPlayerLayout />
+        </DataTemplate>
+        <DataTemplate x:Key="sixPlayerLayout">
+            <playerlayout:SixPlayerLayout />
+        </DataTemplate>
+        <DataTemplate x:Key="fourPlayerLayout">
+            <playerlayout:FourPlayerLayout />
+        </DataTemplate>
+        <DataTemplate x:Key="twoPlayerLayout">
+            <playerlayout:TwoPlayerLayout />
+        </DataTemplate>
+        <DataTemplate x:Key="emptyLayout" />
+    </UserControl.Resources>
+
+    <!-- Player layouts -->
+    <ContentControl DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
+        <ContentControl.Style>
+            <Style TargetType="{x:Type ContentControl}">
+                <Setter Property="ContentTemplate" Value="{StaticResource emptyLayout}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=CurrentTableLayout}" Value="{x:Static session:TableLayout.TwelvePlayers}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource twelvePlayerLayout}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=CurrentTableLayout}" Value="{x:Static session:TableLayout.TenPlayers}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource tenPlayerLayout}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=CurrentTableLayout}" Value="{x:Static session:TableLayout.EightPlayers}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource eightPlayerLayout}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=CurrentTableLayout}" Value="{x:Static session:TableLayout.SixPlayers}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource sixPlayerLayout}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=CurrentTableLayout}" Value="{x:Static session:TableLayout.FourPlayers}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource fourPlayerLayout}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Path=CurrentTableLayout}" Value="{x:Static session:TableLayout.TwoPlayers}">
+                        <Setter Property="ContentTemplate" Value="{StaticResource twoPlayerLayout}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ContentControl.Style>
+    </ContentControl>
+</UserControl>
