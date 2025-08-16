@@ -14,6 +14,7 @@ namespace PokerTracker3000.GameSession
         private string _pathToImage = string.Empty;
         private decimal _moneyInThePot = decimal.Zero;
         private bool _hasData = false;
+        private bool _isChipLead = false;
         #endregion
 
         public string Name
@@ -38,6 +39,12 @@ namespace PokerTracker3000.GameSession
         {
             get => _hasData;
             private set => SetProperty(ref _hasData, value);
+        }
+
+        public bool IsChipLead
+        {
+            get => _isChipLead;
+            set => SetProperty(ref _isChipLead, value);
         }
         #endregion
 
@@ -78,6 +85,7 @@ namespace PokerTracker3000.GameSession
             Name = string.Empty;
             PathToImage = string.Empty;
             MoneyInThePot = decimal.Zero;
+            IsChipLead = false;
             HasData = false;
         }
 

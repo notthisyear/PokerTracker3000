@@ -3,13 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
-             xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters"
              xmlns:playerlayout="clr-namespace:PokerTracker3000.WpfComponents.PlayerLayout">
 
     <UserControl.Resources>
-        <converters:BoolToZeroOrNumberConverter x:Key="boolToZeroOrNumberConverter" />
-        <converters:GrayableImageConverter x:Key="grayableImageConverter" />
-
         <Storyboard x:Key="bouncingScalingAnimation"
              PresentationOptions:Freeze="True"
                     RepeatBehavior="Forever"
@@ -195,18 +191,6 @@
         <Style x:Key="moneyInThePotNameBottomStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource moneyInThePotNameStyleBase}">
             <Setter Property="VerticalAlignment" Value="Bottom" />
         </Style>
-        
-        <RadialGradientBrush x:Key="radialImageMask"
-                      GradientOrigin="0.5,0.5"
-                      Center="0.5,0.5"
-                      RadiusX="0.5"
-                      RadiusY="0.5">
-            <RadialGradientBrush.GradientStops>
-                <GradientStop Color="{StaticResource NoColor}" Offset="0" />
-                <GradientStop Color="{StaticResource NoColor}" Offset="0.8" />
-                <GradientStop Color="Transparent" Offset="1" />
-            </RadialGradientBrush.GradientStops>
-        </RadialGradientBrush>
 
         <LinearGradientBrush x:Key="crossOpacityMask"
                       StartPoint="0,0.5" EndPoint="1,0.5">
@@ -334,82 +318,6 @@
         <Style x:Key="imageAboveTextRight" TargetType="{x:Type Border}" BasedOn="{StaticResource imageAboveTextBase}">
             <Setter Property="HorizontalAlignment" Value="Right" />
         </Style>
-       
-        <Style x:Key="playerImage" TargetType="{x:Type Image}">
-            <Setter Property="OpacityMask" Value="{StaticResource radialImageMask}" />
-            <Setter Property="Opacity" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}},
-                Path=AlwaysShowPlayerImage,
-                Converter={StaticResource boolToZeroOrNumberConverter},
-                ConverterParameter=0.6}" />
-            <Setter Property="Source">
-                <Setter.Value>
-                    <MultiBinding Converter="{StaticResource grayableImageConverter}">
-                        <Binding Path="PlayerData.PathToImage" />
-                        <Binding Path="IsEliminated" />
-                    </MultiBinding>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
-                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}},
-                                            Path=AlwaysShowPlayerImage}" Value="False" />
-                    </MultiDataTrigger.Conditions>
-                    <MultiDataTrigger.EnterActions>
-                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                    </MultiDataTrigger.EnterActions>
-                    <MultiDataTrigger.ExitActions>
-                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                    </MultiDataTrigger.ExitActions>
-                </MultiDataTrigger>
-
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
-                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}},
-                                            Path=AlwaysShowPlayerImage}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <MultiDataTrigger.EnterActions>
-                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                    </MultiDataTrigger.EnterActions>
-                    <MultiDataTrigger.ExitActions>
-                        <BeginStoryboard Storyboard="{StaticResource animateOpacityToPointSix}" />
-                    </MultiDataTrigger.ExitActions>
-                </MultiDataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="crossedOutMark" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SymbolButtonStyle}">
-            <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
-            <Setter Property="Text" Value="&#xE711;" />
-            <Setter Property="FontSize" Value="150" />
-            <Setter Property="Visibility" Value="Collapsed" />
-            <Style.Triggers>
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
-                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}, Path=AlwaysShowPlayerImage}" Value="False" />
-                        <Condition Binding="{Binding Path=IsEliminated}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <MultiDataTrigger.Setters>
-                        <Setter Property="Visibility" Value="Visible" />
-                    </MultiDataTrigger.Setters>
-                </MultiDataTrigger>
-
-                <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
-                        <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}, Path=AlwaysShowPlayerImage}" Value="True" />
-                        <Condition Binding="{Binding Path=IsEliminated}" Value="True" />
-                    </MultiDataTrigger.Conditions>
-                    <MultiDataTrigger.Setters>
-                        <Setter Property="Visibility" Value="Visible" />
-                    </MultiDataTrigger.Setters>
-                </MultiDataTrigger>
-
-            </Style.Triggers>
-        </Style>
 
         <Style x:Key="playerBeingMovedMarker" TargetType="{x:Type Border}">
             <Setter Property="BorderBrush" Value="{StaticResource MainSuccessColorDisabled}" />
@@ -442,10 +350,7 @@
             <StackPanel Style="{StaticResource verticalBasePanel}">
                 <!-- Image -->
                 <Border Style="{StaticResource imageBelowTextLeft}">
-                    <Grid>
-                        <Image Style="{StaticResource playerImage}" />
-                        <TextBlock Style="{StaticResource crossedOutMark}" />
-                    </Grid>
+                    <components:PlayerImage />
                 </Border>
                 
                 <!-- Name and money in the pot -->
@@ -464,10 +369,7 @@
             <StackPanel Style="{StaticResource verticalBasePanel}">
                 <!-- Image -->
                 <Border Style="{StaticResource imageBelowTextCenter}">
-                    <Grid>
-                        <Image Style="{StaticResource playerImage}" />
-                        <TextBlock Style="{StaticResource crossedOutMark}" />
-                    </Grid>
+                    <components:PlayerImage />
                 </Border>
 
                 <!-- Name and money in the pot -->
@@ -486,10 +388,7 @@
             <StackPanel Style="{StaticResource verticalBasePanel}">
                 <!-- Image -->
                 <Border Style="{StaticResource imageBelowTextRight}">
-                    <Grid>
-                        <Image Style="{StaticResource playerImage}" />
-                        <TextBlock Style="{StaticResource crossedOutMark}" />
-                    </Grid>
+                    <components:PlayerImage />
                 </Border>
                 
                 <!-- Name and money in the pot -->
@@ -517,10 +416,7 @@
                 
                 <!-- Image -->
                 <Border Style="{StaticResource imageAboveTextLeft}">
-                    <Grid>
-                        <Image Style="{StaticResource playerImage}" />
-                        <TextBlock Style="{StaticResource crossedOutMark}" />
-                    </Grid>
+                    <components:PlayerImage />
                 </Border>
             </StackPanel>
         </DataTemplate>
@@ -539,10 +435,7 @@
 
                 <!-- Image -->
                 <Border Style="{StaticResource imageAboveTextCenter}">
-                    <Grid>
-                        <Image Style="{StaticResource playerImage}" />
-                        <TextBlock Style="{StaticResource crossedOutMark}" />
-                    </Grid>
+                    <components:PlayerImage />
                 </Border>
             </StackPanel>
         </DataTemplate>
@@ -561,10 +454,7 @@
 
                 <!-- Image -->
                 <Border Style="{StaticResource imageAboveTextRight}">
-                    <Grid>
-                        <Image Style="{StaticResource playerImage}" />
-                        <TextBlock Style="{StaticResource crossedOutMark}" />
-                    </Grid>
+                    <components:PlayerImage />
                 </Border>
             </StackPanel>
         </DataTemplate>
@@ -574,10 +464,7 @@
             <StackPanel Style="{StaticResource horizontalBasePanel}">
                 <!-- Image -->
                 <Border Style="{StaticResource imageCenterLeftOfText}">
-                    <Grid>
-                        <Image Style="{StaticResource playerImage}" />
-                        <TextBlock Style="{StaticResource crossedOutMark}" />
-                    </Grid>
+                    <components:PlayerImage />
                 </Border>
                 <!-- Name and money in the pot -->
                 <StackPanel Style="{StaticResource verticalBasePanel}"
@@ -610,10 +497,7 @@
                 
                 <!-- Image -->
                 <Border Style="{StaticResource imageCenterRightOfText}">
-                    <Grid>
-                        <Image Style="{StaticResource playerImage}" />
-                        <TextBlock Style="{StaticResource crossedOutMark}" />
-                    </Grid>
+                    <components:PlayerImage />
                 </Border>
             </StackPanel>
         </DataTemplate>

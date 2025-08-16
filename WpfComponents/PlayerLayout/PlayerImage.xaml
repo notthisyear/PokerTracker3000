@@ -1,0 +1,155 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.PlayerImage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters"
+            xmlns:playerlayout="clr-namespace:PokerTracker3000.WpfComponents.PlayerLayout">
+    <Grid>
+        <Grid.Resources>
+            <!-- Converters -->
+            <converters:BoolToZeroOrNumberConverter x:Key="boolToZeroOrNumberConverter" />
+            <converters:GrayableImageConverter x:Key="grayableImageConverter" />
+
+            <!-- Brushes -->
+            <RadialGradientBrush x:Key="radialImageMask"
+                                  GradientOrigin="0.5,0.5"
+                                  Center="0.5,0.5"
+                                  RadiusX="0.5"
+                                  RadiusY="0.5">
+                <RadialGradientBrush.GradientStops>
+                    <GradientStop Color="{StaticResource NoColor}" Offset="0" />
+                    <GradientStop Color="{StaticResource NoColor}" Offset="0.8" />
+                    <GradientStop Color="Transparent" Offset="1" />
+                </RadialGradientBrush.GradientStops>
+            </RadialGradientBrush>
+            <LinearGradientBrush x:Key="crossOpacityMask"
+              StartPoint="0,0.5" EndPoint="1,0.5">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Offset="0" Color="Black" />
+                    <GradientStop Offset="0.1" Color="Transparent" />
+                    <GradientStop Offset="0.9" Color="Transparent" />
+                    <GradientStop Offset="1" Color="Black" />
+                </LinearGradientBrush.GradientStops>
+
+            </LinearGradientBrush>
+            
+            <!-- Styles -->
+            <Style x:Key="playerImage" TargetType="{x:Type Image}">
+                <Setter Property="OpacityMask" Value="{StaticResource radialImageMask}" />
+                <Setter Property="Opacity"
+                        Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor,
+                        AncestorType={x:Type playerlayout:Player}},
+                        Path=AlwaysShowPlayerImage,
+                        Converter={StaticResource boolToZeroOrNumberConverter},
+                        ConverterParameter=0.6}" />
+                <Setter Property="Source">
+                    <Setter.Value>
+                        <MultiBinding Converter="{StaticResource grayableImageConverter}">
+                            <Binding Path="PlayerData.PathToImage" />
+                            <Binding Path="IsEliminated" />
+                        </MultiBinding>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                            <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,
+                                AncestorType={x:Type playerlayout:Player}},
+                                Path=AlwaysShowPlayerImage}" Value="False" />
+                        </MultiDataTrigger.Conditions>
+                        <MultiDataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                        </MultiDataTrigger.EnterActions>
+                        <MultiDataTrigger.ExitActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                        </MultiDataTrigger.ExitActions>
+                    </MultiDataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                            <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,
+                                AncestorType={x:Type playerlayout:Player}},
+                                Path=AlwaysShowPlayerImage}" Value="True" />
+                        </MultiDataTrigger.Conditions>
+                        <MultiDataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                        </MultiDataTrigger.EnterActions>
+                        <MultiDataTrigger.ExitActions>
+                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToPointSix}" />
+                        </MultiDataTrigger.ExitActions>
+                    </MultiDataTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="crossedOutMark" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource SymbolButtonStyle}">
+                <Setter Property="Foreground" Value="{StaticResource MainErrorColorDisabled}" />
+                <Setter Property="Text" Value="&#xE711;" />
+                <Setter Property="FontSize" Value="150" />
+                <Setter Property="Visibility" Value="Collapsed" />
+                <Style.Triggers>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                            <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}}
+                                ,Path=AlwaysShowPlayerImage}" Value="False" />
+                            <Condition Binding="{Binding Path=IsEliminated}" Value="True" />
+                        </MultiDataTrigger.Conditions>
+                        <MultiDataTrigger.Setters>
+                            <Setter Property="Visibility" Value="Visible" />
+                        </MultiDataTrigger.Setters>
+                    </MultiDataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
+                            <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type playerlayout:Player}},
+                                Path=AlwaysShowPlayerImage}" Value="True" />
+                            <Condition Binding="{Binding Path=IsEliminated}" Value="True" />
+                        </MultiDataTrigger.Conditions>
+                        <MultiDataTrigger.Setters>
+                            <Setter Property="Visibility" Value="Visible" />
+                        </MultiDataTrigger.Setters>
+                    </MultiDataTrigger>
+
+                </Style.Triggers>
+            </Style>
+        </Grid.Resources>
+        
+        <!-- Player image -->
+        <Image Style="{StaticResource playerImage}" />
+        
+        <!-- Eliminated cross -->
+        <TextBlock Style="{StaticResource crossedOutMark}" />
+
+        <!-- Hat -->
+        <Image Source="{StaticResource chipleadHat}"
+               VerticalAlignment="Top"
+               Width="140">
+            <Image.Style>
+                <Style TargetType="{x:Type Image}">
+                    <Setter Property="Opacity" Value="0" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=PlayerData.IsChipLead}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToPointSix}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Image.Style>
+            <Image.RenderTransform>
+                <TransformGroup>
+                    <TranslateTransform X="-10"
+                                        Y="-25" />
+                    <RotateTransform Angle="-10"/>
+                </TransformGroup>
+            </Image.RenderTransform>
+
+        </Image>
+
+    </Grid>
+</UserControl>

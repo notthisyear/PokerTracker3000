@@ -13,6 +13,7 @@
         <BitmapImage x:Key="pokerTableOld" UriSource="/PokerTracker3000;component/Resources/Images/poker_table.png"/>
         <BitmapImage x:Key="pokerTable" UriSource="/PokerTracker3000;component/Resources/Images/poker_table_2.png"/>
         <BitmapImage x:Key="coffeeMug" UriSource="/PokerTracker3000;component/Resources/Images/coffee_mug.png"/>
+        <BitmapImage x:Key="chipleadHat" UriSource="/PokerTracker3000;component/Resources/Images/hat_chiplead.png"/>
 
         <!-- Converters -->
         <converters:BooleanToVisibleOrCollapsedConverter x:Key="booleanToVisibleOrCollapsedConverter" />

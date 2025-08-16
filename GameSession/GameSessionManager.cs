@@ -127,6 +127,7 @@ namespace PokerTracker3000.GameSession
         private const int NumberOfPlayerSpots = 12;
         private bool _moveInProgress = false;
         private TableLayout _currentTableLayout;
+        private readonly PlayerEditOption _setOrRemoveAsChipLeadOption;
         private readonly PlayerEditOption _addOnOrBuyInOption;
         private readonly PlayerEditOption _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
@@ -167,8 +168,11 @@ namespace PokerTracker3000.GameSession
 
             NavigationManager = new();
 
+            _setOrRemoveAsChipLeadOption = new(PlayerEditOption.EditOption.SetAsChipLead);
             _addOnOrBuyInOption = new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success);
             _removeOrEliminateOption = new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel);
+
+            SpotOptions.Add(_setOrRemoveAsChipLeadOption);
             SpotOptions.Add(_addOnOrBuyInOption);
             SpotOptions.Add(_removeOrEliminateOption);
 
@@ -181,6 +185,7 @@ namespace PokerTracker3000.GameSession
                     new(X: 0, Y: 2),
                     new(X: 1, Y: 2),
                     new(X: 0, Y: 3),
+                    new(X: 1, Y: 3),
                 ]);
             _addOnOrBuyInNavigationId = NavigationManager.RegisterNavigation(
                 [
@@ -351,7 +356,7 @@ namespace PokerTracker3000.GameSession
             });
             FocusManager.RegisterSpotSelectedCallback((PlayerSpot activeSpot, int currentSpotIdx) =>
             {
-                SetOptionsFor(activeSpot.IsEliminated);
+                SetOptionsFor(activeSpot.IsEliminated, activeSpot.PlayerData?.IsChipLead ?? false);
             });
             FocusManager.RegisterPlayerOptionsCallback((PlayerSpot activeSpot, InputEvent.NavigationDirection direction) => NavigateOptions(_playerOptionNavigationId, SpotOptions, direction));
             FocusManager.RegisterPlayerOptionSelectCallback((PlayerSpot activeSpot) =>
@@ -380,9 +385,27 @@ namespace PokerTracker3000.GameSession
                             TotalAmountInPot += (activeSpot.PlayerData!.MoneyInThePot - currentAmountInSpot);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
+                    case PlayerEditOption.EditOption.SetAsChipLead:
+                        var currentChipLead = PlayerSpots.FirstOrDefault(x => x.PlayerData?.IsChipLead ?? false);
+                        if (currentChipLead != default)
+                            currentChipLead.PlayerData!.IsChipLead = false;
+
+                        if (activeSpot.PlayerData != default)
+                            activeSpot.PlayerData.IsChipLead = true;
+
+                        SetOptionsFor(eliminatedPlayer: false, isChipLead: true);
+                        return MainWindowFocusManager.FocusArea.PlayerInfo;
+
+                    case PlayerEditOption.EditOption.RemoveAsChipLead:
+                        if (activeSpot.PlayerData != default)
+                            activeSpot.PlayerData.IsChipLead = false;
+
+                        SetOptionsFor(eliminatedPlayer: false, isChipLead: false);
+                        return MainWindowFocusManager.FocusArea.PlayerInfo;
+
                     case PlayerEditOption.EditOption.Eliminate:
                         activeSpot.IsEliminated = true;
-                        SetOptionsFor(eliminatedPlayer: true);
+                        SetOptionsFor(eliminatedPlayer: true, activeSpot.PlayerData?.IsChipLead ?? false);
                         NumberOfPlayersNotEliminated--;
                         SetAveragePotSize();
                         Notify(PlayerEventMessage.Type.Eliminated, activeSpot.PlayerData!.Name, playerTotalAmount: activeSpot.PlayerData!.MoneyInThePot);
@@ -447,7 +470,7 @@ namespace PokerTracker3000.GameSession
                     {
                         SelectedSpot.IsEliminated = false;
                         NumberOfPlayersNotEliminated++;
-                        SetOptionsFor(eliminatedPlayer: false);
+                        SetOptionsFor(eliminatedPlayer: false, SelectedSpot.PlayerData?.IsChipLead ?? false);
                     }
                     SetAveragePotSize();
                     return true;
@@ -523,10 +546,12 @@ namespace PokerTracker3000.GameSession
             options[newIndex].IsSelected = true;
         }
 
-        private void SetOptionsFor(bool eliminatedPlayer)
+        private void SetOptionsFor(bool eliminatedPlayer, bool isChipLead)
         {
             _addOnOrBuyInOption.ChangeEditOption(eliminatedPlayer ? PlayerEditOption.EditOption.BuyIn : PlayerEditOption.EditOption.AddOn);
             _removeOrEliminateOption.ChangeEditOption(eliminatedPlayer ? PlayerEditOption.EditOption.Remove : PlayerEditOption.EditOption.Eliminate);
+            _setOrRemoveAsChipLeadOption.ChangeEditOption(isChipLead ? PlayerEditOption.EditOption.RemoveAsChipLead : PlayerEditOption.EditOption.SetAsChipLead);
+
             if (eliminatedPlayer)
                 _removeOrEliminateOption.IsAvailable = PlayerSpots.Where(x => x.HasPlayerData).Count() > 1;
             else

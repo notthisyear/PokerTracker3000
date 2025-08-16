@@ -26,6 +26,12 @@ namespace PokerTracker3000.GameSession
             [Description("Load player")]
             Load,
 
+            [Description("Set chip lead")]
+            SetAsChipLead,
+
+            [Description("Remove chip lead")]
+            RemoveAsChipLead,
+
             [Description("Add-on")]
             AddOn,
 
