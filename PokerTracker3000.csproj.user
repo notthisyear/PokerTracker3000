@@ -16,6 +16,9 @@
     <Compile Update="WpfComponents\PlayerLayout\FourPlayerLayout.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="WpfComponents\PlayerLayout\PlayerImage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WpfComponents\PlayerLayout\PlayerLayoutControl.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

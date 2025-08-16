@@ -36,9 +36,7 @@
     <None Remove="Resources\Fonts\Lato-Regular.ttf" />
     <None Remove="Resources\Fonts\Lato-Thin.ttf" />
     <None Remove="Resources\Fonts\Lato-ThinItalic.ttf" />
-    <None Remove="Resources\Images\coffee_mug.png" />
-    <None Remove="Resources\Images\poker_table.png" />
-    <None Remove="Resources\Images\poker_table2.png" />
+    <None Remove="Resources\Images\poker_table.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,7 +70,7 @@
     <Resource Include="Resources\Fonts\CascadiaCode-SemiBoldItalic.ttf" />
     <Resource Include="Resources\Fonts\CascadiaCode-SemiLight.ttf" />
     <Resource Include="Resources\Fonts\CascadiaCode-SemiLightItalic.ttf" />
-    
+
     <Resource Include="Resources\Fonts\Lato-Black.ttf" />
     <Resource Include="Resources\Fonts\Lato-BlackItalic.ttf" />
     <Resource Include="Resources\Fonts\Lato-Bold.ttf" />
@@ -83,15 +81,6 @@
     <Resource Include="Resources\Fonts\Lato-Regular.ttf" />
     <Resource Include="Resources\Fonts\Lato-Thin.ttf" />
     <Resource Include="Resources\Fonts\Lato-ThinItalic.ttf" />
-    <Resource Include="Resources\Images\coffee_mug.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Resources\Images\poker_table.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Resources\Images\poker_table_2.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -113,7 +102,16 @@
     <None Update="Resources\blues_riff.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Images\coffee_mug.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Images\default_player.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\poker_table.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Images\poker_table_2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Settings.json">
