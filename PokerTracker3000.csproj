@@ -42,7 +42,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\Images\poker_table.ico" />
+    <Content Include="Resources\Images\poker_table.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
