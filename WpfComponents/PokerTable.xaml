@@ -76,12 +76,14 @@
                   ConverterParameter=*0.85}" Grid.ColumnSpan="2" />
 
         <!-- Players -->
-        <playerlayout:PlayerLayoutControl ViewModel="{Binding Path=ViewModel}" Grid.ColumnSpan="2" />
+        <playerlayout:PlayerLayoutControl ViewModel="{Binding Path=ViewModel}"
+                                          Grid.ColumnSpan="2" />
 
         <!-- Edit name box -->
         <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="29,0,0,0">
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Grid.ColumnSpan="2">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Opacity" Value="0" />
@@ -106,7 +108,7 @@
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center">
                 <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                           Text="SET NAME FOR PLAYER "
+                           Text="SET NAME FOR PLAYER IN SPOT "
                            FontWeight="Bold"/>
                 <TextBlock Style="{StaticResource MainTextBlockStyle}"
                            Text="{Binding Path=ViewModel.SelectedSpot.SpotIndex,
@@ -151,8 +153,9 @@
 
         <!-- Buy-in/Add-on box -->
         <StackPanel Orientation="Vertical"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center" Grid.ColumnSpan="2">
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Grid.ColumnSpan="2">
             <StackPanel.Style>
                 <Style TargetType="{x:Type StackPanel}">
                     <Setter Property="Opacity" Value="0" />
@@ -193,12 +196,10 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                           Text=" AMOUNT FOR PLAYER "
+                           Text=" AMOUNT FOR "
                            FontWeight="Bold" />
                 <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                     Text="{Binding Path=ViewModel.SelectedSpot.SpotIndex,
-                                    Converter={StaticResource scaleNumberConverter},
-                                    ConverterParameter=+1}"
+                     Text="{Binding Path=ViewModel.SelectedSpot.PlayerData.Name, StringFormat=\'{0}\'}"
                      FontWeight="Bold"/>
             </StackPanel>
 
@@ -255,8 +256,7 @@
         </StackPanel>
 
         <!-- Game edit options -->
-        <ContentControl
-                        VerticalAlignment="Center" Grid.ColumnSpan="2">
+        <ContentControl VerticalAlignment="Center" Grid.ColumnSpan="2">
             <ContentControl.Style>
                 <Style TargetType="{x:Type ContentControl}">
                     <Setter Property="Opacity" Value="0" />

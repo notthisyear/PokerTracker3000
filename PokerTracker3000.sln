@@ -5,9 +5,9 @@ VisualStudioVersion = 17.5.33627.172
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PokerTracker3000", "PokerTracker3000.csproj", "{CC0085E9-01AD-4F32-9314-F5590BFE1148}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotSpotifyWebWrapper", "DotSpotifyWebWrapper\DotSpotifyWebWrapper.csproj", "{88B546A4-CC9F-4619-BD9A-D5736520AD5E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotSpotifyWebWrapper", "..\DotSpotifyWebWrapper\src\DotSpotifyWebWrapper.csproj", "{D821ED37-09D0-577D-2C18-C87377B9D46A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotXInput", "DotXInput\DotXInput.csproj", "{6AFF6E27-BBE3-49FE-A673-B30E319CBB67}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotXInput", "..\DotXInput\DotXInput.csproj", "{51F2EC7D-3868-2C72-2BC9-00625A995801}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +19,14 @@ Global
 		{CC0085E9-01AD-4F32-9314-F5590BFE1148}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC0085E9-01AD-4F32-9314-F5590BFE1148}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC0085E9-01AD-4F32-9314-F5590BFE1148}.Release|Any CPU.Build.0 = Release|Any CPU
-		{88B546A4-CC9F-4619-BD9A-D5736520AD5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{88B546A4-CC9F-4619-BD9A-D5736520AD5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{88B546A4-CC9F-4619-BD9A-D5736520AD5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{88B546A4-CC9F-4619-BD9A-D5736520AD5E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6AFF6E27-BBE3-49FE-A673-B30E319CBB67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6AFF6E27-BBE3-49FE-A673-B30E319CBB67}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6AFF6E27-BBE3-49FE-A673-B30E319CBB67}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6AFF6E27-BBE3-49FE-A673-B30E319CBB67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D821ED37-09D0-577D-2C18-C87377B9D46A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D821ED37-09D0-577D-2C18-C87377B9D46A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D821ED37-09D0-577D-2C18-C87377B9D46A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D821ED37-09D0-577D-2C18-C87377B9D46A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51F2EC7D-3868-2C72-2BC9-00625A995801}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51F2EC7D-3868-2C72-2BC9-00625A995801}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51F2EC7D-3868-2C72-2BC9-00625A995801}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51F2EC7D-3868-2C72-2BC9-00625A995801}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

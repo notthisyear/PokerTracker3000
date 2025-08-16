@@ -4,6 +4,7 @@
         xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
         xmlns:app="clr-namespace:PokerTracker3000"
         xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+        xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters"
         Title="PokerTracker3000"
         Background="Transparent"
         WindowStyle="None"
@@ -28,6 +29,7 @@
                   Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}, Path=ActualHeight}">
 
                 <Grid.Resources>
+                    <converters:FocusAreaToBoolConverter x:Key="focusAreaToBoolConverter" />
                     <Storyboard x:Key="movePanelOutToLeft"
                                 PresentationOptions:Freeze="True">
                         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)">
@@ -128,27 +130,10 @@
                                     </Setter.Value>
                                 </Setter>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.FocusManager.CurrentFocusArea}" Value="{x:Static app:MainWindowFocusManager+FocusArea.EditNameBox}">
-                                        <DataTrigger.EnterActions>
-                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
-                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                                        </DataTrigger.EnterActions>
-                                        <DataTrigger.ExitActions>
-                                            <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
-                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                                        </DataTrigger.ExitActions>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.FocusManager.CurrentFocusArea}" Value="{x:Static app:MainWindowFocusManager+FocusArea.AddOnOrBuyInBox}">
-                                        <DataTrigger.EnterActions>
-                                            <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
-                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                                        </DataTrigger.EnterActions>
-                                        <DataTrigger.ExitActions>
-                                            <BeginStoryboard Storyboard="{StaticResource movePanelInY}" />
-                                            <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                                        </DataTrigger.ExitActions>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.FocusManager.CurrentFocusArea}" Value="{x:Static app:MainWindowFocusManager+FocusArea.SideMenuEditOption}">
+                                    <DataTrigger Binding="{Binding Path=ViewModel.SessionManager.FocusManager.CurrentFocusArea,
+                                                                   Converter={StaticResource focusAreaToBoolConverter},
+                                                                   ConverterParameter=EditNameBox|AddOnOrBuyInBox|SideMenuEditOption}"
+                                                 Value="True">
                                         <DataTrigger.EnterActions>
                                             <BeginStoryboard Storyboard="{StaticResource movePanelOutUp}" />
                                             <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
