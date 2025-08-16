@@ -55,8 +55,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="DotSpotifyWebWrapper\DotSpotifyWebWrapper.csproj" />
-    <ProjectReference Include="DotXInput\DotXInput.csproj" />
+    <ProjectReference Include="..\DotSpotifyWebWrapper\src\DotSpotifyWebWrapper.csproj" />
+    <ProjectReference Include="..\DotXInput\DotXInput.csproj" />
   </ItemGroup>
 
   <ItemGroup>
