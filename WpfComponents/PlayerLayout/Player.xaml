@@ -345,6 +345,9 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Empty template-->
+        <DataTemplate x:Key="emptyTemplate" />
+
         <!-- Top-left data template -->
         <DataTemplate x:Key="topLeftDataTemplate">
             <StackPanel Style="{StaticResource verticalBasePanel}">
@@ -513,7 +516,7 @@
             <ContentControl Content="{Binding Path=SpotData}">
                 <ContentControl.Style>
                     <Style TargetType="{x:Type ContentControl}">
-                        <Setter Property="ContentTemplate" Value="{StaticResource topLeftDataTemplate}" />
+                        <Setter Property="ContentTemplate" Value="{StaticResource emptyTemplate}" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.TopCenter}">
                                 <Setter Property="ContentTemplate" Value="{StaticResource topCenterDataTemplate}" />
