@@ -341,6 +341,14 @@ namespace PokerTracker3000.GameSession
             FocusManager.RegisterPlayerSpots(PlayerSpots);
             FocusManager.RegisterSpotNavigationCallback((int currentSpotIdx, InputEvent.NavigationDirection direction) =>
             {
+                // Note: If we loaded a file with fewer active spots than what
+                //       last selected index was, we can get stuck here. Hence,
+                //       have a simple check here to sure that the current spot
+                //       index is something valid. If not, we reset it.
+                if (!PlayerSpots.First(x => x.SpotIndex == currentSpotIdx).HasPlayerData)
+                {
+                    currentSpotIdx = PlayerSpots.FirstOrDefault(x => x.HasPlayerData)?.SpotIndex ?? 0;
+                }
                 // Note: The navigation is set-up in such a way that if no
                 //       available spot is found in the requested navigation
                 //       direction, the current spot index is returned
