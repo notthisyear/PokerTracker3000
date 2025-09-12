@@ -25,7 +25,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         #region Events
         public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
+        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent { add { } remove { } }
         #endregion
 
         public ChangeStageLengthControl()

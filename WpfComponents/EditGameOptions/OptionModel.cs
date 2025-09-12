@@ -30,7 +30,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         public string Text { get; init; } = string.Empty;
 
         public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
+        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent { add { } remove { } }
 
         public void FireNavigationEvent(InputEvent.NavigationDirection direction)
             => Navigate?.Invoke(this, direction);
