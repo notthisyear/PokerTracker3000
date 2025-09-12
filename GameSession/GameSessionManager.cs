@@ -134,7 +134,7 @@ namespace PokerTracker3000.GameSession
         private readonly int _addOnOrBuyInNavigationId;
         private readonly IGameEventBus _eventBus;
 
-        private record PlayerConfiguration(int SpotIndex, PlayerModel PlayerModel);
+        private record PlayerConfiguration(int SpotIndex, bool IsEliminated, PlayerModel PlayerModel);
 
         private record TableConfiguration(List<PlayerConfiguration> PlayerConfigurations);
         #endregion
@@ -244,8 +244,8 @@ namespace PokerTracker3000.GameSession
             LayoutMightHaveChangedEvent?.Invoke(this, PlayerSpots.Where(x => x.HasPlayerData).Count());
         }
 
-        public bool TrySaveGameSettings(string filePath, out string resultMessage)
-            => GameSettings.TrySave(StageManager, filePath, out resultMessage);
+        public bool TrySaveGameSettings(string filePath, out string resultMessage, bool addExtension = true)
+            => GameSettings.TrySave(StageManager, filePath, out resultMessage, addExtension);
 
         public bool TryLoadGameSettingsFromFile(string filePath, out string resultMessage)
         {
@@ -256,13 +256,15 @@ namespace PokerTracker3000.GameSession
         }
 
         public bool TrySaveTableConfiguration(string filePath, out string resultMessage)
+            => TrySaveTableConfiguration(filePath, PlayerSpots, out resultMessage);
+
+        public static bool TrySaveTableConfiguration(string filePath, List<PlayerSpot> playerSpots, out string resultMessage, bool addExtension = true)
         {
-            resultMessage = string.Empty;
             var configs = new List<PlayerConfiguration>();
-            foreach (var spot in PlayerSpots)
+            foreach (var spot in playerSpots)
             {
                 if (spot.HasPlayerData)
-                    configs.Add(new(spot.SpotIndex, spot.PlayerData!));
+                    configs.Add(new(spot.SpotIndex, spot.IsEliminated, spot.PlayerData!));
             }
 
             if (configs.Count == 0)
@@ -272,30 +274,30 @@ namespace PokerTracker3000.GameSession
             }
 
             var tableConfiguration = new TableConfiguration(configs);
-            var (success, path, e) = tableConfiguration.SerializeWriteToJsonFile(filePath);
+            var (success, path, e) = tableConfiguration.SerializeWriteToJsonFile(filePath, addExtension);
             resultMessage = success ? $"Configuration saved to '{Path.GetFileName(path)}'!" : $"Save failed - {e!.Message}";
             return success;
         }
 
-        public bool TryLoadTableConfigurationFromFile(string filePath, out string resultMessage)
+        public bool TryLoadTableConfigurationFromFile(string filePath, out string resultMessage, Dictionary<int, string>? embeddedImageLookup = default)
         {
             FileTextReader reader = new(filePath);
             if (!reader.SuccessfulRead)
             {
-                resultMessage = $"Reading table configuration failed - {reader.ReadException!.Message}";
+                resultMessage = $"Loading table configuration failed - {reader.ReadException!.Message}";
                 return false;
             }
 
             var (configuration, e) = reader.AllText.DeserializeJsonString<TableConfiguration>(convertSnakeCaseToPascalCase: true);
             if (e != default)
             {
-                resultMessage = $"Reading table configuration failed - {e!.Message}";
+                resultMessage = $"Loading table configuration failed - {e!.Message}";
                 return false;
             }
 
             if (configuration!.PlayerConfigurations == default || configuration.PlayerConfigurations.Count == 0)
             {
-                resultMessage = "Reading table configuration failed - no players found";
+                resultMessage = "Loading table configuration failed - no players found";
                 return false;
             }
 
@@ -311,10 +313,20 @@ namespace PokerTracker3000.GameSession
                 }
 
                 var playerData = playerDataOrNull!;
+                if (playerData.PlayerModel.EmbeddedImageIndex != -1 && embeddedImageLookup != default)
+                {
+                    if (embeddedImageLookup.TryGetValue(playerData.PlayerModel.EmbeddedImageIndex, out var imagePath))
+                        playerData.PlayerModel.PathToImage = imagePath;
+                }
+
                 if (!Path.Exists(playerData.PlayerModel.PathToImage))
+                {
                     playerData.PlayerModel.PathToImage = _pathToDefaultPlayerImage;
+                }
 
                 spot.AddPlayer(playerData.PlayerModel);
+                spot.IsEliminated = playerData.IsEliminated;
+
                 TotalAmountInPot += playerData.PlayerModel.MoneyInThePot;
                 totalNumberofPlayers++;
             }
@@ -322,9 +334,24 @@ namespace PokerTracker3000.GameSession
             NumberOfPlayersNotEliminated = NumberOfPlayers;
             SetAveragePotSize();
             ConsolidateLayout();
-            resultMessage = $"Table configuration read from '{Path.GetFileName(filePath)}'!";
+            resultMessage = $"Table configuration loaded from '{Path.GetFileName(filePath)}'!";
             return true;
         }
+
+        public bool TrySaveGameSession(string filePath, out string resultMessage)
+                    => SessionSaveFile.TryWrite(filePath, this, out resultMessage);
+
+        public bool TryLoadGameSession(string filePath, out string resultMessage)
+        {
+            if (!SessionSaveFile.TryLoad(filePath, this, out var clockNumberOfSeconds, out var currentStageNumber, out resultMessage))
+                return false;
+
+            StageManager.TryGotoStage(currentStageNumber);
+            Clock.Pause();
+            Clock.UpdateNumberOfSeconds(clockNumberOfSeconds);
+            return true;
+        }
+
         #endregion
 
         #region Private methods
@@ -576,6 +603,7 @@ namespace PokerTracker3000.GameSession
                 _ => throw new NotImplementedException(),
             }, new PlayerEventMessage(type, playerName, addOnOrBuyInAmount, playerTotalAmount, potTotal, GameSettings.CurrencyType));
         }
+
         private void SetAveragePotSize()
         {
             AveragePotSize = NumberOfPlayersNotEliminated > 0 ? TotalAmountInPot / NumberOfPlayersNotEliminated : TotalAmountInPot;

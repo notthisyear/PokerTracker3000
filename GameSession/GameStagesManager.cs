@@ -207,6 +207,12 @@ namespace PokerTracker3000.GameSession
                 ChangeStage(previousStage!);
         }
 
+        public void TryGotoStage(int number)
+        {
+            if (TryGetStageByNumber(number, out var stage))
+                ChangeStage(stage!);
+        }
+
         public void ResetCurrentStage()
         {
             if (CurrentStage != default)

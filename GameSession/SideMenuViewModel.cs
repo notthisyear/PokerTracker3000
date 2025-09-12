@@ -180,7 +180,7 @@ namespace PokerTracker3000.GameSession
                         if (_currentFocusParentOptionStack.Count > 0)
                             ExitSubOptionMenu();
                         break;
-                };
+                }
             });
             _focusManager.RegisterSideMenuButtonCallback(buttonPressed =>
             {
@@ -467,12 +467,36 @@ namespace PokerTracker3000.GameSession
             {
                 Id = 4,
                 OptionText = "Load...",
-                DescriptionText = "Load settings or players",
+                DescriptionText = "Load session, settings or players",
                 HasSubOptions = true,
                 SubOptions = [
                     new()
                     {
                         Id = 0,
+                        OptionText = "Game session",
+                        DescriptionText = "Load game session",
+                        IsAvailable = !SessionManager.Clock.IsRunning,
+                        UnavaliableDescriptionText = "Pause game to load",
+                        IsSubOption = true,
+                        OptionAction = (_) =>
+                        {
+                            PrepareLoadDialogForSession();
+                            if (s_loadSettingsDialog.ShowDialog() == true)
+                            {
+                                LastSaveLoadStatus = SessionManager.TryLoadGameSession(s_loadSettingsDialog.FileName, out var resultMessage) ?
+                                LastSaveLoadResult.Success : (string.IsNullOrEmpty(resultMessage) ? LastSaveLoadResult.None : LastSaveLoadResult.Failure);
+                                LastSaveLoadMessage = resultMessage;
+                                Task.Run(() =>
+                                {
+                                    Task.Delay(3000).Wait();
+                                    LastSaveLoadStatus = LastSaveLoadResult.None;
+                                });
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Id = 1,
                         OptionText = "Game settings",
                         DescriptionText = "Load game settings",
                         IsAvailable = !SessionManager.Clock.IsRunning,
@@ -480,7 +504,7 @@ namespace PokerTracker3000.GameSession
                         IsSubOption = true,
                         OptionAction = (_) =>
                         {
-                            s_loadSettingsDialog.Title = "Load game settings";
+                            PrepareLoadDialogForSettingsOrConfig("Load game settings");
                             if (s_loadSettingsDialog.ShowDialog() == true)
                             {
                                 LastSaveLoadStatus = SessionManager.TryLoadGameSettingsFromFile(s_loadSettingsDialog.FileName, out var resultMessage) ?
@@ -496,7 +520,7 @@ namespace PokerTracker3000.GameSession
                     },
                     new()
                     {
-                        Id = 1,
+                        Id = 2,
                         OptionText = "Table configuration",
                         DescriptionText = "Load table configuration",
                         IsAvailable = !SessionManager.Clock.IsRunning,
@@ -504,7 +528,7 @@ namespace PokerTracker3000.GameSession
                         IsSubOption = true,
                         OptionAction = (_) =>
                         {
-                            s_loadSettingsDialog.Title = "Load table configuration";
+                            PrepareLoadDialogForSettingsOrConfig("Load table configuration");
                             if (s_loadSettingsDialog.ShowDialog() == true)
                             {
                                 LastSaveLoadStatus = SessionManager.TryLoadTableConfigurationFromFile(s_loadSettingsDialog.FileName, out var resultMessage) ?
@@ -524,19 +548,41 @@ namespace PokerTracker3000.GameSession
             {
                 Id = 5,
                 OptionText = "Save...",
-                DescriptionText = "Save settings or players",
+                DescriptionText = "Save session, settings or players",
                 HasSubOptions = true,
                 SubOptions =
                 [
                     new()
                     {
                         Id = 0,
+                        OptionText = "Game session",
+                        DescriptionText = "Save entire game session",
+                        IsSubOption = true,
+                        OptionAction = (_) =>
+                        {
+                            PrepareSaveDialogForSession();
+                            if (s_saveSettingsDialog.ShowDialog() == true)
+                            {
+                                LastSaveLoadStatus = SessionManager.TrySaveGameSession(s_saveSettingsDialog.FileName, out var resultMessage) ?
+                                LastSaveLoadResult.Success : (string.IsNullOrEmpty(resultMessage) ? LastSaveLoadResult.None : LastSaveLoadResult.Failure);
+                                LastSaveLoadMessage = resultMessage;
+                                Task.Run(() =>
+                                {
+                                    Task.Delay(3000).Wait();
+                                    LastSaveLoadStatus = LastSaveLoadResult.None;
+                                });
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Id = 1,
                         OptionText = "Game settings",
                         DescriptionText = "Save game settings",
                         IsSubOption = true,
                         OptionAction = (_) =>
                         {
-                            s_saveSettingsDialog.Title = "Save game settings";
+                            PrepareSaveDialogForSettingsOrConfig("Save game settings");
                             if (s_saveSettingsDialog.ShowDialog() == true)
                             {
                                 LastSaveLoadStatus = SessionManager.TrySaveGameSettings(s_saveSettingsDialog.FileName, out var resultMessage) ?
@@ -552,13 +598,13 @@ namespace PokerTracker3000.GameSession
                     },
                     new()
                     {
-                        Id = 1,
+                        Id = 2,
                         OptionText = "Table configuration",
                         DescriptionText = "Save table configuration",
                         IsSubOption = true,
                         OptionAction = (_) =>
                         {
-                            s_saveSettingsDialog.Title = "Save table configuration";
+                            PrepareSaveDialogForSettingsOrConfig("Save table configuration");
                             if (s_saveSettingsDialog.ShowDialog() == true)
                             {
                                 LastSaveLoadStatus = SessionManager.TrySaveTableConfiguration(s_saveSettingsDialog.FileName, out var resultMessage) ?
@@ -664,6 +710,31 @@ namespace PokerTracker3000.GameSession
             msg.NumberOfClosingCallbacksCalled++;
         }
 
+        private static void PrepareSaveDialogForSettingsOrConfig(string title)
+        {
+            s_saveSettingsDialog.Title = title;
+            s_saveSettingsDialog.DefaultExt = "json";
+            s_saveSettingsDialog.Filter = "JSON file (*.json)|*.json";
+        }
+
+        private static void PrepareSaveDialogForSession()
+        {
+            s_saveSettingsDialog.Title = "Save game session";
+            s_saveSettingsDialog.DefaultExt = "ptsession";
+            s_saveSettingsDialog.Filter = "PokerTracker session file (*.ptsession)|*.ptsession";
+        }
+
+        private static void PrepareLoadDialogForSettingsOrConfig(string title)
+        {
+            s_loadSettingsDialog.Title = title;
+            s_loadSettingsDialog.Filter = "JSON file (*.json)|*.json|All files (*.*)|*.*";
+        }
+
+        private static void PrepareLoadDialogForSession()
+        {
+            s_loadSettingsDialog.Title = "Load game session";
+            s_loadSettingsDialog.Filter = "PokerTracker session fil (*.ptsession)|*.ptsession|All files (*.*)|*.*";
+        }
         #endregion
     }
 }

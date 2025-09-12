@@ -76,7 +76,7 @@ namespace PokerTracker3000.GameSession
         #region Public methods
         public void AddPlayer(string name, string pathToImage)
         {
-            PlayerData.Set(name, pathToImage, decimal.Zero);
+            PlayerData.Set(name, pathToImage, decimal.Zero, false);
         }
 
         public void AddPlayer(PlayerModel model)

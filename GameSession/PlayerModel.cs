@@ -46,6 +46,8 @@ namespace PokerTracker3000.GameSession
             get => _isChipLead;
             set => SetProperty(ref _isChipLead, value);
         }
+
+        public int EmbeddedImageIndex { get; set; } = -1;
         #endregion
 
         public PlayerModel() : this(string.Empty, string.Empty)
@@ -54,9 +56,9 @@ namespace PokerTracker3000.GameSession
         }
 
         [JsonConstructor]
-        public PlayerModel(string name, string pathToImage, decimal moneyInThePot = decimal.Zero)
+        public PlayerModel(string name, string pathToImage, decimal moneyInThePot = decimal.Zero, bool isChipLead = false)
         {
-            Set(name, pathToImage, moneyInThePot);
+            Set(name, pathToImage, moneyInThePot, isChipLead);
         }
 
         public static bool TryLoadPlayerFromFile(string pathToFile, out PlayerModel? player)
@@ -77,7 +79,7 @@ namespace PokerTracker3000.GameSession
 
         public void Set(PlayerModel model)
         {
-            Set(model.Name, model.PathToImage, model.MoneyInThePot);
+            Set(model.Name, model.PathToImage, model.MoneyInThePot, model.IsChipLead);
         }
 
         public void Clear()
@@ -89,11 +91,12 @@ namespace PokerTracker3000.GameSession
             HasData = false;
         }
 
-        public void Set(string name, string pathToImage, decimal moneyInThePot)
+        public void Set(string name, string pathToImage, decimal moneyInThePot, bool isChipLead)
         {
             Name = name;
             PathToImage = pathToImage;
             MoneyInThePot = moneyInThePot;
+            IsChipLead = isChipLead;
             HasData = true;
         }
     }

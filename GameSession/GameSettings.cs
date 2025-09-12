@@ -52,7 +52,7 @@ namespace PokerTracker3000.GameSession
 
         #region Public methods
 
-        public bool TrySave(GameStagesManager stageManager, string filePath, out string resultMessage)
+        public bool TrySave(GameStagesManager stageManager, string filePath, out string resultMessage, bool addExtension = true)
         {
             List<GameStage> stages = [];
             if (stageManager.TryGetStageByIndex(0, out var stage))
@@ -66,7 +66,7 @@ namespace PokerTracker3000.GameSession
             }
 
             var setup = new GameSetup(this, stages);
-            var (success, fullPath, e) = setup.SerializeWriteToJsonFile(filePath);
+            var (success, fullPath, e) = setup.SerializeWriteToJsonFile(filePath, addExtension);
             resultMessage = success ? $"Settings saved to '{Path.GetFileName(fullPath)}'!" : $"Save failed - {e!.Message}";
             return success;
         }
@@ -76,26 +76,26 @@ namespace PokerTracker3000.GameSession
             FileTextReader reader = new(filePath);
             if (!reader.SuccessfulRead)
             {
-                resultMessage = $"Reading settings failed - {reader.ReadException!.Message}";
+                resultMessage = $"Loading settings failed - {reader.ReadException!.Message}";
                 return false;
             }
 
             var (setup, e) = reader.AllText.DeserializeJsonString<GameSetup>(convertSnakeCaseToPascalCase: true);
             if (e != default)
             {
-                resultMessage = $"Reading settings failed - {e!.Message}";
+                resultMessage = $"Loading settings failed - {e!.Message}";
                 return false;
             }
 
             if (setup!.Settings == default)
             {
-                resultMessage = $"Reading settings failed - couldn't find any settings";
+                resultMessage = $"Loading settings failed - couldn't find any settings";
                 return false;
             }
 
             if (setup.Stages == default || setup.Stages.Count == 0)
             {
-                resultMessage = $"Reading settings failed - couldn't find any valid stages";
+                resultMessage = $"Loading settings failed - couldn't find any valid stages";
                 return false;
             }
 
@@ -106,7 +106,7 @@ namespace PokerTracker3000.GameSession
             DefaultAddOnAmount = setup.Settings.DefaultAddOnAmount;
             DefaultStageLengthSeconds = setup.Settings.DefaultStageLengthSeconds;
 
-            resultMessage = $"Settings read from '{Path.GetFileName(filePath)}!";
+            resultMessage = $"Settings loaded from '{Path.GetFileName(filePath)}!";
             CurrencyType = setup.Settings.CurrencyType;
             return true;
         }
