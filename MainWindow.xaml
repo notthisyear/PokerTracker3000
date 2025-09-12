@@ -109,7 +109,7 @@
                 <Grid Grid.Row="1"
                       Background="{StaticResource MainBackgroundGradient}">
 
-                    <!-- Players -->
+                    <!-- Main table -->
                     <components:PokerTable HorizontalAlignment="Stretch"
                                            VerticalAlignment="Stretch"
                                            ViewModel="{Binding Path=ViewModel.SessionManager}" />

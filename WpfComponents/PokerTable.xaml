@@ -316,9 +316,10 @@
 
         <!-- Break stage animation -->
         <Image Source="{StaticResource coffeeMug}"
-               HorizontalAlignment="Left"
+               HorizontalAlignment="Center"
                VerticalAlignment="Center"
-               Width="300" Grid.ColumnSpan="2" Margin="-57,0,0,0">
+               Width="300"
+               Grid.ColumnSpan="2">
             <Image.Style>
                 <Style TargetType="{x:Type Image}">
                     <Setter Property="Opacity" Value="0.3" />
