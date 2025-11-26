@@ -1,11 +1,16 @@
 ﻿<UserControl x:Class="PokerTracker3000.WpfComponents.PlayerLayout.Player"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:PresentationOptions="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+             xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters"
              xmlns:playerlayout="clr-namespace:PokerTracker3000.WpfComponents.PlayerLayout">
 
     <UserControl.Resources>
+
+        <converters:PlayerImageWidthConverter x:Key="playerImageWidthConverter" />
+
         <Storyboard x:Key="bouncingScalingAnimation"
              PresentationOptions:Freeze="True"
                     RepeatBehavior="Forever"
@@ -202,6 +207,8 @@
             </LinearGradientBrush.GradientStops>
         </LinearGradientBrush>
 
+        <sys:Double x:Key="defaultImageWidthRatio">0.6</sys:Double>
+
         <Style x:Key="imageBorderBase" TargetType="{x:Type Border}">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
@@ -210,11 +217,20 @@
                     <TranslateTransform X="0" Y="0" />
                 </Setter.Value>
             </Setter>
-            <Setter Property="Width"
-                    Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}},
-                                Path=ActualWidth,
-                                Converter={StaticResource scaleNumberConverter},
-                                ConverterParameter=*0.6}" />
+
+            <Setter Property="Width">
+                <Setter.Value>
+                    <MultiBinding Converter="{StaticResource playerImageWidthConverter}"
+                                  ConverterParameter="{StaticResource defaultImageWidthRatio}">
+                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Grid}}"
+                                 Path="ActualWidth" />
+                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}"
+                                 Path="MinImageWidth" />
+                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}"
+                                 Path="MaxImageWidth" />
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="imageBelowTextBase" TargetType="{x:Type Border}" BasedOn="{StaticResource imageBorderBase}">
@@ -518,6 +534,9 @@
                     <Style TargetType="{x:Type ContentControl}">
                         <Setter Property="ContentTemplate" Value="{StaticResource emptyTemplate}" />
                         <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.TopLeft}">
+                                <Setter Property="ContentTemplate" Value="{StaticResource topLeftDataTemplate}" />
+                            </DataTrigger>
                             <DataTrigger Binding="{Binding Path=Alignment}" Value="{x:Static playerlayout:Player+SpotAlignment.TopCenter}">
                                 <Setter Property="ContentTemplate" Value="{StaticResource topCenterDataTemplate}" />
                             </DataTrigger>

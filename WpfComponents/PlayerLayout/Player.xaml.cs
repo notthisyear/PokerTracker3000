@@ -51,6 +51,30 @@ namespace PokerTracker3000.WpfComponents.PlayerLayout
             typeof(Player),
             new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
 
+        public double MinImageWidth
+        {
+            get => (double)GetValue(MinImageWidthProperty);
+            set => SetValue(MinImageWidthProperty, value);
+        }
+        public static readonly DependencyProperty MinImageWidthProperty = DependencyProperty.Register(
+            nameof(MinImageWidth),
+            typeof(double),
+            typeof(Player),
+            new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
+
+
+        public double MaxImageWidth
+        {
+            get => (double)GetValue(MaxImageWidthProperty);
+            set => SetValue(MaxImageWidthProperty, value);
+        }
+        public static readonly DependencyProperty MaxImageWidthProperty = DependencyProperty.Register(
+            nameof(MaxImageWidth),
+            typeof(double),
+            typeof(Player),
+            new FrameworkPropertyMetadata(double.PositiveInfinity, FrameworkPropertyMetadataOptions.AffectsRender));
+
+
         public Player()
         {
             InitializeComponent();

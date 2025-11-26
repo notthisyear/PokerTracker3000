@@ -64,7 +64,6 @@
                             <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
                         </MultiDataTrigger.ExitActions>
                     </MultiDataTrigger>
-
                     <MultiDataTrigger>
                         <MultiDataTrigger.Conditions>
                             <Condition Binding="{Binding Path=IsHighlighted}" Value="True" />
