@@ -4,8 +4,9 @@ using System.Windows;
 using System.Windows.Controls;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.Interfaces;
-
+using ButtonEventArgs = PokerTracker3000.Interfaces.IInputRelay.ButtonEventArgs;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
+using NavigationEventArgs = PokerTracker3000.Interfaces.IInputRelay.NavigationEventArgs;
 
 namespace PokerTracker3000.WpfComponents.EditGameOptions
 {
@@ -45,14 +46,14 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         public OptionModel StageLengthModel { get; } = new() { Text = "Stage length" };
 
-        public PlayerEditOption AddStageModel { get; } = new(PlayerEditOption.EditOption.AddStage, PlayerEditOption.OptionType.Success);
+        public ButtonOptionModel AddStageModel { get; } = new(ButtonOptionModel.EditOption.AddStage, ButtonOptionModel.OptionType.Success);
 
-        public PlayerEditOption RemoveStageModel { get; } = new(PlayerEditOption.EditOption.RemoveStage, PlayerEditOption.OptionType.Cancel);
+        public ButtonOptionModel RemoveStageModel { get; } = new(ButtonOptionModel.EditOption.RemoveStage, ButtonOptionModel.OptionType.Cancel);
         #endregion
 
         #region Events
-        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent { add { } remove { } }
+        public event EventHandler<NavigationEventArgs>? Navigate;
+        public event EventHandler<ButtonEventArgs>? ButtonEvent { add { } remove { } }
         #endregion
 
         #region Private fields
@@ -60,7 +61,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private int _selectedElementIndex;
         private readonly Dictionary<int,
             (Func<InputEvent.NavigationDirection, bool> navigateAction,
-            Action<IInputRelay.ButtonEventArgs> buttonPressAction)> _actionMap = [];
+            Action<ButtonEventArgs> buttonPressAction)> _actionMap = [];
         #endregion
 
         public EditGameStagesControl()
@@ -90,11 +91,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 ]);
 
             _actionMap.Add(0, (e =>
-            {
-                Navigate?.Invoke(sender, e);
-                return true;
-            },
-            e => { }
+                {
+                    Navigate?.Invoke(sender, new() { Direction = e });
+                    return true;
+                },
+                e => { }
             ));
             _actionMap.Add(4, (_ =>
                 {
@@ -106,7 +107,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
                     {
                         SessionManager.StageManager.AddStage();
-                        Navigate?.Invoke(this, InputEvent.NavigationDirection.Down);
+                        Navigate?.Invoke(this, new() { Direction = InputEvent.NavigationDirection.Down });
                         e.Handled = true;
                     }
                 }
@@ -127,12 +128,12 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 }
             ));
             _actionMap.Add(6, (e =>
-            {
-                var didNavigateAway = HandleCommonNavigationOnSelectableOption(StageLengthModel);
-                if (!didNavigateAway)
-                    StageLengthModel.FireNavigationEvent(e);
-                return didNavigateAway;
-            },
+                {
+                    var didNavigateAway = HandleCommonNavigationOnSelectableOption(StageLengthModel);
+                    if (!didNavigateAway)
+                        StageLengthModel.FireNavigationEvent(e);
+                    return didNavigateAway;
+                },
                 e =>
                 {
                     if (e.ButtonEvent == InputEvent.ButtonEventType.Select && StageLengthModel.IsSelected)
@@ -157,12 +158,12 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 }
             ));
             _actionMap.Add(8, (e =>
-            {
-                var didNavigateAway = HandleCommonNavigationOnSelectableOption(BigBlindModel);
-                if (!didNavigateAway)
-                    BigBlindModel.FireNavigationEvent(e);
-                return didNavigateAway;
-            },
+                {
+                    var didNavigateAway = HandleCommonNavigationOnSelectableOption(BigBlindModel);
+                    if (!didNavigateAway)
+                        BigBlindModel.FireNavigationEvent(e);
+                    return didNavigateAway;
+                },
                 e =>
                 {
                     if (e.ButtonEvent == InputEvent.ButtonEventType.Select && BigBlindModel.IsSelected)
@@ -172,27 +173,27 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 }
             ));
             _actionMap.Add(9, (_ =>
-            {
-                RemoveStageModel.IsSelected = !RemoveStageModel.IsSelected;
-                return true;
-            },
-            e =>
-            {
-                if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
                 {
-                    var isLast = SelectedStage.Number == SessionManager.StageManager.Stages.Count;
-                    SessionManager.StageManager.RemoveStage(SelectedStage.Number);
-                    if (SessionManager.StageManager.Stages.Count > 0)
+                    RemoveStageModel.IsSelected = !RemoveStageModel.IsSelected;
+                    return true;
+                },
+                e =>
+                {
+                    if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
                     {
-                        if (isLast)
-                            Navigate?.Invoke(this, InputEvent.NavigationDirection.Up);
-                        else
-                            StageSelectorSelectedIndexChanged(this, new SelectedIndexChangedEventArgs(GameStagesManager.GetIndexForNumber(SelectedStage.Number)));
+                        var isLast = SelectedStage.Number == SessionManager.StageManager.Stages.Count;
+                        SessionManager.StageManager.RemoveStage(SelectedStage.Number);
+                        if (SessionManager.StageManager.Stages.Count > 0)
+                        {
+                            if (isLast)
+                                Navigate?.Invoke(this, new() { Direction = InputEvent.NavigationDirection.Up });
+                            else
+                                StageSelectorSelectedIndexChanged(this, new SelectedIndexChangedEventArgs(GameStagesManager.GetIndexForNumber(SelectedStage.Number)));
 
+                        }
+                        e.Handled = true;
                     }
-                    e.Handled = true;
                 }
-            }
             ));
 
             _selectedElementIndex = 5;
@@ -210,17 +211,17 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 if (!TrySelectStageIfNeeded())
                     return;
 
-                var isUpOrDown = e == InputEvent.NavigationDirection.Up || e == InputEvent.NavigationDirection.Down;
+                var isUpOrDown = e.Direction == InputEvent.NavigationDirection.Up || e.Direction == InputEvent.NavigationDirection.Down;
                 if (SelectedIndexIsStageSelector() && isUpOrDown)
                 {
-                    _ = _actionMap[0].navigateAction.Invoke(e);
+                    _ = _actionMap[0].navigateAction.Invoke(e.Direction);
                 }
                 else
                 {
-                    if (!_actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].navigateAction.Invoke(e))
+                    if (!_actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].navigateAction.Invoke(e.Direction))
                         return;
 
-                    var newIdx = SessionManager.NavigationManager.Navigate(_navigationId, _selectedElementIndex, e, (newIdx) =>
+                    var newIdx = SessionManager.NavigationManager.Navigate(_navigationId, _selectedElementIndex, e.Direction, (newIdx) =>
                         {
                             if (SelectedStage == default)
                                 return true;
@@ -232,7 +233,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                         });
                     _selectedElementIndex = newIdx;
 
-                    _ = _actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].navigateAction.Invoke(e);
+                    _ = _actionMap[SelectedIndexIsStageSelector() ? 0 : _selectedElementIndex].navigateAction.Invoke(e.Direction);
                     stageSelector.IsEnabled = SelectedIndexIsStageSelector();
                 }
             };

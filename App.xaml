@@ -23,7 +23,8 @@
         <converters:SecondsToTimeStringConverter x:Key="secondsToTimeStringConverter" />
         <converters:SecondsToTimestampConverter x:Key="secondsToTimestampConverter" />
         <converters:EmptyImageConverter x:Key="emptyImageConverter" />
-
+        <converters:StringShortenerConverter x:Key="stringShortenerConverter" />
+        
         <!-- Animation -->
         <Storyboard x:Key="animateOpacityToOne"
                     PresentationOptions:Freeze="True">
@@ -91,6 +92,7 @@
         <Color x:Key="MainTextColorRaw" A="255" R="255" G="255" B="255" />
         <Color x:Key="MainErrorColorRaw" A="255" R="231" G="76" B="60" />
         <Color x:Key="MainSuccessColorRaw" A="255" R="47" G="194" B="55" />
+        <Color x:Key="MainHighlightColorRaw" A="255" R="185" G="204" B="152" />
 
         <!-- Background brushes -->
         <RadialGradientBrush x:Key="MainBackgroundGradient"
@@ -125,8 +127,8 @@
 
         <SolidColorBrush x:Key="MainTextColor" Color="{StaticResource MainTextColorRaw}" />
         <SolidColorBrush x:Key="MainTextSemiTransparent" Color="{StaticResource MainTextColorRaw}" Opacity="0.6"/>
+        <SolidColorBrush x:Key="MainHighlightColor" Color="{StaticResource MainHighlightColorRaw}" />
         <SolidColorBrush x:Key="MainTextMutedColor" Color="#888888" />
-        <SolidColorBrush x:Key="MainHighlightColor" Color="#B9CC98" />
         <SolidColorBrush x:Key="MainMouseOverColor" Color="#4788C8" />
 
         <!-- TextBlock styles-->

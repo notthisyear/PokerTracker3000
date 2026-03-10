@@ -1,10 +1,10 @@
-﻿using System.ComponentModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using PokerTracker3000.Common;
 
 namespace PokerTracker3000.GameSession
 {
-    public class PlayerEditOption : ObservableObject
+    public class ButtonOptionModel : SelectableEntity
     {
         public enum EditOption
         {
@@ -75,7 +75,7 @@ namespace PokerTracker3000.GameSession
             AddStage,
 
             [Description("Remove stage")]
-            RemoveStage
+            RemoveStage,
         }
 
         public enum OptionType
@@ -90,7 +90,6 @@ namespace PokerTracker3000.GameSession
         #region Private fields
         private EditOption _option = EditOption.None;
         private string _name = string.Empty;
-        private bool _isSelected = false;
         private bool _isAvailable = true;
         #endregion
 
@@ -106,28 +105,34 @@ namespace PokerTracker3000.GameSession
             private set => SetProperty(ref _name, value);
         }
 
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
-        }
-
         public bool IsAvailable
         {
             get => _isAvailable;
             set => SetProperty(ref _isAvailable, value);
         }
 
+        public Action? ButtonAction { get; set; }
+
         public OptionType Type { get; init; }
         #endregion
 
-        public PlayerEditOption(EditOption option, OptionType type = OptionType.Default, bool isSelected = false)
+        public ButtonOptionModel(EditOption option, OptionType type = OptionType.Default, bool isSelected = false, bool isAvailable = true)
         {
             ChangeEditOption(option);
             Type = type;
             IsSelected = isSelected;
+            IsAvailable = isAvailable;
         }
 
+        public ButtonOptionModel(string name, Action? buttonAction = default, OptionType type = OptionType.Default, bool isSelected = false, bool isAvailable = true)
+        {
+            Name = name;
+            ButtonAction = buttonAction;
+            Type = type;
+            IsSelected = isSelected;
+            IsAvailable = isAvailable;
+
+        }
         public void ChangeEditOption(EditOption option)
         {
             if (Option == option)

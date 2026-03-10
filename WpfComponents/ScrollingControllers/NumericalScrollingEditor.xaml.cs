@@ -274,15 +274,16 @@ namespace PokerTracker3000.WpfComponents
 
                     if (selectedDigit != default)
                     {
-                        var isUpOrDown = e == InputEvent.NavigationDirection.Up || e == InputEvent.NavigationDirection.Down;
+                        var isUpOrDown = e.Direction == InputEvent.NavigationDirection.Up ||
+                                         e.Direction == InputEvent.NavigationDirection.Down;
                         if (isUpOrDown)
                         {
-                            selectedDigit.FireNavigationEvent(e);
+                            selectedDigit.FireNavigationEvent(e.Direction);
                         }
                         else
                         {
                             selectedDigit.IsSelected = false;
-                            var newIndex = selectedDigit.Index + (e == InputEvent.NavigationDirection.Left ? 1 : -1);
+                            var newIndex = selectedDigit.Index + (e.Direction == InputEvent.NavigationDirection.Left ? 1 : -1);
                             var numberOfDigits = ScrollerMode == Mode.Currency ? NumberOfDigits : 6;
                             newIndex = newIndex < 0 ? numberOfDigits - 1 : newIndex % numberOfDigits;
                             if (ScrollerMode == Mode.Currency)

@@ -31,6 +31,7 @@ namespace PokerTracker3000.WpfComponents
             }
             return children.Count > 0;
         }
+
         public static T? TryFindChildOfType<T>(this DependencyObject parent, string childName = "") where T : DependencyObject
         {
             T? foundChild = null;

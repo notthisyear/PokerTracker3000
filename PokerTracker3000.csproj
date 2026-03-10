@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -118,6 +118,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="WpfComponents\EditGameOptions\ChangeAddOnAmountControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\EditGameOptions\SoundEventEditor\SynthesizedSpeechSoundEffectEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\EditGameOptions\SoundEventEditor\FromFileSoundEffectEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WpfComponents\EditGameOptions\SoundEventEditor\SoundEditOption.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

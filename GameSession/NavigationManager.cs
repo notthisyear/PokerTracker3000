@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
-
+using System.Threading;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.GameSession
@@ -39,7 +40,7 @@ namespace PokerTracker3000.GameSession
                 _navigationOrderForDirection = [];
             }
 
-            public void Initialize(ReadOnlyCollection<ItemCoordinate> allSpots)
+            public void Initialize(ReadOnlyCollection<ItemCoordinate> allSpots, Dictionary<InputEvent.NavigationDirection, Action<List<int>>>? navigationOrderCalculator = default)
             {
                 List<Distance> distanceToOtherSpots = [];
                 foreach (var spot in allSpots)
@@ -58,7 +59,7 @@ namespace PokerTracker3000.GameSession
 
                 distanceToOtherSpots.Sort((x, y) => x.Total < y.Total ? -1 : 1);
 
-                foreach (InputEvent.NavigationDirection direction in Enum.GetValues(typeof(InputEvent.NavigationDirection)))
+                foreach (var direction in Enum.GetValues<InputEvent.NavigationDirection>())
                 {
                     List<int> navigationOrder = direction switch
                     {
@@ -89,6 +90,7 @@ namespace PokerTracker3000.GameSession
         #region Private fields
         private readonly Dictionary<TableLayout, Dictionary<int, ItemCoordinate>> _layoutNavigationMaps;
         private readonly Dictionary<int, Dictionary<int, ItemCoordinate>> _registeredNavigationMaps;
+        private readonly Lock _registredMapsLock = new();
         #endregion
 
         public NavigationManager()
@@ -100,16 +102,35 @@ namespace PokerTracker3000.GameSession
         }
 
         #region Public methods
-        public int RegisterNavigation(List<Node> nodes)
+        public int RegisterNavigation(ReadOnlySpan<Node> nodes)
         {
-            var nextId = _registeredNavigationMaps.Count;
-            _registeredNavigationMaps.Add(nextId, []);
-            for (var i = 0; i < nodes.Count; i++)
-                _registeredNavigationMaps[nextId].Add(i, new() { Id = i, X = nodes[i].X, Y = nodes[i].Y });
-
-            InitializeNavigationDictionary(_registeredNavigationMaps[nextId]);
+            int nextId;
+            lock (_registredMapsLock)
+            {
+                nextId = _registeredNavigationMaps.Count;
+                RegisterNavigation(nextId, nodes);
+            }
             return nextId;
         }
+
+        public void ReplaceNavigation(int id, ReadOnlySpan<Node> newNodes)
+        {
+            lock (_registredMapsLock)
+            {
+                if (!_registeredNavigationMaps.Remove(id))
+                    return;
+                RegisterNavigation(id, newNodes);
+            }
+        }
+
+        public void RemoveNavigation(int id)
+        {
+            lock (_registredMapsLock)
+            {
+                _ = _registeredNavigationMaps.Remove(id);
+            }
+        }
+
 
         public int Navigate(TableLayout layout, int currentSpotIdx, InputEvent.NavigationDirection direction, Predicate<int>? spotValidation = default)
         {
@@ -124,9 +145,40 @@ namespace PokerTracker3000.GameSession
                 return Navigate(navigationMap, currentIdx, direction, nodeValidation);
             return currentIdx;
         }
+
+        public void DumpNavigation(int layoutId)
+        {
+            if (!_registeredNavigationMaps.TryGetValue(layoutId, out var navigationMap))
+                return;
+
+            foreach (var entry in navigationMap)
+            {
+                Debug.WriteLine($"-- NODE {entry.Key} ({entry.Value.X}, {entry.Value.Y}) --");
+                foreach (var d in Enum.GetValues<InputEvent.NavigationDirection>())
+                {
+                    Debug.WriteLine($"\t{d}:");
+                    _ = entry.Value.TryGetValidMovementsInDirection(d, out var order);
+                    if (order != default)
+                    {
+                        foreach (var nextIdx in order)
+                            Debug.WriteLine($"\t\t{nextIdx} ({navigationMap[nextIdx].X}, {navigationMap[nextIdx].Y})");
+                    }
+                    Debug.Write("\n");
+                }
+            }
+        }
         #endregion
 
         #region Private methods
+        private void RegisterNavigation(int id, ReadOnlySpan<Node> nodes)
+        {
+            _registeredNavigationMaps.Add(id, []);
+            for (var i = 0; i < nodes.Length; i++)
+                _registeredNavigationMaps[id].Add(i, new() { Id = i, X = nodes[i].X, Y = nodes[i].Y });
+
+            InitializeNavigationDictionary(_registeredNavigationMaps[id]);
+        }
+
         private void SetupNavigationInformationForPlayerLayouts()
         {
             /* Layout:

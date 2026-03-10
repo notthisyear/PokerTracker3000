@@ -9,6 +9,7 @@ using System.Windows.Media.Animation;
 using PokerTracker3000.Interfaces;
 
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
+using NavigationEventArgs = PokerTracker3000.Interfaces.IInputRelay.NavigationEventArgs;
 
 namespace PokerTracker3000.WpfComponents
 {
@@ -70,31 +71,50 @@ namespace PokerTracker3000.WpfComponents
             typeof(ScrollingSelectorBox),
             new FrameworkPropertyMetadata(30, FrameworkPropertyMetadataOptions.AffectsRender, VerticalSpacingUpdated));
 
-        public bool ShowNextAndPreviousValue
+        public double NextAndPreviousOpacity
         {
-            get { return (bool)GetValue(ShowNextAndPreviousValueProperty); }
-            set { SetValue(ShowNextAndPreviousValueProperty, value); }
+            get { return (double)GetValue(NextAndPreviousOpacityProperty); }
+            set { SetValue(NextAndPreviousOpacityProperty, value); }
         }
-        public static readonly DependencyProperty ShowNextAndPreviousValueProperty = DependencyProperty.Register(
-            nameof(ShowNextAndPreviousValue),
-            typeof(bool),
+        public static readonly DependencyProperty NextAndPreviousOpacityProperty = DependencyProperty.Register(
+            nameof(NextAndPreviousOpacity),
+            typeof(double),
             typeof(ScrollingSelectorBox),
-            new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender, ShowNextAndPreviousUpdated));
+            new FrameworkPropertyMetadata(0.5, FrameworkPropertyMetadataOptions.AffectsRender, ShowNextAndPreviousOpacityUpdated));
 
-        private static void ShowNextAndPreviousUpdated(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        public Brush CenterItemColor
         {
-            if (d is ScrollingSelectorBox b && e.OldValue is bool oldValue && e.NewValue is bool newValue && oldValue != newValue)
-            {
-                foreach (var (block, _, currentOpacity) in b._boxes)
-                {
-                    if (currentOpacity == 1)
-                        continue;
+            get => (Brush)GetValue(CenterItemColorProperty);
+            set => SetValue(CenterItemColorProperty, value);
+        }
+        public static readonly DependencyProperty CenterItemColorProperty = DependencyProperty.Register(
+            nameof(CenterItemColor),
+            typeof(Brush),
+            typeof(ScrollingSelectorBox),
+            new FrameworkPropertyMetadata(new SolidColorBrush(new() { A = 255, R = 255, G = 255, B = 255 }), FrameworkPropertyMetadataOptions.AffectsRender));
 
-                    DoubleAnimation fadeAnimation = new(currentOpacity, newValue ? currentOpacity : 0, b._animationLength);
-                    Storyboard sb = new();
-                    Storyboard.SetTargetProperty(fadeAnimation, b._pathToOpacityProperty);
-                    sb.Children.Add(fadeAnimation);
-                    sb.Begin(block, HandoffBehavior.Compose);
+        private static void ShowNextAndPreviousOpacityUpdated(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ScrollingSelectorBox b &&
+                e.OldValue is double oldValue &&
+                e.NewValue is double newValue &&
+                oldValue != newValue)
+            {
+                var node = b._boxes.First;
+                while (node != default)
+                {
+                    // Only the two elements just before and previous the center one should be affected
+                    if (Math.Abs(node.Value.currentOffset) == b.VerticalSpacing && newValue != node.Value.currentOpacity)
+                    {
+                        DoubleAnimation fadeAnimation = new(node.Value.currentOpacity, newValue, b._animationLength);
+                        Storyboard sb = new();
+                        Storyboard.SetTargetProperty(fadeAnimation, b._pathToOpacityProperty);
+                        sb.Children.Add(fadeAnimation);
+
+                        node.ValueRef.currentOpacity = newValue;
+                        sb.Begin(node.Value.block, HandoffBehavior.Compose);
+                    }
+                    node = node.Next;
                 }
             }
         }
@@ -210,7 +230,10 @@ namespace PokerTracker3000.WpfComponents
             Initialize();
 
             if (NavigatorRelay != default)
-                NavigatorRelay.Navigate += Navigate;
+            {
+                WeakEventManager<IInputRelay, NavigationEventArgs>
+                    .AddHandler(NavigatorRelay, nameof(IInputRelay.Navigate), Navigate);
+            }
 
             RaiseEvent(new(ControlInitializedEvent));
         }
@@ -218,18 +241,18 @@ namespace PokerTracker3000.WpfComponents
         private void Initialize()
         {
             _boxes.AddLast((first, -2 * VerticalSpacing, 0));
-            _boxes.AddLast((second, -VerticalSpacing, 0.5));
+            _boxes.AddLast((second, -VerticalSpacing, NextAndPreviousOpacity));
             _boxes.AddLast((third, 0, 1));
-            _boxes.AddLast((fourth, VerticalSpacing, 0.5));
+            _boxes.AddLast((fourth, VerticalSpacing, NextAndPreviousOpacity));
             _boxes.AddLast((fifth, 2 * VerticalSpacing, 0));
 
             var node = _boxes.First;
             first.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            first.Opacity = ShowNextAndPreviousValue ? node!.Value.currentOpacity : 0;
+            first.Opacity = node!.Value.currentOpacity;
 
             node = node.Next;
             second.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            second.Opacity = ShowNextAndPreviousValue ? node!.Value.currentOpacity : 0;
+            second.Opacity = node!.Value.currentOpacity;
 
             node = node.Next;
             third.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
@@ -237,11 +260,11 @@ namespace PokerTracker3000.WpfComponents
 
             node = node.Next;
             fourth.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            fourth.Opacity = ShowNextAndPreviousValue ? node!.Value.currentOpacity : 0;
+            fourth.Opacity = node!.Value.currentOpacity;
 
             node = node.Next;
             fifth.RenderTransform = new TranslateTransform(0, node!.Value.currentOffset);
-            fifth.Opacity = ShowNextAndPreviousValue ? node!.Value.currentOpacity : 0;
+            fifth.Opacity = node!.Value.currentOpacity;
 
             if (Options == default)
                 return;
@@ -311,17 +334,17 @@ namespace PokerTracker3000.WpfComponents
             return t.Width;
         }
 
-        private void Navigate(object? sender, InputEvent.NavigationDirection e)
+        private void Navigate(object? sender, NavigationEventArgs e)
         {
             if (!WrapAtEnds)
             {
-                if (e == InputEvent.NavigationDirection.Down && _selectedIndex == Options.Count - 1)
+                if (e.Direction == InputEvent.NavigationDirection.Down && _selectedIndex == Options.Count - 1)
                     return;
-                else if (e == InputEvent.NavigationDirection.Up && _selectedIndex == 0)
+                else if (e.Direction == InputEvent.NavigationDirection.Up && _selectedIndex == 0)
                     return;
             }
 
-            Navigate(e);
+            Navigate(e.Direction);
         }
 
         private void Navigate(InputEvent.NavigationDirection e)
@@ -364,8 +387,8 @@ namespace PokerTracker3000.WpfComponents
                 var (block, currentOffset, currentOpacity) = node!.Value;
 
                 (var sb, var newOffset, var newOpacity) = isItemThatWrapped(i) ?
-                    GetStoryBoardForEndPosition(currentOffset, isUp ? EndPosition.Top : EndPosition.Bottom) :
-                    GetStoryBoardForItemAnimation(currentOffset, currentOpacity, e, itemFadeDirection(i));
+                    GetStoryboardForEndPosition(currentOffset, isUp ? EndPosition.Top : EndPosition.Bottom) :
+                    GetStoryboardForItemAnimation(currentOffset, currentOpacity, e, itemFadeDirection(i));
 
                 if (isItemThatWrapped(i))
                 {
@@ -379,16 +402,14 @@ namespace PokerTracker3000.WpfComponents
 
                 node.ValueRef.currentOffset = newOffset;
                 node.ValueRef.currentOpacity = newOpacity;
-
-                if (!ShowNextAndPreviousValue && newOpacity < 1)
-                    block.Opacity = 0;
+                block.Opacity = newOpacity;
             }
 
             if (_selectedIndex != originalSelectedIndex)
                 RaiseSelectedIndexChangedEvent(_selectedIndex);
         }
 
-        private (Storyboard, int, double) GetStoryBoardForEndPosition(int currentOffset, EndPosition position)
+        private (Storyboard, int, double) GetStoryboardForEndPosition(int currentOffset, EndPosition position)
         {
             var newOffset = VerticalSpacing * 2 * (position == EndPosition.Top ? -1 : 1);
             Storyboard sb = new();
@@ -398,14 +419,20 @@ namespace PokerTracker3000.WpfComponents
             return (sb, newOffset, 0.0);
         }
 
-        private (Storyboard, int, double) GetStoryBoardForItemAnimation(int currentOffset, double currentOpacity, InputEvent.NavigationDirection direction, FadeDirection fadeType)
+        private (Storyboard, int, double) GetStoryboardForItemAnimation(int currentOffset, double currentOpacity, InputEvent.NavigationDirection direction, FadeDirection fadeType)
         {
             var newOffset = currentOffset + (VerticalSpacing * (direction == InputEvent.NavigationDirection.Down ? -1 : 1));
-            var newOpacity = currentOpacity + (fadeType == FadeDirection.NoChange ? 0 : (fadeType == FadeDirection.In ? 0.5 : -0.5));
-            DoubleAnimation moveAnimation = new(currentOffset, newOffset, _animationLength) { EasingFunction = _movementEasingFunction };
+            double newOpacity;
 
-            var animationShouldShow = !(!ShowNextAndPreviousValue && newOpacity < 1);
-            DoubleAnimation fadeAnimation = new(animationShouldShow ? currentOpacity : 0, animationShouldShow ? newOpacity : 0, _animationLength);
+            if (Math.Abs(newOffset) == 0)
+                newOpacity = 1.0;
+            else if (Math.Abs(newOffset) == VerticalSpacing)
+                newOpacity = NextAndPreviousOpacity;
+            else
+                newOpacity = 0.0;
+
+            DoubleAnimation moveAnimation = new(currentOffset, newOffset, _animationLength) { EasingFunction = _movementEasingFunction };
+            DoubleAnimation fadeAnimation = new(currentOpacity, newOpacity, _animationLength);
 
             Storyboard sb = new();
             Storyboard.SetTargetProperty(moveAnimation, _pathToTranslateYProperty);

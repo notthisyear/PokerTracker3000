@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common.Messages;
 using PokerTracker3000.Common;
 using PokerTracker3000.Interfaces;
+using System.Threading.Tasks;
 
 namespace PokerTracker3000.GameSession
 {
@@ -83,26 +84,19 @@ namespace PokerTracker3000.GameSession
             _clock = clock;
             _settings = settings;
 
-            clock.RegisterCallbackOnTick(() =>
+            _clock.RegisterCallbackOnTick(() =>
             {
                 if (CurrentStage != default)
                     CurrentStage.LengthSecondsRemaining--;
             });
 
-            _clock.RegisterCallbackOnSecondsLeft(0, (clock) =>
-            {
-                if (CurrentStage == default)
-                    return;
-
-                if (!TryGetNextStage(CurrentStage, out var nextStage))
+            _eventBus.RegisterListener(this, (_, m) => TimeLeftEventReceived(m), GameEventBus.EventType.StageTimeRemainingEvent);
+            _eventBus.NotifyListeners(GameEventBus.EventType.StageTimeRemainingEventRequest,
+                new StageTimeRemainingEventRequestMessage()
                 {
-                    OnLastStage = false;
-                    _eventBus.NotifyListeners(GameEventBus.EventType.GameDone, new GameEventMessage());
-                    AllStagesDone?.Invoke(this, EventArgs.Empty);
-                    return;
-                }
-                ChangeStage(nextStage!);
-            });
+                    Type = RequestType.AddEvent,
+                    EventAtTimeSeconds = 0
+                });
         }
 
         #region Public methods
@@ -245,6 +239,30 @@ namespace PokerTracker3000.GameSession
         #endregion
 
         #region Private methods
+        private void TimeLeftEventReceived(IInternalMessage message)
+        {
+            if (message is not StageTimeRemainingEventMessage msg)
+                return;
+
+            if (msg.EventTimeSeconds != 0)
+                return;
+
+            if (CurrentStage == default)
+                return;
+
+            Task.Run(() =>
+            {
+                if (!TryGetNextStage(CurrentStage, out var nextStage))
+                {
+                    OnLastStage = false;
+                    _eventBus.NotifyListeners(GameEventBus.EventType.GameDone, new GameEventMessage());
+                    AllStagesDone?.Invoke(this, EventArgs.Empty);
+                    return;
+                }
+                ChangeStage(nextStage!);
+            }).ConfigureAwait(false);
+        }
+
         private void ChangeStage(GameStage newStage)
         {
             CurrentStage = newStage!;

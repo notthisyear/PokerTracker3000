@@ -21,6 +21,7 @@ namespace PokerTracker3000.GameSession
             ChangeDefaultAddOnAmount,
             ChangeDefaultBuyInAmount,
             ChangeDefaultStageLength,
+            ChangeSoundEvents,
             ChangeCurrency
         };
 
@@ -391,6 +392,18 @@ namespace PokerTracker3000.GameSession
                     new()
                     {
                         Id = 5,
+                        OptionText = "Sound events",
+                        IsSubOption = true,
+                        DescriptionText = "Change game sound events",
+                        OptionAction = (_) =>
+                        {
+                            SessionManager.CurrentGameEditOption = GameEditOption.ChangeSoundEvents;
+                            _focusManager.SideMenuEditOptionSelected();
+                        }
+                    },
+                    new()
+                    {
+                        Id = 6,
                         OptionText = "Stage length",
                         IsSubOption = true,
                         DescriptionText = "Change default stage length",
@@ -402,7 +415,7 @@ namespace PokerTracker3000.GameSession
                     },
                     new()
                     {
-                        Id = 6,
+                        Id = 7,
                         OptionText = "Currency",
                         IsSubOption = true,
                         DescriptionText = "Change the game currency",
@@ -414,7 +427,7 @@ namespace PokerTracker3000.GameSession
                     },
                     new()
                     {
-                        Id = 7,
+                        Id = 8,
                         OptionText = "Reset current stage",
                         DescriptionText = "Reset time for current stages",
                         IsAvailable = SessionManager.StageManager.CurrentStage != default,
@@ -431,7 +444,7 @@ namespace PokerTracker3000.GameSession
                     },
                     new()
                     {
-                        Id = 8,
+                        Id = 9,
                         OptionText = "Reset all stages",
                         DescriptionText = "Reset time for all stages",
                         IsAvailable = SessionManager.StageManager.Stages.Any(),
@@ -448,7 +461,7 @@ namespace PokerTracker3000.GameSession
                     },
                     new()
                     {
-                        Id = 9,
+                        Id = 10,
                         OptionText = "Reset all amounts",
                         DescriptionText = "Reset all player bets and pot total",
                         IsSubOption = true, OptionAction = (_) =>

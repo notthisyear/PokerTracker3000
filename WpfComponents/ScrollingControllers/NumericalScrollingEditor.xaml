@@ -10,7 +10,7 @@
                 <Setter Property="WrapAtEnds" Value="True" />
                 <Setter Property="OptionTextAlignment" Value="Center" />
                 <Setter Property="Visibility" Value="Collapsed" />
-                <Setter Property="ShowNextAndPreviousValue" Value="False" />
+                <Setter Property="NextAndPreviousOpacity" Value="0.0" />
                 <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
                 <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontSize}" />
             </Style>
@@ -22,7 +22,7 @@
                         <Setter Property="Visibility" Value="Visible" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
-                        <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                        <Setter Property="NextAndPreviousOpacity" Value="0.5" />
                         <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
                     </DataTrigger>
                 </Style.Triggers>
@@ -182,7 +182,7 @@
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=TensHourDigit.IsSelected}" Value="True">
-                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="NextAndPreviousOpacity" Value="0.5" />
                                 <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -198,7 +198,7 @@
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=OnesHourDigit.IsSelected}" Value="True">
-                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="NextAndPreviousOpacity" Value="0.5" />
                                 <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -218,7 +218,7 @@
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=TensMinuteDigit.IsSelected}" Value="True">
-                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="NextAndPreviousOpacity" Value="0.5" />
                                 <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -234,7 +234,7 @@
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=OnesMinuteDigit.IsSelected}" Value="True">
-                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="NextAndPreviousOpacity" Value="0.5" />
                                 <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -254,7 +254,7 @@
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=TensSecondDigit.IsSelected}" Value="True">
-                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="NextAndPreviousOpacity" Value="0.5" />
                                 <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
                             </DataTrigger>
                         </Style.Triggers>
@@ -270,7 +270,7 @@
                     <Style TargetType="{x:Type components:ScrollingSelectorBox}" BasedOn="{StaticResource scrollerStyleTime}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=OnesSecondDigit.IsSelected}" Value="True">
-                                <Setter Property="ShowNextAndPreviousValue" Value="True" />
+                                <Setter Property="NextAndPreviousOpacity" Value="0.5" />
                                 <Setter Property="Foreground" Value="{StaticResource MainHighlightColor}" />
                             </DataTrigger>
                         </Style.Triggers>

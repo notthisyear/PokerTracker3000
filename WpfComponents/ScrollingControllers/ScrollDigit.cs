@@ -2,8 +2,9 @@
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Interfaces;
-
+using ButtonEventArgs = PokerTracker3000.Interfaces.IInputRelay.ButtonEventArgs;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
+using NavigationEventArgs = PokerTracker3000.Interfaces.IInputRelay.NavigationEventArgs;
 
 namespace PokerTracker3000.WpfComponents
 {
@@ -28,8 +29,8 @@ namespace PokerTracker3000.WpfComponents
         #endregion
 
         #region Events
-        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent { add { } remove { } }
+        public event EventHandler<NavigationEventArgs>? Navigate;
+        public event EventHandler<ButtonEventArgs>? ButtonEvent { add { } remove { } }
         #endregion
 
         private ScrollingSelectorBox? _box = default;
@@ -42,7 +43,7 @@ namespace PokerTracker3000.WpfComponents
 
         #region Public methods
         public void FireNavigationEvent(InputEvent.NavigationDirection direction)
-            => Navigate?.Invoke(this, direction);
+            => Navigate?.Invoke(this, new() { Direction = direction });
 
         public void SyncScrollerToValue(ScrollingSelectorBox box)
         {
@@ -51,10 +52,10 @@ namespace PokerTracker3000.WpfComponents
             //       (or 5 -> 0). The reason is that it feels more natural
             //       to scroll when it is in that order.
             while ((box.CurrentSelectedIndex - InvertValue(Value)) > 0)
-                Navigate?.Invoke(this, InputEvent.NavigationDirection.Up);
+                Navigate?.Invoke(this, new() { Direction = InputEvent.NavigationDirection.Up });
 
             while ((box.CurrentSelectedIndex - InvertValue(Value)) < 0)
-                Navigate?.Invoke(this, InputEvent.NavigationDirection.Down);
+                Navigate?.Invoke(this, new() { Direction = InputEvent.NavigationDirection.Down });
         }
 
         public void UnhookToScrollingSelectorBox()

@@ -319,15 +319,15 @@
             </StackPanel>
 
             <!-- Add stage button -->
-            <components:EditPlayerOptionBox Grid.Row="1"
-                                            Grid.Column="0"
-                                            HorizontalAlignment="Center"
-                                            OptionModel="{Binding Path=AddStageModel}" />
+            <components:ButtonOptionBox Grid.Row="1"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center"
+                                        OptionModel="{Binding Path=AddStageModel}" />
             <!-- Remove stage button -->
-            <components:EditPlayerOptionBox  Grid.Row="1"
-                                             Grid.Column="2"
-                                             HorizontalAlignment="Left"
-                                             OptionModel="{Binding Path=RemoveStageModel}" />
+            <components:ButtonOptionBox  Grid.Row="1"
+                                         Grid.Column="2"
+                                         HorizontalAlignment="Left"
+                                         OptionModel="{Binding Path=RemoveStageModel}" />
             
         </Grid>
     </Grid>

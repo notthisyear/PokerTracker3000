@@ -17,7 +17,6 @@
                                              OptionTextAlignment="Right"
                                              FontSize="14"
                                              VerticalSpacing="25"
-                                             ShowNextAndPreviousValue="True"
                                              WrapAtEnds="True"
                                              Options="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=Currencies}"
                                              NavigatorRelay="{Binding Path=.}"

@@ -12,8 +12,14 @@ namespace PokerTracker3000.Interfaces
             public bool Handled { get; set; } = false;
         };
 
+        public class NavigationEventArgs : EventArgs
+        {
+            public InputEvent.NavigationDirection Direction { get; init; }
 
-        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
+            public bool Handled { get; set; } = false;
+        }
+
+        public event EventHandler<NavigationEventArgs>? Navigate;
 
         public event EventHandler<ButtonEventArgs>? ButtonEvent;
     }

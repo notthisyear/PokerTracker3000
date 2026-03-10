@@ -592,8 +592,9 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <components:EditPlayerOptionBox OptionModel="{Binding Path=.}"
-                                                            Margin="5"/>
+                            <components:ButtonOptionBox OptionModel="{Binding Path=.}"
+                                                        Margin="5"
+                                                        Width="110"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

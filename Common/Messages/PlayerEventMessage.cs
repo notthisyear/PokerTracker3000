@@ -10,6 +10,7 @@ namespace PokerTracker3000.Common.Messages
             BuyIn,
             AddOn,
             Eliminated,
+            NewChipLead,
         }
 
         public Type MessageType { get; } = messageType;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using PokerTracker3000.Interfaces;
@@ -13,41 +14,75 @@ namespace PokerTracker3000.Common
     {
         public enum EventType
         {
+            [Description("Game started")]
             /// <summary>
-            /// Game started message. Expects an instance of <see cref="Messages.GameEventMessage"/> as its message data.
+            /// Game started message.
+            /// Expects an instance of <see cref="Messages.GameEventMessage"/> as its message data.
             /// </summary>
             GameStarted,
 
+            [Description("Game paused")]
             /// <summary>
-            /// Game paused message. Expects an instance of <see cref="Messages.GameEventMessage"/> as its message data.
+            /// Game paused message.
+            /// Expects an instance of <see cref="Messages.GameEventMessage"/> as its message data.
             /// </summary>
             GamePaused,
 
+            [Description("Game done")]
             /// <summary>
-            /// Game done message. Expects an instance of <see cref="Messages.GameEventMessage"/> as its message data.
+            /// Game done message.
+            /// Expects an instance of <see cref="Messages.GameEventMessage"/> as its message data.
             /// </summary>
             GameDone,
 
+            [Description("Stage changed")]
             /// <summary>
-            /// Staged changed message. Expects an instance of <see cref="Messages.StageChangedMessage"/> as its message data.
+            /// Staged changed message.
+            /// Expects an instance of <see cref="Messages.StageChangedMessage"/> as its message data.
             /// </summary>
             StageChanged,
 
+            [Description("Player eliminated")]
             /// <summary>
-            /// Player eliminated message. Expects an instance of <see cref="Messages.PlayerEventMessage"/> as its message data.
+            /// Player eliminated message.
+            /// Expects an instance of <see cref="Messages.PlayerEventMessage"/> as its message data.
             /// </summary>
             PlayerEliminated,
 
+            [Description("Player add-on")]
             /// <summary>
-            /// Player add-on message. Expects an instance of <see cref="Messages.PlayerEventMessage"/> as its message data.
+            /// Player add-on message.
+            /// Expects an instance of <see cref="Messages.PlayerEventMessage"/> as its message data.
             /// </summary>
             PlayerAddOn,
 
+            [Description("Player buy-in")]
             /// <summary>
-            /// Player add-on message. Expects an instance of <see cref="Messages.PlayerEventMessage"/> as its message data.
+            /// Player add-on message.
+            /// Expects an instance of <see cref="Messages.PlayerEventMessage"/> as its message data.
             /// </summary>
             PlayerBuyIn,
 
+            [Description("New chip leader")]
+            /// <summary>
+            /// A new chip lead message.
+            /// Expects an instance of <see cref="Messages.PlayerEventMessage"/> as its message data.
+            /// </summary>
+            NewChipLead,
+
+            /// <summary>
+            /// A request to either start or stop a time event generation at a particular remaining stage time.
+            /// Expects an instance of <see cref="Messages.StageTimeRemainingEventRequestMessage"/> as its message data.
+            /// </summary>
+            StageTimeRemainingEventRequest,
+
+            [Description("Time event")]
+            /// <summary>
+            /// A stage time remaining event. Expects an instance of <see cref="Messages.StageTimeRemainingEventMessage"/> as its message data.
+            /// </summary>
+            StageTimeRemainingEvent,
+
+            [Description("Application closing")]
             /// <summary>
             /// The application is closing. Expects an instance of <see cref="Messages.ApplicationClosingMessage"/> as its message data.
             /// </summary>

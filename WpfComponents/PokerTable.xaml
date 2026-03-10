@@ -20,6 +20,9 @@
                                                       SessionManager="{Binding Path=ViewModel}"/>
             <editgameoptions:ChangeBuyInAmountControl x:Key="changeBuyInAmount"
                                                       SessionManager="{Binding Path=ViewModel}"/>
+            <editgameoptions:ChangeSoundsEventsControl x:Key="changeSoundEvents"
+                                                    SessionManager="{Binding Path=ViewModel}"
+                                                     AudioManager="{Binding Path=ViewModel.AudioManager}"/>
             <editgameoptions:ChangeStageLengthControl x:Key="changeStageLength"
                                                      SessionManager="{Binding Path=ViewModel}"/>
             <editgameoptions:ChangeCurrencyControl x:Key="changeCurrency"
@@ -246,7 +249,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <components:EditPlayerOptionBox OptionModel="{Binding Path=.}"
+                                <components:ButtonOptionBox OptionModel="{Binding Path=.}"
                                              Margin="3"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -256,6 +259,7 @@
         </StackPanel>
 
         <!-- Game edit options -->
+        <!-- TODO: Make use of data templates instead -->
         <ContentControl VerticalAlignment="Center" Grid.ColumnSpan="2">
             <ContentControl.Style>
                 <Style TargetType="{x:Type ContentControl}">
@@ -280,6 +284,13 @@
                                      Value="{x:Static session:SideMenuViewModel+GameEditOption.ChangeDefaultBuyInAmount}">
                             <DataTrigger.Setters>
                                 <Setter Property="Content" Value="{StaticResource changeBuyInAmount}" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding Path=ViewModel.CurrentGameEditOption}"
+                                     Value="{x:Static session:SideMenuViewModel+GameEditOption.ChangeSoundEvents}">
+                            <DataTrigger.Setters>
+                                <Setter Property="Content" Value="{StaticResource changeSoundEvents}" />
                             </DataTrigger.Setters>
                         </DataTrigger>
 

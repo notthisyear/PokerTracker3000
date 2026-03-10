@@ -1,0 +1,448 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.EditGameOptions.ChangeSoundsEventsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sound="clr-namespace:PokerTracker3000.GameSession.Sound"
+             xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+             xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters"
+             xmlns:editgameoptions="clr-namespace:PokerTracker3000.WpfComponents.EditGameOptions">
+
+    <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Height="500"
+          Margin="50,0,0,0">
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="270" />
+            <ColumnDefinition Width="630" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.Resources>
+            <converters:SoundConditionConverter x:Key="soundConditionConverter" />
+            <converters:SoundEffectConverter x:Key="soundEffectConverter" />
+
+            <Style x:Key="tableHeadlineText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="Opacity" Value="0.7" />
+            </Style>
+            <Style x:Key="itemControlStyleBase" TargetType="{x:Type Border}">
+                <Setter Property="Padding" Value="5" />
+                <Setter Property="CornerRadius" Value="5" />
+                <Setter Property="BorderThickness" Value="0" />
+            </Style>
+            <Style x:Key="optionItemControlStyle" TargetType="{x:Type Border}" BasedOn="{StaticResource itemControlStyleBase}">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <SolidColorBrush Color="{StaticResource BackgroundDarkerShadeRaw}" Opacity="0.4" />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="conditionsAndEffectsItemControlStyle" TargetType="{x:Type Border}" BasedOn="{StaticResource itemControlStyleBase}">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <SolidColorBrush Color="{StaticResource PrimaryColorRaw}" Opacity="0.4" />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
+
+        <!-- Event triggers -->
+        <StackPanel Orientation="Vertical"
+                    VerticalAlignment="Top"
+                    Grid.Row="1">
+
+            <!-- No sound events-->
+            <TextBlock Text="No sound events"
+                       HorizontalAlignment="Center">
+                <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                        <Setter Property="Opacity" Value="0.5" />
+                        <Setter Property="FontSize" Value="14" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=AudioManager.GameSounds.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            
+            <!-- Sound events -->
+            <Border>
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}" BasedOn="{StaticResource optionItemControlStyle}">
+                        <Setter Property="Opacity" Value="1" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=AudioManager.GameSounds.Count}" Value="0">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                
+                <ItemsControl ItemsSource="{Binding Path=AudioManager.GameSounds}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <editgameoptions:SoundEditOption DisplayName="{Binding Path=Name}"
+                                                             IsSelected="{Binding Path=IsSelected}"
+                                                             MaxTextLength="45"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <!-- Add, load and save buttons -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="0,20,0,0">
+                <components:ButtonOptionBox HorizontalAlignment="Center"
+                                            OptionModel="{Binding Path=AddSoundEventModel}"
+                                            Width="110"/>
+                <components:ButtonOptionBox HorizontalAlignment="Center"
+                                            OptionModel="{Binding Path=LoadSoundEventsModel}"
+                                            Width="65"
+                                            Margin="10,0,10,0"/>
+                <components:ButtonOptionBox HorizontalAlignment="Center"
+                                            OptionModel="{Binding Path=SaveSoundEventsModel}"
+                                            Width="65"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- No selected event text -->
+        <TextBlock Text="No event selected"
+                   Grid.Column="1"
+                   HorizontalAlignment="Center">
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Setter Property="Opacity" Value="0.5" />
+                    <Setter Property="FontSize" Value="14" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=SelectedSoundEvent}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=AudioManager.GameSounds.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- Selected event name -->
+        <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                   Text="{Binding Path=SelectedSoundEvent.Name}"
+                   Grid.Column="1"
+                   HorizontalAlignment="Center"
+                   FontSize="16"/>
+
+        <!-- Sound effect info -->
+        <StackPanel Orientation="Vertical"
+                    Grid.Column="1"
+                    Grid.Row="1">
+
+            <StackPanel.Style>
+                <Style TargetType="{x:Type StackPanel}">
+                    <Setter Property="Opacity" Value="1" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=SelectedSoundEvent}" Value="{x:Null}">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+
+            <!-- Condition and effect overview -->
+            <Border Background="{StaticResource BackgroundColorDarkerShadeWithOpacity}"
+                    Margin="20"
+                    CornerRadius="5"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch">
+
+                <Grid HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Conditions -->
+                    <StackPanel Orientation="Vertical"
+                                Margin="20">
+
+                        <!-- Conditions headline -->
+                        <TextBlock Style="{StaticResource tableHeadlineText}" Text="Conditions"/>
+
+                        <!-- Conditions -->
+                        <Border Style="{StaticResource conditionsAndEffectsItemControlStyle}">
+                            <ItemsControl ItemsSource="{Binding Path=SelectedSoundEvent.Conditions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <editgameoptions:SoundEditOption DisplayName="{Binding Path=DisplayString}"
+                                                                         IsSelected="{Binding Path=IsSelected}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+
+                        <!-- Add condition box -->
+                        <components:ButtonOptionBox OptionModel="{Binding Path=AddSoundConditionModel}"
+                                                    HorizontalAlignment="Left"
+                                                    Width="100"
+                                                    Margin="0,10,0,20"/>
+                    </StackPanel>
+
+                    <!-- Sound effects -->
+                    <StackPanel Grid.Column="1"
+                                Margin="20"
+                                Orientation="Vertical">
+
+                        <!-- Sound effects headline -->
+                        <TextBlock Style="{StaticResource tableHeadlineText}" Text="Sound effects"/>
+
+                        <!-- Sound effects -->
+                        <Border Style="{StaticResource conditionsAndEffectsItemControlStyle}">
+                            <ItemsControl ItemsSource="{Binding Path=SelectedSoundEvent.SoundEffectsOnEvent}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Vertical" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <editgameoptions:SoundEditOption DisplayName="{Binding Path=Name}"
+                                                                         IsSelected="{Binding Path=IsSelected}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+
+                        <!-- Add effect box -->
+                        <components:ButtonOptionBox OptionModel="{Binding Path=AddSoundEffectModel}"
+                                                    HorizontalAlignment="Left"
+                                                    Width="100"
+                                                    Margin="0,10,0,20"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Rename, test and remove buttons -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center">
+                <components:ButtonOptionBox OptionModel="{Binding Path=RenameSoundEventModel}"
+                                            Width="110"/>
+                <components:ButtonOptionBox OptionModel="{Binding Path=TestSoundEventModel}"
+                                            Margin="10,0,10,0"
+                                            Width="110"/>
+                <components:ButtonOptionBox OptionModel="{Binding Path=RemoveSoundEventModel}"
+                                            Width="110"/>
+            </StackPanel>
+        
+            <!-- Sound effect details info -->
+            <Border Background="{StaticResource BackgroundColorDarkerShadeWithOpacity}"
+                    Margin="20,20,20,0"
+                    CornerRadius="5">
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="Opacity" Value="1" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=SelectedSoundConditionOrEffect}" Value="{x:Null}">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+
+                <!-- Sound condition or effect content -->
+                <ContentControl x:Name="editConditionOrEffectControl"
+                                    Content="{Binding Path=SelectedSoundConditionOrEffect}"
+                                    Margin="20"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalAlignment="Stretch">
+                    <ContentControl.Resources>
+
+                        <!-- Sound condition -->
+                        <DataTemplate DataType="{x:Type sound:Condition}">
+                            <editgameoptions:EditSoundCondition NavigationRelay="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                Path=DataContext}"
+                                                                Condition="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                Path=DataContext.SelectedSoundConditionOrEffect,
+                                                                Converter={StaticResource soundConditionConverter}}"
+                                                                IsActive="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                Path=DataContext.SoundConditionAndEditAreaActive}"
+                                                                NavigationManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                Path=DataContext.SessionManager.NavigationManager}"/>
+                        </DataTemplate>
+
+                        <!-- Built-in sound effect editor -->
+                        <DataTemplate DataType="{x:Type sound:BuiltInSoundEffect}">
+                            <editgameoptions:BuiltInSoundEffectEditor  NavigationRelay="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                             Path=DataContext}"
+                                                             SoundEffect="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                             Path=DataContext.SelectedSoundConditionOrEffect,
+                                                             Converter={StaticResource soundEffectConverter}}"
+                                                             IsActive="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                             Path=DataContext.SoundConditionAndEditAreaActive}"
+                                                             NavigationManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                             Path=DataContext.SessionManager.NavigationManager}"/>
+                        </DataTemplate>
+
+                        <!-- From file sound effect editor -->
+                        <DataTemplate DataType="{x:Type sound:FromFileSoundEffect}">
+                            <editgameoptions:FromFileSoundEffectEditor  NavigationRelay="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext}"
+                                                                        SoundEffect="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext.SelectedSoundConditionOrEffect,
+                                                                        Converter={StaticResource soundEffectConverter}}"
+                                                                        IsActive="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext.SoundConditionAndEditAreaActive}"
+                                                                        NavigationManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext.SessionManager.NavigationManager}"/>
+                        </DataTemplate>
+
+                        <!-- Synthesized speech sound effect editor -->
+                        <DataTemplate DataType="{x:Type sound:SpeechSoundEffect}">
+                            <editgameoptions:SynthesizedSpeechSoundEffectEditor  NavigationRelay="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                                 Path=DataContext}"
+                                                                                 SoundEffect="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                                 Path=DataContext.SelectedSoundConditionOrEffect,
+                                                                                 Converter={StaticResource soundEffectConverter}}"
+                                                                                 IsActive="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                                 Path=DataContext.SoundConditionAndEditAreaActive}"
+                                                                                 NavigationManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                                 Path=DataContext.SessionManager.NavigationManager}"/>
+                        </DataTemplate>
+                    </ContentControl.Resources>
+
+                    <ContentControl.Style>
+                        <Style TargetType="{x:Type ContentControl}">
+                            <Setter Property="Opacity" Value="1" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=SoundConditionAndEditAreaActive}" Value="False">
+                                    <Setter Property="Opacity" Value="0.4" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
+            </Border>
+        </StackPanel>
+        
+        <!-- Create new sound effect box -->
+        <Border Grid.Column="1"
+                Grid.Row="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Margin="0,0,0,0"
+                Background="{StaticResource BackgroundColorDarkerShade}"
+                Padding="20"
+                CornerRadius="5"
+                BorderThickness="0">
+            <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="Opacity" Value="0" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=AddSoundEffectBoxOpen}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="*"  />
+                    <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="120" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Headline -->
+                <TextBlock Style="{StaticResource tableHeadlineText}"
+                           Grid.ColumnSpan="3"
+                           HorizontalAlignment="Left"
+                           Text="Select effect type" />
+
+                <!-- Built-in effect -->
+                <components:ButtonOptionBox Grid.Row="1"
+                                            Grid.Column="0"
+                                            OptionModel="{Binding Path=AddBuiltInSoundEffectModel}"
+                                            Width="110"/>
+
+                <!-- From file -->
+                <components:ButtonOptionBox Grid.Row="1"
+                                            Grid.Column="1"
+                                            OptionModel="{Binding Path=AddSoundEffectFromFileModel}"
+                                            Width="110"/>
+
+                <!-- Synthesized speech -->
+                <components:ButtonOptionBox Grid.Row="1"
+                                            Grid.Column="2"
+                                            OptionModel="{Binding Path=AddSynthesizedSpeechSoundEffectModel}"
+                                            Width="110"/>
+
+                <!-- Info text -->
+                <TextBlock Grid.Row="2"
+                           Grid.ColumnSpan="3">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="VerticalAlignment" Value="Bottom" />
+                            <Setter Property="FontSize" Value="10" />
+                            <Setter Property="Opacity" Value="0.7" />
+                            <Setter Property="Text" Value="Add a sound effect using built-in sounds" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=AddSoundEffectFromFileModel.IsSelected}" Value="True">
+                                    <Setter Property="Text" Value="Add a sound effect from a file" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=AddSynthesizedSpeechSoundEffectModel.IsSelected}" Value="True">
+                                    <Setter Property="Text" Value="Add a synthesized speech sound effect" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

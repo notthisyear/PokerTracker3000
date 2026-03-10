@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Interfaces;
 
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
+using ButtonEventArgs = PokerTracker3000.Interfaces.IInputRelay.ButtonEventArgs;
+using NavigationEventArgs = PokerTracker3000.Interfaces.IInputRelay.NavigationEventArgs;
 
 namespace PokerTracker3000.WpfComponents.EditGameOptions
 {
@@ -29,11 +31,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         public string Text { get; init; } = string.Empty;
 
-        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent { add { } remove { } }
+        public event EventHandler<NavigationEventArgs>? Navigate;
+        public event EventHandler<ButtonEventArgs>? ButtonEvent { add { } remove { } }
 
         public void FireNavigationEvent(InputEvent.NavigationDirection direction)
-            => Navigate?.Invoke(this, direction);
+            => Navigate?.Invoke(this, new() { Direction = direction });
         #endregion
     }
 }

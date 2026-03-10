@@ -7,8 +7,9 @@ using PokerTracker3000.Common;
 using PokerTracker3000.GameComponents;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.Interfaces;
-
+using ButtonEventArgs = PokerTracker3000.Interfaces.IInputRelay.ButtonEventArgs;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
+using NavigationEventArgs = PokerTracker3000.Interfaces.IInputRelay.NavigationEventArgs;
 
 namespace PokerTracker3000.WpfComponents.EditGameOptions
 {
@@ -41,8 +42,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         public ObservableCollection<string> Currencies { get; } = [];
 
         #region Events
-        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent { add { } remove { } }
+        public event EventHandler<NavigationEventArgs>? Navigate;
+        public event EventHandler<ButtonEventArgs>? ButtonEvent { add { } remove { } }
         #endregion
 
         private readonly List<CurrencyType> _currencyList = [];
@@ -71,7 +72,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     if (SessionManager != default && SessionManager.CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeCurrency)
                     {
                         while (_currencyList[editor.CurrentSelectedIndex] != SelectedCurrency)
-                            Navigate?.Invoke(this, InputEvent.NavigationDirection.Down);
+                            Navigate?.Invoke(this, new() { Direction = InputEvent.NavigationDirection.Down });
                     }
                 }
 

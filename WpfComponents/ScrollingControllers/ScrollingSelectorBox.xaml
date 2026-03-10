@@ -10,6 +10,12 @@
                 <Setter Property="Width" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=TextBoxWidth}" />
                 <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=Foreground}" />
                 <Setter Property="FontWeight" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=FontWeight}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=RenderTransform.(TranslateTransform.Y), RelativeSource={RelativeSource Self}}" Value="0">
+                        <Setter Property="Foreground"
+                                Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=CenterItemColor}" />
+                    </DataTrigger>
+                </Style.Triggers>
             </Style>
         </Grid.Resources>
 

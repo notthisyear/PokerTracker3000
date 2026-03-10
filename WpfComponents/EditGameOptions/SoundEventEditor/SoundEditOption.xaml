@@ -1,0 +1,87 @@
+﻿<UserControl x:Class="PokerTracker3000.WpfComponents.EditGameOptions.SoundEditOption"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converter="clr-namespace:PokerTracker3000.WpfComponents.Converters">
+    <Border CornerRadius="5"
+            Padding="5"
+            DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
+       
+        <Border.Style>
+            <Style TargetType="{x:Type Border}">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <SolidColorBrush Color="{StaticResource BackgroundDarkerShadeRaw}"
+                                         Opacity="0" />
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Opacity)">
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0.8" />
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Opacity)">
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0" Value="0.8" />
+                                        <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0" />
+                                    </DoubleAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <TextBlock>
+            <TextBlock.Text>
+                <MultiBinding Converter="{StaticResource stringShortenerConverter}">
+                    <MultiBinding.Bindings>
+                        <Binding Path="DisplayName" />
+                        <Binding Path="MaxTextLength" />
+                    </MultiBinding.Bindings>
+                </MultiBinding>
+            </TextBlock.Text>
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="Opacity" Value="0.9" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=IsSelected}" Value="True">
+                            <DataTrigger.Setters>
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </DataTrigger.Setters>
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)">
+                                            <LinearColorKeyFrame KeyTime="0:0:0" Value="{StaticResource MainTextColorRaw}" />
+                                            <LinearColorKeyFrame KeyTime="0:0:0.3" Value="{StaticResource MainHighlightColorRaw}" />
+                                        </ColorAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)">
+                                            <LinearColorKeyFrame KeyTime="0:0:0" Value="{StaticResource MainHighlightColorRaw}" />
+                                            <LinearColorKeyFrame KeyTime="0:0:0.3" Value="{StaticResource MainTextColorRaw}" />
+                                        </ColorAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </Border>
+</UserControl>

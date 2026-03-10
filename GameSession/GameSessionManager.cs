@@ -6,9 +6,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using PokerTracker3000.Common;
 using PokerTracker3000.Common.FileUtilities;
 using PokerTracker3000.Common.Messages;
+using PokerTracker3000.GameSession.Sound;
 using PokerTracker3000.Interfaces;
-
+using ButtonEventArgs = PokerTracker3000.Interfaces.IInputRelay.ButtonEventArgs;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
+using NavigationEventArgs = PokerTracker3000.Interfaces.IInputRelay.NavigationEventArgs;
 
 namespace PokerTracker3000.GameSession
 {
@@ -38,26 +40,26 @@ namespace PokerTracker3000.GameSession
 
         public List<PlayerSpot> PlayerSpots { get; } = [];
 
-        public List<PlayerEditOption> AddOnOrBuyInOptions { get; } =
+        public List<ButtonOptionModel> AddOnOrBuyInOptions { get; } =
         [
-            new(PlayerEditOption.EditOption.Add1000, type: PlayerEditOption.OptionType.Success, isSelected: true),
-            new(PlayerEditOption.EditOption.Add100, type: PlayerEditOption.OptionType.Success),
-            new(PlayerEditOption.EditOption.Add10, type: PlayerEditOption.OptionType.Success),
-            new(PlayerEditOption.EditOption.Add1, type: PlayerEditOption.OptionType.Success),
-            new(PlayerEditOption.EditOption.Ok),
-            new(PlayerEditOption.EditOption.Remove1000, type: PlayerEditOption.OptionType.Cancel),
-            new(PlayerEditOption.EditOption.Remove100, type: PlayerEditOption.OptionType.Cancel),
-            new(PlayerEditOption.EditOption.Remove10, type: PlayerEditOption.OptionType.Cancel),
-            new(PlayerEditOption.EditOption.Remove1, type: PlayerEditOption.OptionType.Cancel)
+            new(ButtonOptionModel.EditOption.Add1000, type: ButtonOptionModel.OptionType.Success, isSelected: true),
+            new(ButtonOptionModel.EditOption.Add100, type: ButtonOptionModel.OptionType.Success),
+            new(ButtonOptionModel.EditOption.Add10, type: ButtonOptionModel.OptionType.Success),
+            new(ButtonOptionModel.EditOption.Add1, type: ButtonOptionModel.OptionType.Success),
+            new(ButtonOptionModel.EditOption.Ok),
+            new(ButtonOptionModel.EditOption.Remove1000, type: ButtonOptionModel.OptionType.Cancel),
+            new(ButtonOptionModel.EditOption.Remove100, type: ButtonOptionModel.OptionType.Cancel),
+            new(ButtonOptionModel.EditOption.Remove10, type: ButtonOptionModel.OptionType.Cancel),
+            new(ButtonOptionModel.EditOption.Remove1, type: ButtonOptionModel.OptionType.Cancel)
         ];
 
-        public List<PlayerEditOption> SpotOptions { get; } =
+        public List<ButtonOptionModel> SpotOptions { get; } =
         [
-            new(PlayerEditOption.EditOption.ChangeName, isSelected: true),
-            new(PlayerEditOption.EditOption.ChangeImage),
-            new(PlayerEditOption.EditOption.Move),
-            new(PlayerEditOption.EditOption.Load),
-            new(PlayerEditOption.EditOption.Save),
+            new(ButtonOptionModel.EditOption.ChangeName, isSelected: true),
+            new(ButtonOptionModel.EditOption.ChangeImage),
+            new(ButtonOptionModel.EditOption.Move),
+            new(ButtonOptionModel.EditOption.Load),
+            new(ButtonOptionModel.EditOption.Save),
         ];
 
         public PlayerSpot? SelectedSpot
@@ -106,6 +108,8 @@ namespace PokerTracker3000.GameSession
 
         public MainWindowFocusManager FocusManager { get; }
 
+        public AudioManager AudioManager { get; }
+
         public GameStagesManager StageManager { get; }
 
         public NavigationManager NavigationManager { get; }
@@ -118,8 +122,8 @@ namespace PokerTracker3000.GameSession
         #region Events
         public event EventHandler<int>? LayoutMightHaveChangedEvent;
         public event EventHandler? StagesCollectionLoadedFromFile;
-        public event EventHandler<InputEvent.NavigationDirection>? Navigate;
-        public event EventHandler<IInputRelay.ButtonEventArgs>? ButtonEvent;
+        public event EventHandler<NavigationEventArgs>? Navigate;
+        public event EventHandler<ButtonEventArgs>? ButtonEvent;
         #endregion
 
         #region Private fields
@@ -127,9 +131,9 @@ namespace PokerTracker3000.GameSession
         private const int NumberOfPlayerSpots = 12;
         private bool _moveInProgress = false;
         private TableLayout _currentTableLayout;
-        private readonly PlayerEditOption _setOrRemoveAsChipLeadOption;
-        private readonly PlayerEditOption _addOnOrBuyInOption;
-        private readonly PlayerEditOption _removeOrEliminateOption;
+        private readonly ButtonOptionModel _setOrRemoveAsChipLeadOption;
+        private readonly ButtonOptionModel _addOnOrBuyInOption;
+        private readonly ButtonOptionModel _removeOrEliminateOption;
         private readonly int _playerOptionNavigationId;
         private readonly int _addOnOrBuyInNavigationId;
         private readonly IGameEventBus _eventBus;
@@ -142,6 +146,7 @@ namespace PokerTracker3000.GameSession
         public GameSessionManager(IGameEventBus eventBus,
             GameSettings settings,
             MainWindowFocusManager focusManager,
+            AudioManager audioManager,
             GameStagesManager stagesManager,
             ChipManager chipManager,
             GameClock clock,
@@ -150,6 +155,7 @@ namespace PokerTracker3000.GameSession
             _eventBus = eventBus;
             GameSettings = settings;
             FocusManager = focusManager;
+            AudioManager = audioManager;
             StageManager = stagesManager;
             ChipManager = chipManager;
             Clock = clock;
@@ -168,9 +174,9 @@ namespace PokerTracker3000.GameSession
 
             NavigationManager = new();
 
-            _setOrRemoveAsChipLeadOption = new(PlayerEditOption.EditOption.SetAsChipLead);
-            _addOnOrBuyInOption = new(PlayerEditOption.EditOption.AddOn, PlayerEditOption.OptionType.Success);
-            _removeOrEliminateOption = new(PlayerEditOption.EditOption.Eliminate, PlayerEditOption.OptionType.Cancel);
+            _setOrRemoveAsChipLeadOption = new(ButtonOptionModel.EditOption.SetAsChipLead);
+            _addOnOrBuyInOption = new(ButtonOptionModel.EditOption.AddOn, ButtonOptionModel.OptionType.Success);
+            _removeOrEliminateOption = new(ButtonOptionModel.EditOption.Eliminate, ButtonOptionModel.OptionType.Cancel);
 
             SpotOptions.Add(_setOrRemoveAsChipLeadOption);
             SpotOptions.Add(_addOnOrBuyInOption);
@@ -398,47 +404,50 @@ namespace PokerTracker3000.GameSession
             {
                 switch (GetSelectedOptionIn(SpotOptions).Option)
                 {
-                    case PlayerEditOption.EditOption.ChangeName:
+                    case ButtonOptionModel.EditOption.ChangeName:
                         SelectedSpot = activeSpot;
                         return MainWindowFocusManager.FocusArea.EditNameBox;
 
-                    case PlayerEditOption.EditOption.ChangeImage:
+                    case ButtonOptionModel.EditOption.ChangeImage:
                         activeSpot.ChangeImage();
                         // TODO: When there's a nice image picker dialog, this line
                         //       will have to change
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
                     // TODO: Some sort of save/load feedback would be nice
-                    case PlayerEditOption.EditOption.Save:
+                    case ButtonOptionModel.EditOption.Save:
                         activeSpot.TrySavePlayer();
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
-                    case PlayerEditOption.EditOption.Load:
+                    case ButtonOptionModel.EditOption.Load:
                         var currentAmountInSpot = activeSpot.HasPlayerData ? activeSpot.PlayerData!.MoneyInThePot : 0;
                         activeSpot.TryLoadPlayer();
                         if (activeSpot.HasPlayerData && activeSpot.PlayerData!.MoneyInThePot != currentAmountInSpot)
                             TotalAmountInPot += (activeSpot.PlayerData!.MoneyInThePot - currentAmountInSpot);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
-                    case PlayerEditOption.EditOption.SetAsChipLead:
+                    case ButtonOptionModel.EditOption.SetAsChipLead:
                         var currentChipLead = PlayerSpots.FirstOrDefault(x => x.PlayerData?.IsChipLead ?? false);
                         if (currentChipLead != default)
                             currentChipLead.PlayerData!.IsChipLead = false;
 
                         if (activeSpot.PlayerData != default)
+                        {
                             activeSpot.PlayerData.IsChipLead = true;
+                            Notify(PlayerEventMessage.Type.NewChipLead, activeSpot.PlayerData.Name);
+                        }
 
                         SetOptionsFor(eliminatedPlayer: false, isChipLead: true);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
-                    case PlayerEditOption.EditOption.RemoveAsChipLead:
+                    case ButtonOptionModel.EditOption.RemoveAsChipLead:
                         if (activeSpot.PlayerData != default)
                             activeSpot.PlayerData.IsChipLead = false;
 
                         SetOptionsFor(eliminatedPlayer: false, isChipLead: false);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
-                    case PlayerEditOption.EditOption.Eliminate:
+                    case ButtonOptionModel.EditOption.Eliminate:
                         activeSpot.IsEliminated = true;
                         SetOptionsFor(eliminatedPlayer: true, activeSpot.PlayerData?.IsChipLead ?? false);
                         NumberOfPlayersNotEliminated--;
@@ -446,7 +455,7 @@ namespace PokerTracker3000.GameSession
                         Notify(PlayerEventMessage.Type.Eliminated, activeSpot.PlayerData!.Name, playerTotalAmount: activeSpot.PlayerData!.MoneyInThePot);
                         return MainWindowFocusManager.FocusArea.PlayerInfo;
 
-                    case PlayerEditOption.EditOption.Remove:
+                    case ButtonOptionModel.EditOption.Remove:
                         if (!_removeOrEliminateOption.IsAvailable)
                             return MainWindowFocusManager.FocusArea.PlayerInfo;
                         activeSpot.RemovePlayer();
@@ -462,17 +471,17 @@ namespace PokerTracker3000.GameSession
 
                         return MainWindowFocusManager.FocusArea.Players;
 
-                    case PlayerEditOption.EditOption.Move:
+                    case ButtonOptionModel.EditOption.Move:
                         _moveInProgress = true;
                         activeSpot.IsBeingMoved = true;
                         return MainWindowFocusManager.FocusArea.MovementInProgress;
 
-                    case PlayerEditOption.EditOption.AddOn:
+                    case ButtonOptionModel.EditOption.AddOn:
                         SelectedSpot = activeSpot;
                         SelectedSpot.BuyInOrAddOnAmount = GameSettings.DefaultAddOnAmount;
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
 
-                    case PlayerEditOption.EditOption.BuyIn:
+                    case ButtonOptionModel.EditOption.BuyIn:
                         SelectedSpot = activeSpot;
                         SelectedSpot.BuyInOrAddOnAmount = GameSettings.DefaultBuyInAmount;
                         return MainWindowFocusManager.FocusArea.AddOnOrBuyInBox;
@@ -489,7 +498,7 @@ namespace PokerTracker3000.GameSession
                     return false;
 
                 var currentOption = GetSelectedOptionIn(AddOnOrBuyInOptions);
-                if (currentOption.Option == PlayerEditOption.EditOption.Ok)
+                if (currentOption.Option == ButtonOptionModel.EditOption.Ok)
                 {
                     TotalAmountInPot += SelectedSpot.BuyInOrAddOnAmount;
                     SelectedSpot.PlayerData.MoneyInThePot += SelectedSpot.BuyInOrAddOnAmount;
@@ -513,14 +522,14 @@ namespace PokerTracker3000.GameSession
 
                 var amountToAdd = currentOption.Option switch
                 {
-                    PlayerEditOption.EditOption.Add1000 => 1000,
-                    PlayerEditOption.EditOption.Add100 => 100,
-                    PlayerEditOption.EditOption.Add10 => 10,
-                    PlayerEditOption.EditOption.Add1 => 1,
-                    PlayerEditOption.EditOption.Remove1000 => -1000,
-                    PlayerEditOption.EditOption.Remove100 => -100,
-                    PlayerEditOption.EditOption.Remove10 => -10,
-                    PlayerEditOption.EditOption.Remove1 => -1,
+                    ButtonOptionModel.EditOption.Add1000 => 1000,
+                    ButtonOptionModel.EditOption.Add100 => 100,
+                    ButtonOptionModel.EditOption.Add10 => 10,
+                    ButtonOptionModel.EditOption.Add1 => 1,
+                    ButtonOptionModel.EditOption.Remove1000 => -1000,
+                    ButtonOptionModel.EditOption.Remove100 => -100,
+                    ButtonOptionModel.EditOption.Remove10 => -10,
+                    ButtonOptionModel.EditOption.Remove1 => -1,
                     _ => 0,
                 };
                 SelectedSpot.BuyInOrAddOnAmount += amountToAdd;
@@ -531,7 +540,8 @@ namespace PokerTracker3000.GameSession
                 _moveInProgress = false;
                 spot.IsBeingMoved = false;
             });
-            FocusManager.RegisterSideMenuEditOptionNavigationCallback((InputEvent.NavigationDirection direction) => Navigate?.Invoke(this, direction));
+            FocusManager.RegisterSideMenuEditOptionNavigationCallback((InputEvent.NavigationDirection direction)
+                => Navigate?.Invoke(this, new() { Direction = direction }));
             FocusManager.RegisterSideMenuEditOptionActionCallback((InputEvent.ButtonEventType eventType) =>
             {
                 switch (eventType)
@@ -558,7 +568,8 @@ namespace PokerTracker3000.GameSession
                         }
                         else if (CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultAddOnAmount ||
                                  CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultBuyInAmount ||
-                                 CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultStageLength)
+                                 CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeDefaultStageLength ||
+                                 CurrentGameEditOption == SideMenuViewModel.GameEditOption.ChangeSoundEvents)
                         {
                             ButtonEvent?.Invoke(this, new() { ButtonEvent = eventType });
                         }
@@ -570,7 +581,7 @@ namespace PokerTracker3000.GameSession
             });
         }
 
-        private void NavigateOptions(int navigationId, List<PlayerEditOption> options, InputEvent.NavigationDirection direction)
+        private void NavigateOptions(int navigationId, List<ButtonOptionModel> options, InputEvent.NavigationDirection direction)
         {
             var currentOption = GetSelectedOptionIn(options);
             var currentOptionIndex = options.IndexOf(currentOption);
@@ -583,9 +594,9 @@ namespace PokerTracker3000.GameSession
 
         private void SetOptionsFor(bool eliminatedPlayer, bool isChipLead)
         {
-            _addOnOrBuyInOption.ChangeEditOption(eliminatedPlayer ? PlayerEditOption.EditOption.BuyIn : PlayerEditOption.EditOption.AddOn);
-            _removeOrEliminateOption.ChangeEditOption(eliminatedPlayer ? PlayerEditOption.EditOption.Remove : PlayerEditOption.EditOption.Eliminate);
-            _setOrRemoveAsChipLeadOption.ChangeEditOption(isChipLead ? PlayerEditOption.EditOption.RemoveAsChipLead : PlayerEditOption.EditOption.SetAsChipLead);
+            _addOnOrBuyInOption.ChangeEditOption(eliminatedPlayer ? ButtonOptionModel.EditOption.BuyIn : ButtonOptionModel.EditOption.AddOn);
+            _removeOrEliminateOption.ChangeEditOption(eliminatedPlayer ? ButtonOptionModel.EditOption.Remove : ButtonOptionModel.EditOption.Eliminate);
+            _setOrRemoveAsChipLeadOption.ChangeEditOption(isChipLead ? ButtonOptionModel.EditOption.RemoveAsChipLead : ButtonOptionModel.EditOption.SetAsChipLead);
 
             if (eliminatedPlayer)
                 _removeOrEliminateOption.IsAvailable = PlayerSpots.Where(x => x.HasPlayerData).Count() > 1;
@@ -600,6 +611,7 @@ namespace PokerTracker3000.GameSession
                 PlayerEventMessage.Type.BuyIn => GameEventBus.EventType.PlayerBuyIn,
                 PlayerEventMessage.Type.AddOn => GameEventBus.EventType.PlayerAddOn,
                 PlayerEventMessage.Type.Eliminated => GameEventBus.EventType.PlayerEliminated,
+                PlayerEventMessage.Type.NewChipLead => GameEventBus.EventType.NewChipLead,
                 _ => throw new NotImplementedException(),
             }, new PlayerEventMessage(type, playerName, addOnOrBuyInAmount, playerTotalAmount, potTotal, GameSettings.CurrencyType));
         }
@@ -609,7 +621,7 @@ namespace PokerTracker3000.GameSession
             AveragePotSize = NumberOfPlayersNotEliminated > 0 ? TotalAmountInPot / NumberOfPlayersNotEliminated : TotalAmountInPot;
         }
 
-        private static PlayerEditOption GetSelectedOptionIn(List<PlayerEditOption> options)
+        private static ButtonOptionModel GetSelectedOptionIn(List<ButtonOptionModel> options)
             => options.First(x => x.IsSelected);
         #endregion
     }

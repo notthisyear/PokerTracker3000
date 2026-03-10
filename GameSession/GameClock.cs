@@ -39,7 +39,7 @@ namespace PokerTracker3000.GameSession
         private readonly IGameEventBus _eventBus;
         private readonly Timer _tickClockTimer;
         private readonly List<Action> _callbacksOnTick = [];
-        private readonly Dictionary<int, List<Action<GameClock>>> _callbacksOnTimeLeft = [];
+        private readonly HashSet<int> _eventsOnTimeLeft = [];
 
         private long _ticksOnLastFire = DateTime.MinValue.Ticks;
         private bool _pauseOnNextTick = false;
@@ -52,6 +52,20 @@ namespace PokerTracker3000.GameSession
         {
             _eventBus = eventBus;
             _tickClockTimer = new(TickClock, default, Timeout.Infinite, Timeout.Infinite);
+
+            _eventBus.RegisterListener(this, (_, m) => HandleTimeEventRequest(m), GameEventBus.EventType.StageTimeRemainingEventRequest, true);
+        }
+
+        private void HandleTimeEventRequest(IInternalMessage m)
+        {
+            if (m is not StageTimeRemainingEventRequestMessage msg)
+                return;
+
+            if (msg.Type == RequestType.RemoveEvent)
+                _ = _eventsOnTimeLeft.Remove(msg.EventAtTimeSeconds);
+
+            if (msg.Type == RequestType.AddEvent)
+                _ = _eventsOnTimeLeft.Add(msg.EventAtTimeSeconds);
         }
 
         public void UpdateNumberOfSeconds(int numberOfSeconds)
@@ -88,13 +102,6 @@ namespace PokerTracker3000.GameSession
             _tickClockTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
-        public void RegisterCallbackOnSecondsLeft(int triggerSeconds, Action<GameClock> action)
-        {
-            if (!_callbacksOnTimeLeft.TryGetValue(triggerSeconds, out var actions))
-                _callbacksOnTimeLeft.Add(triggerSeconds, []);
-            _callbacksOnTimeLeft[triggerSeconds].Add(action);
-        }
-
         public void RegisterCallbackOnTick(Action action)
         {
             _callbacksOnTick.Add(action);
@@ -118,13 +125,10 @@ namespace PokerTracker3000.GameSession
                             action.Invoke();
                     });
                 }
-                if (_callbacksOnTimeLeft.TryGetValue(NumberOfSeconds, out var value))
+                if (_eventsOnTimeLeft.TryGetValue(NumberOfSeconds, out var value))
                 {
-                    Task.Run(() =>
-                    {
-                        foreach (var action in value)
-                            action.Invoke(this);
-                    });
+                    _eventBus.NotifyListeners(GameEventBus.EventType.StageTimeRemainingEvent,
+                        new StageTimeRemainingEventMessage() { EventTimeSeconds = value });
                 }
             }
 
