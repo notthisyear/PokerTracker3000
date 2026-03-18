@@ -17,7 +17,7 @@ namespace PokerTracker3000.GameSession.Sound
     {
         None,
         [Description("Blues riff")]
-        Riff,
+        BluesRiff,
     }
 
     public enum MultipleOptionMode

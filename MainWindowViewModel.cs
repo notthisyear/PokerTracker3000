@@ -74,7 +74,7 @@ namespace PokerTracker3000.ViewModels
             //    ] }
             //});
 
-            _audioManager = new(eventBus, settings.RiffSoundEffectPath);
+            _audioManager = new(eventBus, settings.BuiltInEffects);
             AddDefaultSounds();
 
             var gameSettings = new GameSettings();
@@ -175,7 +175,7 @@ namespace PokerTracker3000.ViewModels
                     Name = "Game started"
                 };
                 gameStartedEvent.AddConditionToEvent(new EventCondition(GameEventBus.EventType.GameStarted));
-                gameStartedEvent.AddSoundEffectToEvent(new BuiltInSoundEffect(BuiltInSoundEffectType.Riff));
+                gameStartedEvent.AddSoundEffectToEvent(new BuiltInSoundEffect(BuiltInSoundEffectType.BluesRiff));
                 _audioManager.AddSoundEvent(gameStartedEvent);
             }
 
@@ -193,7 +193,7 @@ namespace PokerTracker3000.ViewModels
                     Name = "Stage end notification"
                 };
                 stageEndNotification.AddConditionToEvent(new TimeCondition(stageEndNotificationSeconds));
-                stageEndNotification.AddSoundEffectToEvent(new BuiltInSoundEffect(BuiltInSoundEffectType.Riff));
+                stageEndNotification.AddSoundEffectToEvent(new BuiltInSoundEffect(BuiltInSoundEffectType.BluesRiff));
                 var speechEffectStageEnd = new SpeechSoundEffect("Stage ending notification");
                 speechEffectStageEnd.AddSpeechOption("Attention players! This stage will end in one minute");
                 stageEndNotification.AddSoundEffectToEvent(speechEffectStageEnd);

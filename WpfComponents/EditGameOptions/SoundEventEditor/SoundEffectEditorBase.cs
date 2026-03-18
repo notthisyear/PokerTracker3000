@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using PokerTracker3000.Common;
 using PokerTracker3000.GameSession;
@@ -15,8 +17,21 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
     public abstract class SoundEffectEditorBase : ConditionAndEffectEditorBase
     {
+        #region Dependency property
+        public AudioManager AudioManager
+        {
+            get { return (AudioManager)GetValue(AudioManagerProperty); }
+            set { SetValue(AudioManagerProperty, value); }
+        }
+        public static readonly DependencyProperty AudioManagerProperty = DependencyProperty.Register(
+            nameof(AudioManager),
+            typeof(AudioManager),
+            typeof(SoundEffectEditorBase),
+            new FrameworkPropertyMetadata(default));
+        #endregion
+
         #region Public properties
-        public ButtonOptionModel TestEffectModel { get; } = new("Test");
+        public ButtonOptionModel TestEffectModel { get; } = new("Test", type: ButtonOptionModel.OptionType.Info);
 
         public ButtonOptionModel RemoveEffectModel { get; } = new("Remove", type: ButtonOptionModel.OptionType.Cancel);
 
@@ -28,6 +43,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         #endregion
 
         #region Private fields
+        private SoundEffect? _currentSoundEffect;
         // Note: During Unloaded, the dependency property that hold the NavigationManager is no longer accessible
         private NavigationManager? _cachedNavigationManager;
         #endregion
@@ -40,9 +56,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         protected int SelectedElementIndex { get; set; } = 0;
 
-        protected void ControlLoadedBase()
+        protected void ControlLoadedBase(SoundEffect effect)
         {
             _cachedNavigationManager = NavigationManager;
+            _currentSoundEffect = effect;
+
             NavigationId = NavigationManager.RegisterNavigation(GetNavigationNodes());
             Unloaded += ControlUnloaded;
             RemoveEffectModel.ButtonAction = () => { RaiseRemoveEvent(); };
@@ -50,12 +68,30 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (SelectedElementMap.TryGetValue(SelectedElementIndex, out var element))
                 element?.IsSelected = true;
 
+            TestEffectModel.ButtonAction = () =>
+            {
+                TaskCompletionSource tcs = new();
+                TestEffectModel.IsAvailable = false;
+                TestSoundEffect(tcs);
+                Task.Run(() =>
+                {
+                    tcs.Task.Wait();
+                    Application.Current.Dispatcher.Invoke(() => { TestEffectModel.IsAvailable = true; });
+                });
+            };
             WeakEventManager<IInputRelay, NavigationEventArgs>.AddHandler(
                 NavigationRelay, nameof(NavigationRelay.Navigate), HandleNavigation);
             WeakEventManager<IInputRelay, ButtonEventArgs>.AddHandler(
                 NavigationRelay, nameof(NavigationRelay.ButtonEvent), HandleButton);
         }
 
+        protected void TestSoundEffect(TaskCompletionSource tcs, int optionId = -1)
+        {
+            if (AudioManager == default || _currentSoundEffect == default)
+                return;
+
+            AudioManager.TestSoundEffect(_currentSoundEffect, tcs, optionId);
+        }
         protected abstract NavigationManager.Node[] GetNavigationNodes();
 
         protected abstract void HandleNavigation(object? sender, NavigationEventArgs e);
@@ -79,7 +115,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         public ButtonOptionModel ChangeEffectOptionModel { get; } = new("Change");
 
-        public ButtonOptionModel TestEffectOptionModel { get; } = new("Test");
+        public ButtonOptionModel TestEffectOptionModel { get; } = new("Test", type: ButtonOptionModel.OptionType.Info);
 
         public ButtonOptionModel RemoveEffectOptionModel { get; } = new("Remove", type: ButtonOptionModel.OptionType.Cancel);
 
@@ -146,7 +182,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         #region Protected methods
         protected abstract int GetMultipleOptionsModeScrollerIndex();
 
-        protected void ControlLoadedBase(MultipleOptionMode multipleOptionsMode, bool showMultipleOptionsModeScroller)
+        protected void ControlLoadedBase(SoundEffect effect, MultipleOptionMode multipleOptionsMode, bool showMultipleOptionsModeScroller)
         {
             PopulateOptionsList(AvailableMultipleOptionModeTypes, MultipleOptionModes);
             if (multipleOptionsMode != MultipleOptionMode.None)
@@ -159,7 +195,23 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             _selectedChangeRemoveTestMap.Add(0, ChangeEffectOptionModel);
             _selectedChangeRemoveTestMap.Add(1, RemoveEffectOptionModel);
             _selectedChangeRemoveTestMap.Add(2, TestEffectOptionModel);
-            ControlLoadedBase();
+
+            TestEffectOptionModel.ButtonAction = () =>
+            {
+                var selectedOption = SelectedElementMap.Values.Where(x => x is SoundEffectOption).FirstOrDefault(x => x.IsSelected);
+                if (selectedOption is not SoundEffectOption option)
+                    return;
+
+                TaskCompletionSource tcs = new();
+                TestEffectOptionModel.IsAvailable = false;
+                TestSoundEffect(tcs, option.Id);
+                Task.Run(() =>
+                {
+                    tcs.Task.Wait();
+                    Application.Current.Dispatcher.Invoke(() => { TestEffectOptionModel.IsAvailable = true; });
+                });
+            };
+            ControlLoadedBase(effect);
         }
 
         protected override void HandleNavigation(object? sender, NavigationEventArgs e)
@@ -227,7 +279,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
             {
                 // If the change/remove/test option dialog is open, invoke the action
-                if (ShowChangeRemoveTestEffectOptions)
+                if (ShowChangeRemoveTestEffectOptions && _selectedChangeRemoveTestMap[_selectedChangeRemoveTestIndex].IsAvailable)
                 {
                     _selectedChangeRemoveTestMap[_selectedChangeRemoveTestIndex].ButtonAction?.Invoke();
                     e.Handled = true;
@@ -240,7 +292,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     e.Handled = true;
                 }
                 // If a button was selected, invoke its action.
-                else if (element is ButtonOptionModel button)
+                else if (element is ButtonOptionModel button && button.IsAvailable)
                 {
                     button.ButtonAction?.Invoke();
                     e.Handled = true;

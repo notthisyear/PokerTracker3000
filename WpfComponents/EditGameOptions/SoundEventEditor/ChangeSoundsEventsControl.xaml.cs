@@ -248,7 +248,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     return;
 
                 var (_, selectedIndex) = _navigationIdAndSelectedIndex[SelectedArea.ConditionAndEffect];
-                SelectedSoundEvent.AddSoundEffectToEvent(new BuiltInSoundEffect(BuiltInSoundEffectType.Riff));
+                SelectedSoundEvent.AddSoundEffectToEvent(new BuiltInSoundEffect(BuiltInSoundEffectType.BluesRiff));
                 RecreateNavigationInConditionAndEffectArea(selectedIndex + 1);
 
                 AddSoundEffectModel.IsAvailable = SelectedSoundEvent.SoundEffectsOnEvent.Count < MaxSoundEffects;

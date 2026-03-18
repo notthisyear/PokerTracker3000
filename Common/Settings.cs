@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using PokerTracker3000.Common.FileUtilities;
+using PokerTracker3000.GameSession.Sound;
 
 namespace PokerTracker3000.Common
 {
@@ -21,12 +26,23 @@ namespace PokerTracker3000.Common
             if (!reader.SuccessfulRead)
                 throw reader.ReadException!;
 
-            var (app, e) = reader.AllText.DeserializeJsonString<ApplicationSettings>(convertSnakeCaseToPascalCase: true);
+            var (app, e) = reader.AllText.DeserializeJsonString<ApplicationSettings>(settings:
+                new JsonSerializerSettings()
+                {
+                    ContractResolver = new DefaultContractResolver
+                    {
+                        NamingStrategy = new SnakeCaseNamingStrategy()
+                    },
+                    Converters = { new StringEnumConverter() }
+                });
+
             if (e != default)
                 throw e;
 
             app!.DefaultPlayerImagePath = GetFullPathToResource(app!.DefaultPlayerImagePath, subfolder: "Images");
-            app!.RiffSoundEffectPath = GetFullPathToResource(app!.RiffSoundEffectPath);
+            foreach (var entry in app!.BuiltInEffects)
+                app!.BuiltInEffects[entry.Key] = GetFullPathToResource(entry.Value);
+
             s_appSettings = app!;
             s_isInitialized = true;
         }
@@ -51,6 +67,6 @@ namespace PokerTracker3000.Common
 
         public string DefaultPlayerImagePath { get; set; } = string.Empty;
 
-        public string RiffSoundEffectPath { get; set; } = string.Empty;
+        public Dictionary<BuiltInSoundEffectType, string> BuiltInEffects { get; set; } = [];
     }
 }

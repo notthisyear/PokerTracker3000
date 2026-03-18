@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Data;
 using PokerTracker3000.Common;
+using PokerTracker3000.Interfaces;
 
 namespace PokerTracker3000.GameSession.Sound
 {
@@ -30,7 +32,9 @@ namespace PokerTracker3000.GameSession.Sound
             }
         }
 
-        public int Id { get; } = ThreadSafeId.GetNext();
+        private readonly int _id = ThreadSafeId.GetNext();
+
+        public int Id => _id;
     }
 
     public abstract class SoundEffect : SelectableEntity
@@ -135,33 +139,42 @@ namespace PokerTracker3000.GameSession.Sound
     };
 
     [AttributeUsage(AttributeTargets.Field)]
-    public sealed class SynthesizedSpeechVariableAttribute(string name, string description) : Attribute
+    public sealed class SynthesizedSpeechVariableAttribute(string name, string description, string defaultReplacement) : Attribute
     {
         public string Name { get; } = name;
 
         public string Description { get; } = description;
+
+        public string DefaultReplacement { get; } = defaultReplacement;
+
+        public bool HasVariable(string message)
+            => message.Contains(Name);
+
+        public string Replace(string message, string? replacement = default)
+            => message.Replace(Name, string.IsNullOrEmpty(replacement) ? DefaultReplacement : replacement);
+
     }
 
     public sealed class SpeechSoundEffect : MultipleOptionSoundEffect
     {
         public enum TextVariable
         {
-            [SynthesizedSpeechVariable("$EVENT", "The game event name")]
+            [SynthesizedSpeechVariable("$EVENT", "The game event name", "Event")]
             GameEvent,
 
-            [SynthesizedSpeechVariable("$PNAME", "The name of the player")]
+            [SynthesizedSpeechVariable("$PNAME", "The name of the player", "Player")]
             PlayerName,
 
-            [SynthesizedSpeechVariable("$PTOT", "The total of a player")]
+            [SynthesizedSpeechVariable("$PTOT", "The total of a player", "Player total")]
             PlayerTotal,
 
-            [SynthesizedSpeechVariable("$PBET", "The total of a player bet")]
+            [SynthesizedSpeechVariable("$PBET", "The total of a player bet", "Player bet")]
             PlayerBet,
 
-            [SynthesizedSpeechVariable("$TOTAL", "The total of the pot")]
+            [SynthesizedSpeechVariable("$TOTAL", "The total of the pot", "Pot total")]
             PotTotal,
 
-            [SynthesizedSpeechVariable("$TIME", "The remaining stage time")]
+            [SynthesizedSpeechVariable("$TIME", "The remaining stage time", "Time")]
             StageTimeRemaning,
         }
 
@@ -202,6 +215,47 @@ namespace PokerTracker3000.GameSession.Sound
             }
             SetName();
         }
+
+        public static string GetSpeechForSoundEffectOption(SoundEffectOption option, IInternalMessage? message = default)
+        {
+            var result = option.Name;
+            foreach (var textVariable in Enum.GetValues<TextVariable>())
+            {
+                if (HasVariable(textVariable, result))
+                    result = s_variableAttributeLookup[textVariable].Replace(result, GetVariableValueFromMessage(message));
+            }
+            return result;
+        }
+
+        #region Private fields and methods
+        private static readonly Dictionary<TextVariable, SynthesizedSpeechVariableAttribute> s_variableAttributeLookup = [];
+
+        private static bool HasVariable(TextVariable variable, string message)
+        {
+            lock (s_variableAttributeLookup)
+            {
+                if (s_variableAttributeLookup.Count == 0)
+                {
+                    foreach (var textVariable in Enum.GetValues<TextVariable>())
+                        s_variableAttributeLookup.Add(textVariable, textVariable.GetCustomAttributeFromEnum<SynthesizedSpeechVariableAttribute>().attr!);
+                }
+            }
+
+            return s_variableAttributeLookup[variable].HasVariable(message);
+        }
+
+        private static string GetVariableValueFromMessage(IInternalMessage? message)
+        {
+            if (message == default)
+                return string.Empty;
+
+            // TODO: Implement
+            return message switch
+            {
+                _ => string.Empty,
+            };
+        }
+        #endregion
     }
 
     public sealed class FromFileSoundEffect : MultipleOptionSoundEffect

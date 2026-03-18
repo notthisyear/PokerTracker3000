@@ -46,8 +46,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (NavigationRelay == default || SoundEffect == default)
                 return;
 
-            ControlLoadedBase();
-
+            ControlLoadedBase(SoundEffect);
             PopulateOptionsList(AvailableBuiltInSoundEffectTypes, _builtInSoundEffectTypes);
 
             while (_builtInSoundEffectTypes[builtInSoundEffectScroller.CurrentSelectedIndex] != SoundEffect.BuiltInEffect)
@@ -100,7 +99,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             // If a button was selected, invoke its action.
             if (e.ButtonEvent == InputEvent.ButtonEventType.Select &&
                 SelectedElementMap.TryGetValue(SelectedElementIndex, out var element) &&
-                element is ButtonOptionModel button)
+                element is ButtonOptionModel button &&
+                button.IsAvailable)
             {
                 button.ButtonAction?.Invoke();
                 e.Handled = true;

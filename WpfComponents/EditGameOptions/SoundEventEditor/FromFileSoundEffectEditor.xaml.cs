@@ -45,7 +45,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (NavigationRelay == default || SoundEffect == default)
                 return;
 
-            ControlLoadedBase(SoundEffect.Mode, SoundEffect.EffectOptions.Count > 1);
+            ControlLoadedBase(SoundEffect, SoundEffect.Mode, SoundEffect.EffectOptions.Count > 1);
 
             AddOptionModel.ButtonAction = () =>
             {
@@ -60,10 +60,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                         MultipleOptionMode.None;
 
                     NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
-                    // The map has changes, so we have to remark the add button as selected
-                    var addButtonEntry = SelectedElementMap.FirstOrDefault(x => x.Value == AddOptionModel);
-                    if (addButtonEntry.Value != default)
-                        SelectedElementIndex = addButtonEntry.Key;
+
+                    // Select the new option
+                    AddOptionModel.IsSelected = false;
+                    SelectedElementIndex = SoundEffect.EffectOptions.Count - 1;
+                    SelectedElementMap[SelectedElementIndex].IsSelected = true;
                 }
             };
             ChangeEffectOptionModel.ButtonAction = () =>

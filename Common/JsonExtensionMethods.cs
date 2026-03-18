@@ -14,10 +14,13 @@ namespace PokerTracker3000.Common
             }
         };
 
-        public static (T?, Exception?) DeserializeJsonString<T>(this string serializedString, bool convertSnakeCaseToPascalCase = false)
+        public static (T?, Exception?) DeserializeJsonString<T>(this string serializedString, bool convertSnakeCaseToPascalCase = false, JsonSerializerSettings? settings = null)
         {
             if (string.IsNullOrEmpty(serializedString))
                 return (default, new ArgumentNullException(nameof(serializedString)));
+
+            if (settings != default)
+                return serializedString.DeserializeJsonString<T>(settings);
             return (convertSnakeCaseToPascalCase) ? serializedString.DeserializeJsonString<T>(s_settings) :
                                                     serializedString.DeserializeJsonString<T>(new JsonSerializerSettings());
         }

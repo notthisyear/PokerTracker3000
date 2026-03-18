@@ -17,29 +17,40 @@ namespace PokerTracker3000.GameSession.Sound
     {
         public ObservableCollection<SoundEvent> GameSounds { get; } = [];
 
-        private record SoundItem(SoundEffectType Type, string Speech = "");
+        private record SoundItem(SoundEffect Effect, IInternalMessage? Message, TaskCompletionSource? Tcs, int OptionId)
+        {
+            public static SoundItem Get(SoundEffect effect)
+                => new(effect, default, default, -1);
+
+            public static SoundItem Get(SoundEffect effect, IInternalMessage message)
+                => new(effect, message, default, -1);
+
+            public static SoundItem Get(SoundEffect effect, TaskCompletionSource? tcs, int optionId)
+                => new(effect, default, tcs, optionId);
+
+            public static SoundItem Get(SoundEffect effect, IInternalMessage message, TaskCompletionSource tcs, int optionId)
+                => new(effect, message, tcs, optionId);
+        }
 
         #region Private fields
         private readonly IGameEventBus _eventBus;
         private readonly SpeechSynthesizer _synth;
         private readonly Thread _audioThread;
-        private readonly ConcurrentQueue<(SoundEffect effect, IInternalMessage message)> _audioQueue;
+        private readonly ConcurrentQueue<SoundItem> _audioQueue;
+        private readonly Dictionary<BuiltInSoundEffectType, string> _builtInSoundEffectsPaths;
         private readonly TaskCompletionSource _tcs = new();
-        private readonly Dictionary<SoundEffectType, (int index, List<string> paths)> _soundPaths;
         private readonly object _gameSoundsAccessLock = new();
-        private readonly string _riffSoundEffectPath;
 
         private bool _shouldExit = false;
         #endregion
 
-        public AudioManager(IGameEventBus eventBus, string riffSoundEffectPath)
+        public AudioManager(IGameEventBus eventBus, Dictionary<BuiltInSoundEffectType, string> builtInEffectPaths)
         {
             _eventBus = eventBus;
             _synth = new SpeechSynthesizer();
             _synth.SetOutputToDefaultAudioDevice();
 
-            _riffSoundEffectPath = riffSoundEffectPath;
-            _soundPaths = [];
+            _builtInSoundEffectsPaths = builtInEffectPaths;
 
             BindingOperations.EnableCollectionSynchronization(GameSounds, _gameSoundsAccessLock);
 
@@ -79,6 +90,11 @@ namespace PokerTracker3000.GameSession.Sound
         }
 
         #region Public methods
+        public void TestSoundEffect(SoundEffect effect, TaskCompletionSource? tcs = default, int optionId = -1)
+        {
+            _audioQueue.Enqueue(SoundItem.Get(effect, tcs, optionId));
+        }
+
         public void AddSoundEvent(SoundEvent soundEvent)
         {
             lock (_gameSoundsAccessLock)
@@ -144,26 +160,46 @@ namespace PokerTracker3000.GameSession.Sound
             {
                 if (_audioQueue.TryDequeue(out var item))
                 {
-                    //if (item.effect.Type == SoundEffectType.Speech && item.effect is SpeechSoundEffect speechEffect)
-                    //{
-                    //    _synth.Speak(speechEffect.GetSpeech(
-                    //        speechEffect.SpeechOptions[speechEffect.GetNextOptionIndex()],
-                    //        item.message));
-                    //}
-                    //else
-                    //{
-                    //    var audioPath = string.Empty;
-                    //    if (item.effect.Type == SoundEffectType.BuiltIn && item.effect is BuiltInSoundEffect builtInEffect)
-                    //        audioPath = GetPathForBuiltInEffect(builtInEffect.BuiltInEffect);
-                    //    else if (item.effect.Type == SoundEffectType.File && item.effect is FromFileSoundEffect fileEffect)
-                    //        audioPath = fileEffect.PathOptions[fileEffect.GetNextOptionIndex()];
+                    switch (item.Effect)
+                    {
+                        case BuiltInSoundEffect builtInEffect:
+                            if (_builtInSoundEffectsPaths.TryGetValue(builtInEffect.BuiltInEffect, out var audioPath))
+                            {
+                                using var player = new SoundPlayer(audioPath);
+                                player.PlaySync();
+                                item.Tcs?.SetResult();
+                            }
+                            break;
 
-                    //    if (!string.IsNullOrEmpty(audioPath))
-                    //    {
-                    //        using var player = new SoundPlayer(audioPath);
-                    //        player.PlaySync();
-                    //    }
-                    //}
+                        case FromFileSoundEffect fromFileSoundEffect:
+                            {
+                                var option = (item.OptionId > -1) ?
+                                    fromFileSoundEffect.EffectOptions.FirstOrDefault(x => x.Id == item.OptionId) :
+                                    fromFileSoundEffect.EffectOptions[fromFileSoundEffect.GetNextOptionIndex()];
+
+                                if (option != default)
+                                {
+                                    using var player = new SoundPlayer(option.Path);
+                                    player.PlaySync();
+                                    item.Tcs?.SetResult();
+                                }
+                            }
+                            break;
+
+                        case SpeechSoundEffect speechSoundEffect:
+                            {
+                                var option = (item.OptionId > -1) ?
+                                    speechSoundEffect.EffectOptions.FirstOrDefault(x => x.Id == item.OptionId) :
+                                    speechSoundEffect.EffectOptions[speechSoundEffect.GetNextOptionIndex()];
+
+                                if (option != default)
+                                {
+                                    _synth.Speak(SpeechSoundEffect.GetSpeechForSoundEffectOption(option, item.Message));
+                                    item.Tcs?.SetResult();
+                                }
+                            }
+                            break;
+                    }
                 }
                 else
                 {

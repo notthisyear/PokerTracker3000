@@ -66,7 +66,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (NavigationRelay == default || SoundEffect == default)
                 return;
 
-            ControlLoadedBase(SoundEffect.Mode, SoundEffect.EffectOptions.Count > 1);
+            ControlLoadedBase(SoundEffect, SoundEffect.Mode, SoundEffect.EffectOptions.Count > 1);
 
             foreach (var s in Enum.GetValues<TextVariable>())
             {
@@ -88,7 +88,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
                     NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
 
-                    // Select the new options
+                    // Select the new option
                     AddOptionModel.IsSelected = false;
                     SelectedElementIndex = SoundEffect.EffectOptions.Count - 1;
                     SelectedElementMap[SelectedElementIndex].IsSelected = true;

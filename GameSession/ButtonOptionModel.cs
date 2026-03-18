@@ -81,6 +81,7 @@ namespace PokerTracker3000.GameSession
         public enum OptionType
         {
             Default,
+            Info,
             Success,
             Cancel
         };

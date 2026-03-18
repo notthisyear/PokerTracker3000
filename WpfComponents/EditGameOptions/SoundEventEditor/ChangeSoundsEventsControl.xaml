@@ -308,14 +308,16 @@
                         <!-- Built-in sound effect editor -->
                         <DataTemplate DataType="{x:Type sound:BuiltInSoundEffect}">
                             <editgameoptions:BuiltInSoundEffectEditor  NavigationRelay="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
-                                                             Path=DataContext}"
-                                                             SoundEffect="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
-                                                             Path=DataContext.SelectedSoundConditionOrEffect,
-                                                             Converter={StaticResource soundEffectConverter}}"
-                                                             IsActive="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
-                                                             Path=DataContext.SoundConditionAndEditAreaActive}"
-                                                             NavigationManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
-                                                             Path=DataContext.SessionManager.NavigationManager}"/>
+                                                                        Path=DataContext}"
+                                                                        SoundEffect="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext.SelectedSoundConditionOrEffect,
+                                                                        Converter={StaticResource soundEffectConverter}}"
+                                                                        IsActive="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext.SoundConditionAndEditAreaActive}"
+                                                                        NavigationManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext.SessionManager.NavigationManager}"
+                                                                        AudioManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext.SessionManager.AudioManager}" />
                         </DataTemplate>
 
                         <!-- From file sound effect editor -->
@@ -328,7 +330,9 @@
                                                                         IsActive="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
                                                                         Path=DataContext.SoundConditionAndEditAreaActive}"
                                                                         NavigationManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
-                                                                        Path=DataContext.SessionManager.NavigationManager}"/>
+                                                                        Path=DataContext.SessionManager.NavigationManager}"
+                                                                        AudioManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                        Path=DataContext.SessionManager.AudioManager}" />
                         </DataTemplate>
 
                         <!-- Synthesized speech sound effect editor -->
@@ -341,7 +345,9 @@
                                                                                  IsActive="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
                                                                                  Path=DataContext.SoundConditionAndEditAreaActive}"
                                                                                  NavigationManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
-                                                                                 Path=DataContext.SessionManager.NavigationManager}"/>
+                                                                                 Path=DataContext.SessionManager.NavigationManager}"
+                                                                                 AudioManager="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContentControl}},
+                                                                                 Path=DataContext.SessionManager.AudioManager}" />
                         </DataTemplate>
                     </ContentControl.Resources>
 
