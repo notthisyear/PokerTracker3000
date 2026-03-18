@@ -85,14 +85,14 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         public ObservableCollection<string> AvailableMultipleOptionModeTypes { get; } = [];
 
-        protected List<MultipleOptionMode> MultipleOptionModes { get; } = [];
+        public List<MultipleOptionMode> MultipleOptionModes { get; } = [];
         #endregion
 
         #region Read-only dependency property
         public bool ShowRenameEffectField
         {
             get => (bool)GetValue(s_showRenameEffectFieldProperty);
-            protected set => SetValue(s_showRenameEffectFieldPropertyKey, value);
+            set => SetValue(s_showRenameEffectFieldPropertyKey, value);
         }
         private static readonly DependencyPropertyKey s_showRenameEffectFieldPropertyKey = DependencyProperty.RegisterReadOnly(
             nameof(ShowRenameEffectField),

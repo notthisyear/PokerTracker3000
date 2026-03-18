@@ -19,6 +19,9 @@
     <Compile Update="WpfComponents\EditGameOptions\SoundEventEditor\EditSoundCondition.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="WpfComponents\EditGameOptions\SoundEventEditor\FileAndSpeechSoundEffectEditContent.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WpfComponents\PlayerLayout\EightPlayerLayout.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

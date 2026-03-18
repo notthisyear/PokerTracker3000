@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using Ookii.Dialogs.Wpf;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.GameSession.Sound;
-using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.WpfComponents.EditGameOptions
 {
@@ -50,17 +47,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             ControlLoadedBase(SoundEffect.Mode, SoundEffect.EffectOptions.Count > 1);
 
-            multipleOptionModeScroller.SelectedIndexChanged += (s, e) =>
-            {
-                SoundEffect?.Mode = MultipleOptionModes[multipleOptionModeScroller.CurrentSelectedIndex];
-            };
-
-            RenameEffectModel.ButtonAction = () =>
-            {
-                ShowRenameEffectField = true;
-                renameEffectBox.Focus();
-                renameEffectBox.CaretIndex = SoundEffect?.RawName.Length ?? 0;
-            };
             AddOptionModel.ButtonAction = () =>
             {
                 if (SoundEffect != default &&
@@ -70,7 +56,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     SoundEffect.AddFileOption(s_loadSoundEffectDialog.FileName);
                     ShowMultipleOptionsScroller = SoundEffect.EffectOptions.Count > 1;
                     SoundEffect.Mode = ShowMultipleOptionsScroller ?
-                        MultipleOptionModes[multipleOptionModeScroller.CurrentSelectedIndex] :
+                        MultipleOptionModes[mainContent.MultipleOptionModeSelectedIndex] :
                         MultipleOptionMode.None;
 
                     NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
@@ -107,7 +93,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 SoundEffect.RemoveFileOption(option);
                 ShowMultipleOptionsScroller = SoundEffect.EffectOptions.Count > 1;
                 SoundEffect.Mode = ShowMultipleOptionsScroller ?
-                        MultipleOptionModes[multipleOptionModeScroller.CurrentSelectedIndex] :
+                        MultipleOptionModes[mainContent.MultipleOptionModeSelectedIndex] :
                         MultipleOptionMode.None;
 
                 NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
@@ -120,7 +106,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         }
 
         protected override int GetMultipleOptionsModeScrollerIndex()
-             => multipleOptionModeScroller.CurrentSelectedIndex;
+             => mainContent.MultipleOptionModeSelectedIndex;
 
         protected override NavigationManager.Node[] GetNavigationNodes()
             => GetNavigationNodesForOptions(SoundEffect?.EffectOptions ?? []);

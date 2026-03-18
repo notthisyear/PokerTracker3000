@@ -74,17 +74,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 SpeechVariables.Add(attr!);
             }
 
-            multipleOptionModeScroller.SelectedIndexChanged += (s, e) =>
-            {
-                SoundEffect?.Mode = MultipleOptionModes[multipleOptionModeScroller.CurrentSelectedIndex];
-            };
-
-            RenameEffectModel.ButtonAction = () =>
-            {
-                ShowRenameEffectField = true;
-                renameEffectBox.Focus();
-                renameEffectBox.CaretIndex = SoundEffect?.RawName.Length ?? 0;
-            };
             AddOptionModel.ButtonAction = () =>
             {
                 if (SoundEffect != default)
@@ -94,7 +83,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     SoundEffect.AddSpeechOption(defaultText);
                     ShowMultipleOptionsScroller = SoundEffect.EffectOptions.Count > 1;
                     SoundEffect.Mode = ShowMultipleOptionsScroller ?
-                        MultipleOptionModes[multipleOptionModeScroller.CurrentSelectedIndex] :
+                        MultipleOptionModes[mainContent.MultipleOptionModeSelectedIndex] :
                         MultipleOptionMode.None;
 
                     NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
@@ -137,7 +126,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 SoundEffect.RemoveSpeechOption(option);
                 ShowMultipleOptionsScroller = SoundEffect.EffectOptions.Count > 1;
                 SoundEffect.Mode = ShowMultipleOptionsScroller ?
-                        MultipleOptionModes[multipleOptionModeScroller.CurrentSelectedIndex] :
+                        MultipleOptionModes[mainContent.MultipleOptionModeSelectedIndex] :
                         MultipleOptionMode.None;
 
                 NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
@@ -150,7 +139,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         }
 
         protected override int GetMultipleOptionsModeScrollerIndex()
-             => multipleOptionModeScroller.CurrentSelectedIndex;
+             => mainContent.MultipleOptionModeSelectedIndex;
 
         protected override NavigationManager.Node[] GetNavigationNodes()
              => GetNavigationNodesForOptions(SoundEffect?.EffectOptions ?? []);
