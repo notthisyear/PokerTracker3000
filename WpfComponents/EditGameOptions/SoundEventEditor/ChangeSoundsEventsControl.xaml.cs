@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
 using Ookii.Dialogs.Wpf;
 using PokerTracker3000.Common;
 using PokerTracker3000.Common.FileUtilities;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.GameSession.Sound;
+using PokerTracker3000.GameSession.Sound.JsonConverters;
 using PokerTracker3000.Interfaces;
+
 using ButtonEventArgs = PokerTracker3000.Interfaces.IInputRelay.ButtonEventArgs;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 using NavigationEventArgs = PokerTracker3000.Interfaces.IInputRelay.NavigationEventArgs;
@@ -142,12 +143,18 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private const int MaxSoundConditions = 5;
         private const int MaxSoundEffects = 5;
 
-        private static readonly VistaSaveFileDialog s_saveSettingsDialog = new()
+        private static readonly VistaSaveFileDialog s_saveSoundEventsDialog = new()
         {
             Title = "Save sound events",
             AddExtension = true,
             DefaultExt = "json",
             Filter = "JSON file (*.json)|*.json"
+        };
+        private static readonly VistaOpenFileDialog s_loadSoundEventsDialog = new()
+        {
+            Title = "Load sound events",
+            Multiselect = false,
+            Filter = "JSON file (*.json)|*.json|All files (*.*)|*.*"
         };
         #endregion
 
@@ -199,14 +206,48 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             };
             LoadSoundEventsModel.ButtonAction = () =>
             {
-                // TODO: Implement;
+                if (s_loadSoundEventsDialog.ShowDialog() == true)
+                {
+                    var reader = new FileTextReader(s_loadSoundEventsDialog.FileName);
+                    if (!reader.SuccessfulRead)
+                        throw reader.ReadException!;
+
+                    var (soundEvents, e) = reader.AllText.DeserializeJsonString<List<SoundEvent>>(
+                        [
+                            new SoundEventJsonConverter(),
+                            new StringEnumConverter(),
+                            new SoundConditionAndEffectJsonConverter<SoundCondition, SoundConditionKindAttribute>(),
+                            new SoundConditionAndEffectJsonConverter<SoundEffect, SoundEffectKindAttribute>()
+                        ],
+                        true);
+
+                    // TODO: Show feedback
+
+                    if (e == default)
+                    {
+                        AudioManager.ClearSoundEvents();
+                        foreach (var soundEvent in soundEvents!)
+                            AudioManager.AddSoundEvent(soundEvent);
+
+                        // Recreate the navigation for the current area
+                        var (id, _) = _navigationIdAndSelectedIndex[SelectedArea.SoundEvent];
+                        SessionManager.NavigationManager.ReplaceNavigation(id, GetNavigationNodesForArea(SelectedArea.SoundEvent));
+                        var loadButtonEntry = _selectedEntityMap[SelectedArea.SoundEvent].First(x => x.Value == LoadSoundEventsModel);
+                        _navigationIdAndSelectedIndex[SelectedArea.SoundEvent] = (id, loadButtonEntry.Key);
+                    }
+                }
             };
             SaveSoundEventsModel.ButtonAction = () =>
             {
-                if (s_saveSettingsDialog.ShowDialog() == true)
+                if (s_saveSoundEventsDialog.ShowDialog() == true)
                 {
                     var (success, path, e) = AudioManager.GameSounds.SerializeWriteToJsonFile(
-                        s_saveSettingsDialog.FileName, true, new StringEnumConverter());
+                        s_saveSoundEventsDialog.FileName, true,
+                        [
+                            new StringEnumConverter(),
+                            new SoundConditionAndEffectJsonConverter<SoundCondition, SoundConditionKindAttribute>(),
+                            new SoundConditionAndEffectJsonConverter<SoundEffect, SoundEffectKindAttribute>()
+                        ]);
 
                     // TODO: Show feedback
                 }
@@ -325,7 +366,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             {
                 case SelectedArea.SoundEvent:
                     {
-                        // The sound event and three button
+                        // The sound events and three button
                         var numberOfSoundEvents = AudioManager.GameSounds.Count;
                         var navigationNodes = new NavigationManager.Node[numberOfSoundEvents + 3];
                         for (var i = 0; i < numberOfSoundEvents; i++)

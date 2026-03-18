@@ -132,6 +132,14 @@ namespace PokerTracker3000.GameSession.Sound
             }
         }
 
+        public void ClearSoundEvents()
+        {
+            lock (_gameSoundsAccessLock)
+            {
+                GameSounds.Clear();
+            }
+        }
+
         //public void AddEventSound(GameEventBus.EventType eventType, params SoundEffect[] effects)
         //{
         //    lock (_gameSoundsAccessLock)

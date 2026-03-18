@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Data;
 using Newtonsoft.Json;
 using PokerTracker3000.Common;
+using PokerTracker3000.GameSession.Sound.JsonConverters;
 using PokerTracker3000.Interfaces;
 
 namespace PokerTracker3000.GameSession.Sound
@@ -53,8 +54,6 @@ namespace PokerTracker3000.GameSession.Sound
             get { return _name; }
             protected set { SetProperty(ref _name, value); }
         }
-
-        public abstract SoundEffectType Type { get; }
         #endregion
     };
 
@@ -126,12 +125,11 @@ namespace PokerTracker3000.GameSession.Sound
         #endregion
     }
 
+    [SoundEffectKind("built_in")]
     public sealed class BuiltInSoundEffect : SoundEffect
     {
         #region Public properties
         public BuiltInSoundEffectType BuiltInEffect { get; } = BuiltInSoundEffectType.None;
-
-        public override SoundEffectType Type => SoundEffectType.BuiltIn;
         #endregion
 
         public BuiltInSoundEffect(BuiltInSoundEffectType builtInEffect)
@@ -159,6 +157,7 @@ namespace PokerTracker3000.GameSession.Sound
 
     }
 
+    [SoundEffectKind("synthesized_speech")]
     public sealed class SpeechSoundEffect : MultipleOptionSoundEffect
     {
         public enum TextVariable
@@ -181,8 +180,6 @@ namespace PokerTracker3000.GameSession.Sound
             [SynthesizedSpeechVariable("$TIME", "The remaining stage time", "Time")]
             StageTimeRemaning,
         }
-
-        public override SoundEffectType Type => SoundEffectType.Speech;
 
         public override ObservableCollection<SoundEffectOption> EffectOptions { get; }
 
@@ -262,10 +259,9 @@ namespace PokerTracker3000.GameSession.Sound
         #endregion
     }
 
+    [SoundEffectKind("from_file")]
     public sealed class FromFileSoundEffect : MultipleOptionSoundEffect
     {
-        public override SoundEffectType Type => SoundEffectType.File;
-
         public override ObservableCollection<SoundEffectOption> EffectOptions { get; }
 
         #region Private fields

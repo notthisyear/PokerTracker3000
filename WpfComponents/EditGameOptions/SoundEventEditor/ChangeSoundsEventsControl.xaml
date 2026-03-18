@@ -59,7 +59,8 @@
 
             <!-- No sound events-->
             <TextBlock Text="No sound events"
-                       HorizontalAlignment="Center">
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center">
                 <TextBlock.Style>
                 <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                     <Setter Property="Visibility" Value="Collapsed" />
@@ -128,6 +129,8 @@
         <!-- No selected event text -->
         <TextBlock Text="No event selected"
                    Grid.Column="1"
+                   Grid.RowSpan="2"
+                   VerticalAlignment="Center"
                    HorizontalAlignment="Center">
             <TextBlock.Style>
                 <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">

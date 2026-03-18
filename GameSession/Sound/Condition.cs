@@ -4,9 +4,16 @@ using System.Globalization;
 using System.Numerics;
 using Newtonsoft.Json;
 using PokerTracker3000.Common;
+using PokerTracker3000.GameSession.Sound.JsonConverters;
 
 namespace PokerTracker3000.GameSession.Sound
 {
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class ConditionKindAttribute(string kind) : Attribute
+    {
+        public string Kind { get; } = kind;
+    }
+
     public enum ConditionVariable
     {
         None,
@@ -147,6 +154,7 @@ namespace PokerTracker3000.GameSession.Sound
         public abstract bool Check(T value);
     }
 
+    [SoundConditionKind("event")]
     public sealed class EventCondition : Condition<GameEventBus.EventType>
     {
         public GameEventBus.EventType Value { get; }
@@ -164,9 +172,14 @@ namespace PokerTracker3000.GameSession.Sound
             => Value == v;
     }
 
+    [SoundConditionKind("time")]
     public sealed class TimeCondition : Condition<int>
     {
         private readonly int _value;
+
+        [JsonConstructor]
+        public TimeCondition(string conditionValue) : this(int.Parse(conditionValue, NumberStyles.Integer))
+        { }
 
         public TimeCondition(int value)
         {
@@ -182,22 +195,24 @@ namespace PokerTracker3000.GameSession.Sound
             => _value == v;
     }
 
+    [SoundConditionKind("string")]
     public sealed class StringCondition : Condition<string>
     {
         private readonly Predicate<string> _check;
 
-        public StringCondition(ConditionVariable variable, ConditionCheckType checkType, string value)
+
+        public StringCondition(ConditionVariable conditionVariable, ConditionCheckType conditionCheckType, string conditionValue)
         {
-            if (string.IsNullOrEmpty(value))
-                throw new ArgumentNullException(nameof(value), "StringCondition value cannot be empty");
+            if (string.IsNullOrEmpty(conditionValue))
+                throw new ArgumentNullException(nameof(conditionValue), "StringCondition value cannot be empty");
 
-            if (checkType != ConditionCheckType.Equal && checkType != ConditionCheckType.NotEqual)
-                throw new ArgumentException("StringCondition can only check equality", nameof(checkType));
+            if (conditionCheckType != ConditionCheckType.Equal && conditionCheckType != ConditionCheckType.NotEqual)
+                throw new ArgumentException("StringCondition can only check equality", nameof(conditionCheckType));
 
-            ConditionVariable = variable;
-            ConditionCheckType = checkType;
-            ConditionValue = value;
-            _check = checkType == ConditionCheckType.Equal ?
+            ConditionVariable = conditionVariable;
+            ConditionCheckType = conditionCheckType;
+            ConditionValue = conditionValue;
+            _check = conditionCheckType == ConditionCheckType.Equal ?
                 (v => string.Equals(ConditionValue, v, StringComparison.Ordinal)) :
                 (v => !string.Equals(ConditionValue, v, StringComparison.Ordinal));
             DisplayString = $"{GetConditionVariableString(ConditionVariable)} {GetCheckTypeString(ConditionCheckType)} \"{ConditionValue}\"";
@@ -207,19 +222,20 @@ namespace PokerTracker3000.GameSession.Sound
             => _check(v);
     }
 
+    [SoundConditionKind("number")]
     public sealed class NumberCondition<T> : Condition<T> where T : INumber<T>
     {
         private readonly T _value;
         private readonly Predicate<T> _check;
 
-        public NumberCondition(ConditionVariable variable, ConditionCheckType checkType, T value)
+        public NumberCondition(ConditionVariable conditionVariable, ConditionCheckType conditionCheckType, T conditionValue)
         {
-            ConditionVariable = variable;
-            ConditionCheckType = checkType;
-            ConditionValue = value.ToString() ?? string.Empty;
+            ConditionVariable = conditionVariable;
+            ConditionCheckType = conditionCheckType;
+            ConditionValue = conditionValue.ToString() ?? string.Empty;
 
-            _value = value;
-            _check = checkType switch
+            _value = conditionValue;
+            _check = conditionCheckType switch
             {
                 ConditionCheckType.LessThan => v => _value < v,
                 ConditionCheckType.LessThanOrEqual => v => _value <= v,

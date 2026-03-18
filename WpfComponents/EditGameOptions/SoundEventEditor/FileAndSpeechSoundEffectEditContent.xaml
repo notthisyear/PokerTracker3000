@@ -4,8 +4,12 @@
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
              xmlns:editgameoptions="clr-namespace:PokerTracker3000.WpfComponents.EditGameOptions"
              xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules"
+             xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters"
              xmlns:sound="clr-namespace:PokerTracker3000.GameSession.Sound">
     <Grid>
+        <Grid.Resources>
+            <converters:ObjectToDataTypeConverter x:Key="objectToDataTypeConverter" />
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
             <RowDefinition Height="*" />
@@ -21,7 +25,8 @@
                 <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                     <Setter Property="Text" Value="Sound effect from file" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=SoundEffect.Type}" Value="{x:Static sound:SoundEffectType.Speech}">
+                        <DataTrigger Binding="{Binding Path=SoundEffect, Converter={StaticResource objectToDataTypeConverter}}"
+                                     Value="{x:Type sound:SpeechSoundEffect}">
                             <Setter Property="Text" Value="Synthesized speech sound effect" />
                         </DataTrigger>
                     </Style.Triggers>

@@ -15,6 +15,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 {
     public sealed class ScrollerSelectable : SelectableEntity { }
 
+    // TODO: THE UNLOAD LOGIC SHOULD MOVE TO THE BASE CLASS SO THAT IT PROPERLY SETS THE UNLOAD EVENT FOR CONDITIONS. CURRENTLY BROKEN.
     public abstract class SoundEffectEditorBase : ConditionAndEffectEditorBase
     {
         #region Dependency property
@@ -92,6 +93,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             AudioManager.TestSoundEffect(_currentSoundEffect, tcs, optionId);
         }
+
         protected abstract NavigationManager.Node[] GetNavigationNodes();
 
         protected abstract void HandleNavigation(object? sender, NavigationEventArgs e);
