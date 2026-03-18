@@ -6,23 +6,19 @@ namespace PokerTracker3000.Common
 {
     internal static class JsonExtensionMethods
     {
-        private static readonly JsonSerializerSettings s_settings = new()
-        {
-            ContractResolver = new DefaultContractResolver
-            {
-                NamingStrategy = new SnakeCaseNamingStrategy()
-            }
-        };
-
-        public static (T?, Exception?) DeserializeJsonString<T>(this string serializedString, bool convertSnakeCaseToPascalCase = false, JsonSerializerSettings? settings = null)
+        public static (T?, Exception?) DeserializeJsonString<T>(this string serializedString, bool convertSnakeCaseToPascalCase = false, JsonConverter? converter = default)
         {
             if (string.IsNullOrEmpty(serializedString))
                 return (default, new ArgumentNullException(nameof(serializedString)));
 
-            if (settings != default)
-                return serializedString.DeserializeJsonString<T>(settings);
-            return (convertSnakeCaseToPascalCase) ? serializedString.DeserializeJsonString<T>(s_settings) :
-                                                    serializedString.DeserializeJsonString<T>(new JsonSerializerSettings());
+            var settings = new JsonSerializerSettings();
+            if (convertSnakeCaseToPascalCase)
+                settings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() };
+
+            if (converter != default)
+                settings.Converters = [converter];
+
+            return serializedString.DeserializeJsonString<T>(settings);
         }
 
         public static (T?, Exception?) DeserializeJsonString<T>(this string serializedString, JsonSerializerSettings settings)
@@ -40,9 +36,15 @@ namespace PokerTracker3000.Common
             }
         }
 
-        public static (string?, Exception?) SerializeToJsonString<T>(this T objectToSerialize, bool convertPascalCaseToSnakeCase = false, bool indent = false, bool ignoreNullValues = false)
+        public static (string?, Exception?) SerializeToJsonString<T>(this T objectToSerialize, bool convertPascalCaseToSnakeCase = false, bool indent = false, bool ignoreNullValues = false, JsonConverter? converter = default)
         {
-            var settings = (convertPascalCaseToSnakeCase) ? s_settings : new JsonSerializerSettings();
+            var settings = new JsonSerializerSettings();
+            if (convertPascalCaseToSnakeCase)
+                settings.ContractResolver = new DefaultContractResolver { NamingStrategy = new SnakeCaseNamingStrategy() };
+
+            if (converter != default)
+                settings.Converters = [converter];
+
             settings.NullValueHandling = ignoreNullValues ? NullValueHandling.Ignore : NullValueHandling.Include;
 
             try

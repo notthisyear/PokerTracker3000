@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Numerics;
+using Newtonsoft.Json;
 using PokerTracker3000.Common;
 
 namespace PokerTracker3000.GameSession.Sound
@@ -60,6 +61,7 @@ namespace PokerTracker3000.GameSession.Sound
 
         public string ConditionValue { get; protected set; } = string.Empty;
 
+        [JsonIgnore]
         public string DisplayString { get; protected set; } = string.Empty;
 
         private const NumberStyles IntegerNumberStyle = NumberStyles.Integer;

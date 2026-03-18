@@ -26,15 +26,8 @@ namespace PokerTracker3000.Common
             if (!reader.SuccessfulRead)
                 throw reader.ReadException!;
 
-            var (app, e) = reader.AllText.DeserializeJsonString<ApplicationSettings>(settings:
-                new JsonSerializerSettings()
-                {
-                    ContractResolver = new DefaultContractResolver
-                    {
-                        NamingStrategy = new SnakeCaseNamingStrategy()
-                    },
-                    Converters = { new StringEnumConverter() }
-                });
+            var (app, e) = reader.AllText.DeserializeJsonString<ApplicationSettings>(convertSnakeCaseToPascalCase: true,
+                converter: new StringEnumConverter());
 
             if (e != default)
                 throw e;

@@ -4,7 +4,12 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
+using Ookii.Dialogs.Wpf;
 using PokerTracker3000.Common;
+using PokerTracker3000.Common.FileUtilities;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.GameSession.Sound;
 using PokerTracker3000.Interfaces;
@@ -136,6 +141,14 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         private const int MaxSoundConditions = 5;
         private const int MaxSoundEffects = 5;
+
+        private static readonly VistaSaveFileDialog s_saveSettingsDialog = new()
+        {
+            Title = "Save sound events",
+            AddExtension = true,
+            DefaultExt = "json",
+            Filter = "JSON file (*.json)|*.json"
+        };
         #endregion
 
         public ChangeSoundsEventsControl()
@@ -190,7 +203,13 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             };
             SaveSoundEventsModel.ButtonAction = () =>
             {
-                // TODO: Implement;
+                if (s_saveSettingsDialog.ShowDialog() == true)
+                {
+                    var (success, path, e) = AudioManager.GameSounds.SerializeWriteToJsonFile(
+                        s_saveSettingsDialog.FileName, true, new StringEnumConverter());
+
+                    // TODO: Show feedback
+                }
             };
 
             AddSoundConditionModel.ButtonAction = () =>

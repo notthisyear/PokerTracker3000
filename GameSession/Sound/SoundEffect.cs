@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Data;
+using Newtonsoft.Json;
 using PokerTracker3000.Common;
 using PokerTracker3000.Interfaces;
 
@@ -34,6 +35,7 @@ namespace PokerTracker3000.GameSession.Sound
 
         private readonly int _id = ThreadSafeId.GetNext();
 
+        [JsonIgnore]
         public int Id => _id;
     }
 
@@ -45,6 +47,7 @@ namespace PokerTracker3000.GameSession.Sound
         private string _name = string.Empty;
         #endregion
 
+        [JsonIgnore]
         public string Name
         {
             get { return _name; }
@@ -71,6 +74,7 @@ namespace PokerTracker3000.GameSession.Sound
                 SetName();
             }
         }
+
         public string RawName
         {
             get => _rawName;

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace PokerTracker3000.Common.FileUtilities
 {
     internal static class FileExtensionMethods
     {
-        public static (bool success, string path, Exception? e) SerializeWriteToJsonFile<T>(this T obj, string path, bool addExtension)
+        public static (bool success, string path, Exception? e) SerializeWriteToJsonFile<T>(this T obj, string path, bool addExtension, JsonConverter? converter = default)
         {
-            var (s, e) = obj.SerializeToJsonString(convertPascalCaseToSnakeCase: true, indent: true);
+            var (s, e) = obj.SerializeToJsonString(convertPascalCaseToSnakeCase: true, indent: true, converter: converter);
             if (e != default)
                 return (false, string.Empty, e);
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Data;
+using Newtonsoft.Json;
 using PokerTracker3000.Common;
 
 namespace PokerTracker3000.GameSession.Sound
@@ -18,6 +19,7 @@ namespace PokerTracker3000.GameSession.Sound
             set { SetProperty(ref _name, value); }
         }
 
+        [JsonIgnore]
         public int Id { get; }
 
         public ObservableCollection<Condition> Conditions { get; }
