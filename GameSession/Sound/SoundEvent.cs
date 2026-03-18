@@ -39,6 +39,7 @@ namespace PokerTracker3000.GameSession.Sound
             BindingOperations.EnableCollectionSynchronization(SoundEffectsOnEvent, _accessLock);
             BindingOperations.EnableCollectionSynchronization(Conditions, _accessLock);
         }
+
         public void AddConditionToEvent(Condition condition, int index = -1)
         {
             lock (_accessLock)

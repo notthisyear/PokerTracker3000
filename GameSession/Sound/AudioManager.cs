@@ -19,17 +19,14 @@ namespace PokerTracker3000.GameSession.Sound
 
         private record SoundItem(SoundEffect Effect, IInternalMessage? Message, TaskCompletionSource? Tcs, int OptionId)
         {
-            public static SoundItem Get(SoundEffect effect)
-                => new(effect, default, default, -1);
-
             public static SoundItem Get(SoundEffect effect, IInternalMessage message)
                 => new(effect, message, default, -1);
 
+            public static SoundItem Get(SoundEffect effect, TaskCompletionSource? tcs)
+               => new(effect, default, tcs, -1);
+
             public static SoundItem Get(SoundEffect effect, TaskCompletionSource? tcs, int optionId)
                 => new(effect, default, tcs, optionId);
-
-            public static SoundItem Get(SoundEffect effect, IInternalMessage message, TaskCompletionSource tcs, int optionId)
-                => new(effect, message, tcs, optionId);
         }
 
         #region Private fields
@@ -90,6 +87,28 @@ namespace PokerTracker3000.GameSession.Sound
         }
 
         #region Public methods
+        public void TestSoundEvent(SoundEvent soundEvent, TaskCompletionSource? tcs = default)
+        {
+            List<Task> effectTasks = [];
+            foreach (var effect in soundEvent.SoundEffectsOnEvent)
+            {
+                var t = new Task(() =>
+                {
+                    var completionSource = new TaskCompletionSource();
+                    _audioQueue.Enqueue(SoundItem.Get(effect, completionSource));
+                    completionSource.Task.Wait();
+                });
+                t.Start();
+                effectTasks.Add(t);
+            }
+
+            Task.Run(() =>
+            {
+                Task.WhenAll(effectTasks).Wait();
+                tcs?.SetResult();
+            });
+        }
+
         public void TestSoundEffect(SoundEffect effect, TaskCompletionSource? tcs = default, int optionId = -1)
         {
             _audioQueue.Enqueue(SoundItem.Get(effect, tcs, optionId));

@@ -104,7 +104,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         public ButtonOptionModel RenameSoundEventModel { get; } = new("Rename event");
 
-        public ButtonOptionModel TestSoundEventModel { get; } = new("Test event");
+        public ButtonOptionModel TestSoundEventModel { get; } = new("Test event", type: ButtonOptionModel.OptionType.Info);
 
         public ButtonOptionModel RemoveSoundEventModel { get; } = new("Remove event", type: ButtonOptionModel.OptionType.Cancel);
 
@@ -217,7 +217,17 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             };
             TestSoundEventModel.ButtonAction = () =>
             {
-                // TODO: Implement
+                if (SelectedSoundEvent == default)
+                    return;
+
+                TaskCompletionSource tcs = new();
+                TestSoundEventModel.IsAvailable = false;
+                AudioManager.TestSoundEvent(SelectedSoundEvent, tcs);
+                Task.Run(() =>
+                {
+                    tcs.Task.Wait();
+                    Application.Current.Dispatcher.Invoke(() => { TestSoundEventModel.IsAvailable = true; });
+                });
             };
             RemoveSoundEventModel.ButtonAction = () =>
             {
@@ -283,6 +293,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             SessionManager.NavigationManager.ReplaceNavigation(id, GetNavigationNodesForArea(SelectedArea.ConditionAndEffect));
             _navigationIdAndSelectedIndex[SelectedArea.ConditionAndEffect] = (id, selectedIndex);
         }
+
         private NavigationManager.Node[] GetNavigationNodesForArea(SelectedArea area)
         {
             if (!_selectedEntityMap.ContainsKey(area))
@@ -552,7 +563,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     SessionManager.NavigationManager.ReplaceNavigation(id, GetNavigationNodesForArea(SelectedArea.ConditionAndEffect));
                     HandleNavigationInConditionAndEffectArea(effectAndConditionIndex, effectAndConditionIndex);
                 }
-                else if (entity is ButtonOptionModel model)
+                else if (entity is ButtonOptionModel model && model.IsAvailable)
                 {
                     model.ButtonAction?.Invoke();
                 }
@@ -576,7 +587,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 return;
 
             // If a button is pressed
-            if (entity is ButtonOptionModel button)
+            if (entity is ButtonOptionModel button && button.IsAvailable)
             {
                 button.ButtonAction?.Invoke();
                 return;
@@ -616,7 +627,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             {
                 var (_, selectedIndex) = _navigationIdAndSelectedIndex[_selectedArea];
                 if (_selectedEntityMap[_selectedArea].TryGetValue(selectedIndex, out var entity) &&
-                    entity is ButtonOptionModel button)
+                    entity is ButtonOptionModel button &&
+                    button.IsAvailable)
                 {
                     // Actually add the new sound effect
                     button.ButtonAction?.Invoke();
