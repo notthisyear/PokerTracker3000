@@ -6,7 +6,6 @@ using System.Windows;
 using PokerTracker3000.Common;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.GameSession.Sound;
-using PokerTracker3000.Interfaces;
 
 using ButtonEventArgs = PokerTracker3000.Interfaces.IInputRelay.ButtonEventArgs;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
@@ -27,7 +26,13 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             nameof(Condition),
             typeof(SoundCondition),
             typeof(EditSoundCondition),
-            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender, ConditionChanged));
+
+        private static void ConditionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is EditSoundCondition control && control.IsLoaded && e.NewValue is SoundCondition c)
+                control.ReloadSettings(c);
+        }
 
         public string CurrentValue
         {
@@ -48,18 +53,19 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 c.ValidateCurrentSettings();
         }
 
+        #region Read-only dependency properties
         public int SelectedInputColumn
         {
-            get { return (int)GetValue(SelectedInputColumnProperty); }
-            set { SetValue(SelectedInputColumnProperty, value); }
+            get => (int)GetValue(s_selectedInputColumnProperty);
+            private set => SetValue(s_selectedInputColumnPropertyKey, value);
         }
-        public static readonly DependencyProperty SelectedInputColumnProperty = DependencyProperty.Register(
+        private static readonly DependencyPropertyKey s_selectedInputColumnPropertyKey = DependencyProperty.RegisterReadOnly(
             nameof(SelectedInputColumn),
             typeof(int),
             typeof(EditSoundCondition),
             new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.AffectsRender));
+        private static readonly DependencyProperty s_selectedInputColumnProperty = s_selectedInputColumnPropertyKey.DependencyProperty;
 
-        #region Read-only dependency properties
         public bool IsGameEventType
         {
             get => (bool)GetValue(s_isGameEventTypeProperty);
@@ -71,6 +77,18 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             typeof(EditSoundCondition),
             new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
         private static readonly DependencyProperty s_isGameEventTypeProperty = s_isGameEventTypePropertyKey.DependencyProperty;
+
+        public bool ShowConditionValueEditField
+        {
+            get => (bool)GetValue(s_showConditionValueEditFieldProperty);
+            private set => SetValue(s_showConditionValueEditFieldPropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_showConditionValueEditFieldPropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(ShowConditionValueEditField),
+            typeof(bool),
+            typeof(EditSoundCondition),
+            new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
+        private static readonly DependencyProperty s_showConditionValueEditFieldProperty = s_showConditionValueEditFieldPropertyKey.DependencyProperty;
 
         public bool IsValid
         {
@@ -100,8 +118,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         #endregion
 
         #region Public properties
-        public ButtonOptionModel RemoveConditionModel { get; } = new("Remove", type: ButtonOptionModel.OptionType.Cancel);
-
         public ObservableCollection<string> AvailableConditionVariables { get; } = [];
 
         public ObservableCollection<string> AvailableConditionCheckTypes { get; } = [];
@@ -119,6 +135,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         public ConditionCheckType SelectedConditionCheckType { get; private set; }
 
         public GameEventBus.EventType SelectedGameEventType { get; private set; }
+
+        public ButtonOptionModel ConditionValueButton { get; } = new(string.Empty, type: ButtonOptionModel.OptionType.Info);
         #endregion
 
         #region Private fields
@@ -128,9 +146,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         private readonly Lock _initLock = new();
         private bool _isLoaded = false;
-        private int _navigationId;
-        // Note: During Unloaded, the dependency property that hold the NavigationManager is no longer accessible
-        private NavigationManager? _cachedNavigationManager;
         #endregion
 
         public EditSoundCondition()
@@ -143,6 +158,84 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             gameEventScroller.Loaded += GameEventScrollerLoaded;
         }
 
+        #region Protected methods
+        protected override void HandleNavigation(object? sender, NavigationEventArgs e)
+        {
+            if (!IsActive || NavigationManager == default)
+                return;
+
+            var isLeftOrRight = (e.Direction == InputEvent.NavigationDirection.Left) || (e.Direction == InputEvent.NavigationDirection.Right);
+            if (isLeftOrRight || ConditionValueButton.IsSelected || RemoveButtonModel.IsSelected)
+            {
+                SelectedInputColumn = NavigationManager.Navigate(NavigationId, SelectedInputColumn, e.Direction);
+
+                // Mark the buttons as either selected or not
+                ConditionValueButton.IsSelected = !IsGameEventType && SelectedInputColumn == 2;
+                RemoveButtonModel.IsSelected = SelectedInputColumn == 3;
+            }
+            else
+            {
+                // Forward the navigation event to the appropiate scroller
+                if (SelectedInputColumn == 0)
+                    ConditionVariableNavigator.RaiseEvent(e.Direction);
+                else if (SelectedInputColumn == 1)
+                    ConditionCheckNavigator.RaiseEvent(e.Direction);
+                else if ((SelectedInputColumn == 2) && IsGameEventType)
+                    GameEventNavigator.RaiseEvent(e.Direction);
+            }
+
+            e.Handled = true;
+        }
+
+        protected override void HandleButton(object? sender, ButtonEventArgs e)
+        {
+            if (!IsActive || !IsLoaded)
+                return;
+
+            if (RemoveButtonModel.IsSelected && e.ButtonEvent == InputEvent.ButtonEventType.Select)
+            {
+                RemoveButtonModel.IsSelected = false;
+                RemoveButtonModel.ButtonAction?.Invoke();
+                e.Handled = true;
+            }
+            else if (ConditionValueButton.IsSelected)
+            {
+                if (e.ButtonEvent == InputEvent.ButtonEventType.Select)
+                {
+                    ShowConditionValueEditField = !ShowConditionValueEditField;
+                    if (ShowConditionValueEditField)
+                    {
+                        CurrentValue = Condition.ConditionValue;
+                        conditionValueBox.Focus();
+                        conditionValueBox.CaretIndex = CurrentValue.Length;
+                    }
+                    e.Handled = true;
+                }
+                else if (e.ButtonEvent == InputEvent.ButtonEventType.GoBack && ShowConditionValueEditField)
+                {
+                    ShowConditionValueEditField = false;
+                    // Note: This is for the case where a validation error causes up to not update the condition, 
+                    //       hence not retriggering the condition so that CurrentValue gets updated in ReloadSettings
+                    CurrentValue = Condition.ConditionValue;
+                    e.Handled = true;
+                }
+            }
+        }
+
+        protected override NavigationManager.Node[] GetNavigationNodes()
+        {
+            // Two or three scrollers, and two or one button
+            var numberOfElements = 4;
+            var navigationNodes = new NavigationManager.Node[numberOfElements];
+
+            for (var i = 0; i < numberOfElements; i++)
+                navigationNodes[i] = new(i, 0);
+
+            return navigationNodes;
+        }
+        #endregion
+
+        #region Loaded methods
         private void ConditionVariableScrollerLoaded(object sender, RoutedEventArgs e)
         {
             conditionVariableScroller.Loaded -= ConditionVariableScrollerLoaded;
@@ -152,17 +245,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             while (_conditionVariables[conditionVariableScroller.CurrentSelectedIndex] != Condition.ConditionVariable)
                 ConditionVariableNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
 
-            conditionVariableScroller.SelectedIndexChanged += (s, e) =>
-            {
-                SelectedConditionVariable = _conditionVariables[conditionVariableScroller.CurrentSelectedIndex];
-                var wasGameEventType = IsGameEventType;
-                IsGameEventType = SelectedConditionVariable == ConditionVariable.GameEvent;
-
-                if (wasGameEventType != IsGameEventType)
-                    NavigationManager.ReplaceNavigation(_navigationId, GetNavigationNodes());
-
-                ValidateCurrentSettings();
-            };
+            conditionVariableScroller.SelectedIndexChanged += ConditionVariableScrollerSelectedIndexChanged;
         }
 
         private void ConditionCheckScrollerLoaded(object sender, RoutedEventArgs e)
@@ -174,11 +257,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             while (_conditionCheckTypes[conditionCheckScroller.CurrentSelectedIndex] != Condition.ConditionCheckType)
                 ConditionCheckNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
 
-            conditionCheckScroller.SelectedIndexChanged += (s, e) =>
-            {
-                SelectedConditionCheckType = _conditionCheckTypes[conditionCheckScroller.CurrentSelectedIndex];
-                ValidateCurrentSettings();
-            };
+            conditionCheckScroller.SelectedIndexChanged += ConditionCheckScrollerSelectedIndexChanged;
         }
 
         private void GameEventScrollerLoaded(object sender, RoutedEventArgs e)
@@ -195,11 +274,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     GameEventNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
             }
 
-            gameEventScroller.SelectedIndexChanged += (s, e) =>
-            {
-                SelectedGameEventType = _gameEventTypes[gameEventScroller.CurrentSelectedIndex];
-                ValidateCurrentSettings();
-            };
+            gameEventScroller.SelectedIndexChanged += GameEventScrollerSelectedIndexChanged;
         }
 
         private void ControlLoaded(object sender, RoutedEventArgs e)
@@ -217,8 +292,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 return;
             }
 
-            Unloaded += ControlUnloaded;
-
             PopulateOptionsList(AvailableConditionVariables, _conditionVariables);
             PopulateOptionsList(AvailableConditionCheckTypes, _conditionCheckTypes);
             PopulateOptionsList(AvailableGameEventTypes, _gameEventTypes);
@@ -226,18 +299,50 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             SelectedConditionVariable = Condition.ConditionVariable;
             SelectedConditionCheckType = Condition.ConditionCheckType;
             CurrentValue = Condition.ConditionValue;
+            ConditionValueButton.Name = CurrentValue;
+            IsGameEventType = SelectedConditionVariable == ConditionVariable.GameEvent;
+
+            ControlLoadedBase();
+
+            ValidateCurrentSettings(false);
+        }
+        #endregion
+
+        private void ReloadSettings(SoundCondition condition)
+        {
+            conditionVariableScroller.SelectedIndexChanged -= ConditionVariableScrollerSelectedIndexChanged;
+            conditionCheckScroller.SelectedIndexChanged -= ConditionCheckScrollerSelectedIndexChanged;
+            gameEventScroller.SelectedIndexChanged -= GameEventScrollerSelectedIndexChanged;
+
+            while (_conditionVariables[conditionVariableScroller.CurrentSelectedIndex] != condition.ConditionVariable)
+                ConditionVariableNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
+
+            while (_conditionCheckTypes[conditionCheckScroller.CurrentSelectedIndex] != condition.ConditionCheckType)
+                ConditionCheckNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
+
+            if (condition is EventCondition eventCondition)
+            {
+                SelectedGameEventType = eventCondition.Value;
+                IsGameEventType = true;
+                while (_gameEventTypes[gameEventScroller.CurrentSelectedIndex] != SelectedGameEventType)
+                    GameEventNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
+            }
+            else
+            {
+                IsGameEventType = false;
+            }
+
+            SelectedConditionVariable = condition.ConditionVariable;
+            SelectedConditionCheckType = condition.ConditionCheckType;
+            CurrentValue = condition.ConditionValue;
+            ConditionValueButton.Name = CurrentValue;
             IsGameEventType = SelectedConditionVariable == ConditionVariable.GameEvent;
 
             ValidateCurrentSettings(false);
 
-            _cachedNavigationManager = NavigationManager;
-            _navigationId = NavigationManager.RegisterNavigation(GetNavigationNodes());
-
-            WeakEventManager<IInputRelay, NavigationEventArgs>.
-                AddHandler(NavigationRelay, nameof(NavigationRelay.Navigate), HandleNavigate);
-
-            WeakEventManager<IInputRelay, ButtonEventArgs>.
-                AddHandler(NavigationRelay, nameof(NavigationRelay.ButtonEvent), HandleButtonPress);
+            conditionVariableScroller.SelectedIndexChanged += ConditionVariableScrollerSelectedIndexChanged;
+            conditionCheckScroller.SelectedIndexChanged += ConditionCheckScrollerSelectedIndexChanged;
+            gameEventScroller.SelectedIndexChanged += GameEventScrollerSelectedIndexChanged;
         }
 
         private void ValidateCurrentSettings(bool fireEventIfValid = true)
@@ -259,61 +364,28 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 throw new InvalidOperationException("EditSoundCondition not loaded");
         }
 
-        private void HandleNavigate(object? sender, NavigationEventArgs e)
+        #region Scroller selected changed callbacks
+        private void ConditionVariableScrollerSelectedIndexChanged(object sender, RoutedEventArgs e)
         {
-            if (!IsActive || NavigationManager == default)
-                return;
+            SelectedConditionVariable = _conditionVariables[conditionVariableScroller.CurrentSelectedIndex];
+            IsGameEventType = SelectedConditionVariable == ConditionVariable.GameEvent;
 
-            var isLeftOrRight = (e.Direction == InputEvent.NavigationDirection.Left) || (e.Direction == InputEvent.NavigationDirection.Right);
-            if (isLeftOrRight || RemoveConditionModel.IsSelected)
-            {
-                SelectedInputColumn = NavigationManager.Navigate(_navigationId, SelectedInputColumn, e.Direction);
+            ConditionValueButton.Name = Condition.ConditionValue;
 
-                // Mark the button as either selected or not
-                RemoveConditionModel.IsSelected = IsGameEventType ? (SelectedInputColumn == 3) : (SelectedInputColumn == 2);
-            }
-            else
-            {
-                // Forward the navigation event to the appropiate scroller
-                if (SelectedInputColumn == 0)
-                    ConditionVariableNavigator.RaiseEvent(e.Direction);
-                else if (SelectedInputColumn == 1)
-                    ConditionCheckNavigator.RaiseEvent(e.Direction);
-                else if ((SelectedInputColumn == 2) && IsGameEventType)
-                    GameEventNavigator.RaiseEvent(e.Direction);
-            }
-
-            e.Handled = true;
+            ValidateCurrentSettings();
         }
 
-        private void HandleButtonPress(object? sender, ButtonEventArgs e)
+        private void ConditionCheckScrollerSelectedIndexChanged(object sender, RoutedEventArgs e)
         {
-            if (e.ButtonEvent == InputEvent.ButtonEventType.Select && RemoveConditionModel.IsSelected)
-            {
-                RemoveConditionModel.IsSelected = false;
-                RaiseRemoveEvent();
-                e.Handled = true;
-            }
+            SelectedConditionCheckType = _conditionCheckTypes[conditionCheckScroller.CurrentSelectedIndex];
+            ValidateCurrentSettings();
         }
 
-        private NavigationManager.Node[] GetNavigationNodes()
+        private void GameEventScrollerSelectedIndexChanged(object sender, RoutedEventArgs e)
         {
-            // Two or three scrollers, and two buttons
-            var numberOfScrollers = IsGameEventType ? 3 : 2;
-            var navigationNodes = new NavigationManager.Node[numberOfScrollers + 1];
-
-            for (var i = 0; i < numberOfScrollers; i++)
-                navigationNodes[i] = new(i, 0);
-
-            // Remove sound condition button
-            navigationNodes[numberOfScrollers] = new(numberOfScrollers, 0);
-            return navigationNodes;
+            SelectedGameEventType = _gameEventTypes[gameEventScroller.CurrentSelectedIndex];
+            ValidateCurrentSettings();
         }
-
-        private void ControlUnloaded(object sender, RoutedEventArgs e)
-        {
-            Unloaded -= ControlUnloaded;
-            _cachedNavigationManager?.RemoveNavigation(_navigationId);
-        }
+        #endregion
     }
 }

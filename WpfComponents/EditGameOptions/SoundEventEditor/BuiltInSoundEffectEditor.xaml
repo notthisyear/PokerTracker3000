@@ -75,7 +75,7 @@
                                           Width="70"
                                           Margin="10,0,10,0"/>
 
-            <components:ButtonOptionBox OptionModel="{Binding Path=RemoveEffectModel}"
+            <components:ButtonOptionBox OptionModel="{Binding Path=RemoveButtonModel}"
                                  Width="70"/>  
         </StackPanel>
     </Grid>

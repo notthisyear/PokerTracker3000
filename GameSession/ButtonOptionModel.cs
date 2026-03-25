@@ -103,7 +103,7 @@ namespace PokerTracker3000.GameSession
         public string Name
         {
             get => _name;
-            private set => SetProperty(ref _name, value);
+            set => SetProperty(ref _name, value);
         }
 
         public bool IsAvailable
@@ -134,6 +134,7 @@ namespace PokerTracker3000.GameSession
             IsAvailable = isAvailable;
 
         }
+
         public void ChangeEditOption(EditOption option)
         {
             if (Option == option)

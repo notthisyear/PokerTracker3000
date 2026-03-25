@@ -121,7 +121,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             SelectedElementMap.Add(1, TestEffectModel);
             navigationNodes[1] = new(0, 1);
 
-            SelectedElementMap.Add(2, RemoveEffectModel);
+            SelectedElementMap.Add(2, RemoveButtonModel);
             navigationNodes[2] = new(1, 1);
 
             return navigationNodes;

@@ -2,6 +2,7 @@
                                               xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                               xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
+                                              xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules"
                                               xmlns:editgameoptions="clr-namespace:PokerTracker3000.WpfComponents.EditGameOptions">
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}">
@@ -189,19 +190,15 @@
             </components:ScrollingSelectorBox.Style>
         </components:ScrollingSelectorBox>
 
-        <!-- Text input -->
-        <TextBox x:Name="valueEditBox"
-                 Text="{Binding Path=CurrentValue, UpdateSourceTrigger=PropertyChanged}"
-                 Grid.Column="2"
-                 Grid.Row="1"
-                 VerticalAlignment="Center"
-                 VerticalContentAlignment="Center"
-                 HorizontalAlignment="Left"
-                 Padding="5,0,0,0"
-                 Width="120"
-                 Height="25">
-            <TextBox.Style>
-                <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource MainTextBoxStyle}">
+        <!-- Text input button -->
+        <components:ButtonOptionBox OptionModel="{Binding Path=ConditionValueButton}"
+                            Grid.Column="2"
+                            Grid.Row="1"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left"
+                            Width="120">
+            <components:ButtonOptionBox.Style>
+                <Style TargetType="{x:Type components:ButtonOptionBox}">
                     <Setter Property="Visibility" Value="Collapsed" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Path=IsGameEventType}" Value="False">
@@ -209,16 +206,16 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </TextBox.Style>
-        </TextBox>
-        
+            </components:ButtonOptionBox.Style>
+        </components:ButtonOptionBox>
+
         <!-- Option info and validation -->
         <StackPanel Orientation="Vertical"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Bottom"
                     Grid.ColumnSpan="3"
                     Grid.Row="2">
-            <TextBlock Margin="0,10,15,10">
+            <TextBlock>
                 <TextBlock.Style>
                     <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
                         <Setter Property="Text" Value="What game event to trigger on" />
@@ -226,6 +223,7 @@
                         <Setter Property="Opacity" Value="0.6" />
                         <Setter Property="Visibility" Value="Visible" />
                         <Setter Property="HorizontalAlignment" Value="Right" />
+                        <Setter Property="Margin" Value="0,10,15,10" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Path=SelectedInputColumn}" Value="0">
                                 <Setter Property="Text" Value="What event to trigger on" />
@@ -235,11 +233,20 @@
                                 <Setter Property="Text" Value="What condition to trigger on" />
                                 <Setter Property="HorizontalAlignment" Value="Center" />
                             </DataTrigger>
-
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Path=SelectedInputColumn}" Value="2" />
+                                    <Condition Binding="{Binding Path=IsGameEventType}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <MultiDataTrigger.Setters>
+                                    <Setter Property="Text" Value="What value to trigger on" />
+                                    <Setter Property="Margin" Value="0,10,45,10" />
+                                </MultiDataTrigger.Setters>
+                            </MultiDataTrigger>
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
                                     <Condition Binding="{Binding Path=IsActive}" Value="True" />
-                                    <Condition Binding="{Binding Path=RemoveConditionModel.IsSelected}" Value="True" />
+                                    <Condition Binding="{Binding Path=RemoveButtonModel.IsSelected}" Value="True" />
                                 </MultiDataTrigger.Conditions>
                                 <MultiDataTrigger.Setters>
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -288,11 +295,45 @@
             </StackPanel>
         </StackPanel>
         
-        <!-- Remove buttons -->
-        <components:ButtonOptionBox OptionModel="{Binding Path=RemoveConditionModel}"
+        <!-- Remove button -->
+        <components:ButtonOptionBox OptionModel="{Binding Path=RemoveButtonModel}"
                                     HorizontalAlignment="Center"
                                     Grid.Column="3"
                                     Grid.Row="1"
                                     Width="95"/>
+
+        <!-- Text input box -->
+        <Border  Background="{StaticResource BackgroundColorDarkerShade}"
+                 Grid.RowSpan="2"
+                 Grid.Column="2"
+                 Grid.ColumnSpan="2"
+                 HorizontalAlignment="Stretch"
+                 CornerRadius="5"
+                 Padding="5"
+                 Height="50">
+            <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="Opacity" Value="0" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=ShowConditionValueEditField}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <TextBox  x:Name="conditionValueBox"
+                      Style="{StaticResource MainTextBoxStyle}"
+                      HorizontalAlignment="Stretch"
+                      Height="30"
+                      HorizontalContentAlignment="Center"
+                      VerticalContentAlignment="Center"
+                      Text="{Binding Path=CurrentValue, UpdateSourceTrigger=PropertyChanged}" />
+        </Border>
     </Grid>
 </editgameoptions:ConditionAndEffectEditorBase>

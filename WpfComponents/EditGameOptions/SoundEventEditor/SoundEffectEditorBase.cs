@@ -7,7 +7,6 @@ using System.Windows;
 using PokerTracker3000.Common;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.GameSession.Sound;
-using PokerTracker3000.Interfaces;
 using static PokerTracker3000.Interfaces.IInputRelay;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
@@ -15,7 +14,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 {
     public sealed class ScrollerSelectable : SelectableEntity { }
 
-    // TODO: THE UNLOAD LOGIC SHOULD MOVE TO THE BASE CLASS SO THAT IT PROPERLY SETS THE UNLOAD EVENT FOR CONDITIONS. CURRENTLY BROKEN.
     public abstract class SoundEffectEditorBase : ConditionAndEffectEditorBase
     {
         #region Dependency property
@@ -34,8 +32,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         #region Public properties
         public ButtonOptionModel TestEffectModel { get; } = new("Test", type: ButtonOptionModel.OptionType.Info);
 
-        public ButtonOptionModel RemoveEffectModel { get; } = new("Remove", type: ButtonOptionModel.OptionType.Cancel);
-
         public ButtonOptionModel AddOptionModel { get; } = new("Add", type: ButtonOptionModel.OptionType.Success);
 
         public NavigationOnlyRelay ScrollerNavRelay { get; } = new();
@@ -45,26 +41,16 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         #region Private fields
         private SoundEffect? _currentSoundEffect;
-        // Note: During Unloaded, the dependency property that hold the NavigationManager is no longer accessible
-        private NavigationManager? _cachedNavigationManager;
         #endregion
 
         #region Protected properties and methods
-
-        protected int NavigationId { get; private set; }
-
         protected Dictionary<int, SelectableEntity> SelectedElementMap { get; } = [];
 
         protected int SelectedElementIndex { get; set; } = 0;
 
         protected void ControlLoadedBase(SoundEffect effect)
         {
-            _cachedNavigationManager = NavigationManager;
             _currentSoundEffect = effect;
-
-            NavigationId = NavigationManager.RegisterNavigation(GetNavigationNodes());
-            Unloaded += ControlUnloaded;
-            RemoveEffectModel.ButtonAction = () => { RaiseRemoveEvent(); };
 
             if (SelectedElementMap.TryGetValue(SelectedElementIndex, out var element))
                 element?.IsSelected = true;
@@ -80,10 +66,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     Application.Current.Dispatcher.Invoke(() => { TestEffectModel.IsAvailable = true; });
                 });
             };
-            WeakEventManager<IInputRelay, NavigationEventArgs>.AddHandler(
-                NavigationRelay, nameof(NavigationRelay.Navigate), HandleNavigation);
-            WeakEventManager<IInputRelay, ButtonEventArgs>.AddHandler(
-                NavigationRelay, nameof(NavigationRelay.ButtonEvent), HandleButton);
+
+            ControlLoadedBase();
         }
 
         protected void TestSoundEffect(TaskCompletionSource tcs, int optionId = -1)
@@ -92,20 +76,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 return;
 
             AudioManager.TestSoundEffect(_currentSoundEffect, tcs, optionId);
-        }
-
-        protected abstract NavigationManager.Node[] GetNavigationNodes();
-
-        protected abstract void HandleNavigation(object? sender, NavigationEventArgs e);
-
-        protected abstract void HandleButton(object? sender, ButtonEventArgs e);
-        #endregion
-
-        #region Private methods
-        private void ControlUnloaded(object sender, RoutedEventArgs e)
-        {
-            Unloaded -= ControlUnloaded;
-            _cachedNavigationManager?.RemoveNavigation(NavigationId);
         }
         #endregion
     }
@@ -213,6 +183,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     Application.Current.Dispatcher.Invoke(() => { TestEffectOptionModel.IsAvailable = true; });
                 });
             };
+
             ControlLoadedBase(effect);
         }
 
@@ -354,7 +325,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             SelectedElementMap.Add(elementCtr, RenameEffectModel);
             navigationNodes[elementCtr++] = new(0, buttonRow);
 
-            SelectedElementMap.Add(elementCtr, RemoveEffectModel);
+            SelectedElementMap.Add(elementCtr, RemoveButtonModel);
             navigationNodes[elementCtr] = new(2, buttonRow);
 
             return navigationNodes;
