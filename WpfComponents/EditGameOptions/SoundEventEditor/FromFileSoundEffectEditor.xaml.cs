@@ -19,7 +19,13 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             nameof(SoundEffect),
             typeof(FromFileSoundEffect),
             typeof(FromFileSoundEffectEditor),
-            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender, SoundEffectChangedCallback));
+
+        private static void SoundEffectChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is FromFileSoundEffectEditor editor && editor.IsLoaded && e.NewValue is FromFileSoundEffect effect)
+                editor.InitializeControl(effect, effect.Mode, effect.EffectOptions.Count > 1, false);
+        }
         #endregion
 
         #region Private fields
@@ -40,11 +46,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private void ControlLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= ControlLoaded;
-
-            if (NavigationRelay == default || SoundEffect == default)
-                return;
-
-            ControlLoadedBase(SoundEffect, SoundEffect.Mode, SoundEffect.EffectOptions.Count > 1);
 
             AddOptionModel.ButtonAction = () =>
             {

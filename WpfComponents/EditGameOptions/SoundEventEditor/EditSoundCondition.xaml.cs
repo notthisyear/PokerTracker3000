@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Windows;
@@ -31,7 +30,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private static void ConditionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is EditSoundCondition control && control.IsLoaded && e.NewValue is SoundCondition c)
-                control.ReloadSettings(c);
+                control.ReloadSettings(c, false);
         }
 
         public string CurrentValue
@@ -143,19 +142,19 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private readonly List<ConditionVariable> _conditionVariables = [];
         private readonly List<ConditionCheckType> _conditionCheckTypes = [];
         private readonly List<GameEventBus.EventType> _gameEventTypes = [];
-
-        private readonly Lock _initLock = new();
-        private bool _isLoaded = false;
+        private const int NumberOfScrollers = 3;
+        private int _scrollersInitialized = 0;
+        private readonly Lock _initializationLock = new();
         #endregion
 
         public EditSoundCondition()
         {
             InitializeComponent();
-            Loaded += ControlLoaded;
 
-            conditionVariableScroller.Loaded += ConditionVariableScrollerLoaded;
-            conditionCheckScroller.Loaded += ConditionCheckScrollerLoaded;
-            gameEventScroller.Loaded += GameEventScrollerLoaded;
+            conditionVariableScroller.ControlInitialized += ConditionVariableInitilized;
+            conditionCheckScroller.ControlInitialized += ConditionCheckScrollerInitilized;
+            gameEventScroller.ControlInitialized += GameEventScrollerInitialized;
+
         }
 
         #region Protected methods
@@ -235,103 +234,41 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         }
         #endregion
 
-        #region Loaded methods
-        private void ConditionVariableScrollerLoaded(object sender, RoutedEventArgs e)
+        #region Initialization
+        private void ConditionVariableInitilized(object sender, RoutedEventArgs e)
         {
-            conditionVariableScroller.Loaded -= ConditionVariableScrollerLoaded;
-
-            VerifyIsLoaded();
-
-            while (_conditionVariables[conditionVariableScroller.CurrentSelectedIndex] != Condition.ConditionVariable)
-                ConditionVariableNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
-
-            conditionVariableScroller.SelectedIndexChanged += ConditionVariableScrollerSelectedIndexChanged;
+            conditionVariableScroller.ControlInitialized -= ConditionVariableInitilized;
+            RunRestOfInitializationIfAllDone();
         }
 
-        private void ConditionCheckScrollerLoaded(object sender, RoutedEventArgs e)
+        private void ConditionCheckScrollerInitilized(object sender, RoutedEventArgs e)
         {
-            conditionCheckScroller.Loaded -= ConditionCheckScrollerLoaded;
-
-            VerifyIsLoaded();
-
-            while (_conditionCheckTypes[conditionCheckScroller.CurrentSelectedIndex] != Condition.ConditionCheckType)
-                ConditionCheckNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
-
-            conditionCheckScroller.SelectedIndexChanged += ConditionCheckScrollerSelectedIndexChanged;
+            conditionCheckScroller.ControlInitialized -= ConditionCheckScrollerInitilized;
+            RunRestOfInitializationIfAllDone();
         }
 
-        private void GameEventScrollerLoaded(object sender, RoutedEventArgs e)
+        private void GameEventScrollerInitialized(object sender, RoutedEventArgs e)
         {
-            gameEventScroller.Loaded -= GameEventScrollerLoaded;
+            gameEventScroller.ControlInitialized -= GameEventScrollerInitialized;
+            RunRestOfInitializationIfAllDone();
+        }
 
-            VerifyIsLoaded();
-
-            if (Condition is EventCondition condition)
+        private void RunRestOfInitializationIfAllDone()
+        {
+            bool initializationComplete;
+            lock (_initializationLock)
             {
-                SelectedGameEventType = condition.Value;
-                IsGameEventType = true;
-                while (_gameEventTypes[gameEventScroller.CurrentSelectedIndex] != SelectedGameEventType)
-                    GameEventNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
+                _scrollersInitialized++;
+                initializationComplete = _scrollersInitialized == NumberOfScrollers;
             }
 
-            gameEventScroller.SelectedIndexChanged += GameEventScrollerSelectedIndexChanged;
-        }
-
-        private void ControlLoaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= ControlLoaded;
-            lock (_initLock)
-                _isLoaded = true;
-
-            if (NavigationRelay == default ||
-                NavigationManager == default ||
-                Condition == default ||
-                Condition.ConditionVariable == ConditionVariable.None ||
-                Condition.ConditionCheckType == ConditionCheckType.None)
-            {
-                return;
-            }
-
-            PopulateOptionsList(AvailableConditionVariables, _conditionVariables);
-            PopulateOptionsList(AvailableConditionCheckTypes, _conditionCheckTypes);
-            PopulateOptionsList(AvailableGameEventTypes, _gameEventTypes);
-
-            SelectedConditionVariable = Condition.ConditionVariable;
-            SelectedConditionCheckType = Condition.ConditionCheckType;
-            CurrentValue = Condition.ConditionValue;
-            ConditionValueButton.Name = CurrentValue;
-            IsGameEventType = SelectedConditionVariable == ConditionVariable.GameEvent;
-
-            ControlLoadedBase();
-
-            ValidateCurrentSettings(false);
+            if (initializationComplete)
+                ReloadSettings(Condition, true);
         }
         #endregion
 
-        private void ReloadSettings(SoundCondition condition)
+        private void ReloadSettings(SoundCondition condition, bool isFirstTime)
         {
-            conditionVariableScroller.SelectedIndexChanged -= ConditionVariableScrollerSelectedIndexChanged;
-            conditionCheckScroller.SelectedIndexChanged -= ConditionCheckScrollerSelectedIndexChanged;
-            gameEventScroller.SelectedIndexChanged -= GameEventScrollerSelectedIndexChanged;
-
-            while (_conditionVariables[conditionVariableScroller.CurrentSelectedIndex] != condition.ConditionVariable)
-                ConditionVariableNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
-
-            while (_conditionCheckTypes[conditionCheckScroller.CurrentSelectedIndex] != condition.ConditionCheckType)
-                ConditionCheckNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
-
-            if (condition is EventCondition eventCondition)
-            {
-                SelectedGameEventType = eventCondition.Value;
-                IsGameEventType = true;
-                while (_gameEventTypes[gameEventScroller.CurrentSelectedIndex] != SelectedGameEventType)
-                    GameEventNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
-            }
-            else
-            {
-                IsGameEventType = false;
-            }
-
             SelectedConditionVariable = condition.ConditionVariable;
             SelectedConditionCheckType = condition.ConditionCheckType;
             CurrentValue = condition.ConditionValue;
@@ -340,9 +277,43 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             ValidateCurrentSettings(false);
 
-            conditionVariableScroller.SelectedIndexChanged += ConditionVariableScrollerSelectedIndexChanged;
-            conditionCheckScroller.SelectedIndexChanged += ConditionCheckScrollerSelectedIndexChanged;
-            gameEventScroller.SelectedIndexChanged += GameEventScrollerSelectedIndexChanged;
+            if (isFirstTime)
+            {
+                PopulateOptionsList(AvailableConditionVariables, _conditionVariables);
+                PopulateOptionsList(AvailableConditionCheckTypes, _conditionCheckTypes);
+                PopulateOptionsList(AvailableGameEventTypes, _gameEventTypes);
+            }
+            else
+            {
+                conditionVariableScroller.SelectedIndexChanged -= ConditionVariableScrollerSelectedIndexChanged;
+                conditionCheckScroller.SelectedIndexChanged -= ConditionCheckScrollerSelectedIndexChanged;
+                gameEventScroller.SelectedIndexChanged -= GameEventScrollerSelectedIndexChanged;
+            }
+
+            while (_conditionVariables[conditionVariableScroller.CurrentSelectedIndex] != condition.ConditionVariable)
+                ConditionVariableNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
+
+            while (_conditionCheckTypes[conditionCheckScroller.CurrentSelectedIndex] != condition.ConditionCheckType)
+            {
+                if (conditionCheckScroller.NavigatorRelay == ConditionCheckNavigator)
+                    ConditionCheckNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
+            }
+
+            if (condition is EventCondition eventCondition)
+            {
+                SelectedGameEventType = eventCondition.Value;
+                while (_gameEventTypes[gameEventScroller.CurrentSelectedIndex] != SelectedGameEventType)
+                    GameEventNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
+            }
+
+            if (!isFirstTime)
+            {
+                conditionVariableScroller.SelectedIndexChanged += ConditionVariableScrollerSelectedIndexChanged;
+                conditionCheckScroller.SelectedIndexChanged += ConditionCheckScrollerSelectedIndexChanged;
+                gameEventScroller.SelectedIndexChanged += GameEventScrollerSelectedIndexChanged;
+            }
+
+            ControlLoadedBase(isFirstTime);
         }
 
         private void ValidateCurrentSettings(bool fireEventIfValid = true)
@@ -354,15 +325,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 RaiseNewValidContentEvent();
         }
 
-        private void VerifyIsLoaded()
-        {
-            bool loaded;
-            lock (_initLock)
-                loaded = _isLoaded;
-
-            if (!loaded)
-                throw new InvalidOperationException("EditSoundCondition not loaded");
-        }
 
         #region Scroller selected changed callbacks
         private void ConditionVariableScrollerSelectedIndexChanged(object sender, RoutedEventArgs e)

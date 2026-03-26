@@ -66,8 +66,14 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         #region Protected methods and properties
         protected int NavigationId { get; private set; }
 
-        protected void ControlLoadedBase()
+        protected void ControlLoadedBase(bool isFirstTime)
         {
+            if (!isFirstTime)
+            {
+                NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
+                return;
+            }
+
             _cachedNavigationManager = NavigationManager;
             Unloaded += ControlUnloaded;
 

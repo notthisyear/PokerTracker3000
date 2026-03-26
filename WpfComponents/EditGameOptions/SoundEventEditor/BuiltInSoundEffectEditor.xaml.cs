@@ -20,7 +20,13 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             nameof(SoundEffect),
             typeof(BuiltInSoundEffect),
             typeof(BuiltInSoundEffectEditor),
-            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender, SoundEffectChangedCallback));
+
+        private static void SoundEffectChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is BuiltInSoundEffectEditor editor && editor.IsLoaded && e.NewValue is BuiltInSoundEffect effect)
+                editor.ReloadControlSettings(effect, false);
+        }
         #endregion
 
         #region Public properties
@@ -36,28 +42,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         public BuiltInSoundEffectEditor()
         {
             InitializeComponent();
-            Loaded += ControlLoaded;
+            builtInSoundEffectScroller.ControlInitialized += BuiltInSoundEffectScrollerInitialized;
         }
-
-        private void ControlLoaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= ControlLoaded;
-
-            if (NavigationRelay == default || SoundEffect == default)
-                return;
-
-            ControlLoadedBase(SoundEffect);
-            PopulateOptionsList(AvailableBuiltInSoundEffectTypes, _builtInSoundEffectTypes);
-
-            while (_builtInSoundEffectTypes[builtInSoundEffectScroller.CurrentSelectedIndex] != SoundEffect.BuiltInEffect)
-                ScrollerNavRelay.RaiseEvent(InputEvent.NavigationDirection.Down);
-
-            builtInSoundEffectScroller.SelectedIndexChanged += (s, e) =>
-            {
-                SelectedBuiltInSoundEffect = _builtInSoundEffectTypes[builtInSoundEffectScroller.CurrentSelectedIndex];
-            };
-        }
-
         protected override void HandleNavigation(object? sender, NavigationEventArgs e)
         {
             if (!IsActive)
@@ -125,6 +111,31 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             navigationNodes[2] = new(1, 1);
 
             return navigationNodes;
+        }
+
+        private void BuiltInSoundEffectScrollerInitialized(object sender, RoutedEventArgs e)
+        {
+            builtInSoundEffectScroller.ControlInitialized -= BuiltInSoundEffectScrollerInitialized;
+            ReloadControlSettings(SoundEffect, true);
+        }
+
+        private void ReloadControlSettings(BuiltInSoundEffect soundEffect, bool firstTime)
+        {
+            if (firstTime)
+                PopulateOptionsList(AvailableBuiltInSoundEffectTypes, _builtInSoundEffectTypes);
+
+            while (_builtInSoundEffectTypes[builtInSoundEffectScroller.CurrentSelectedIndex] != soundEffect.BuiltInEffect)
+                ScrollerNavRelay.RaiseEvent(InputEvent.NavigationDirection.Down);
+
+            if (!firstTime)
+                builtInSoundEffectScroller.SelectedIndexChanged += EffectScrollerSelectedIndexChangedCallback;
+
+            ControlLoadedBase(SoundEffect, firstTime);
+        }
+
+        private void EffectScrollerSelectedIndexChangedCallback(object sender, RoutedEventArgs e)
+        {
+            SelectedBuiltInSoundEffect = _builtInSoundEffectTypes[builtInSoundEffectScroller.CurrentSelectedIndex];
         }
     }
 }

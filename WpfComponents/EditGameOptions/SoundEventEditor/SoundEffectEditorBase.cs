@@ -48,14 +48,10 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         protected int SelectedElementIndex { get; set; } = 0;
 
-        protected void ControlLoadedBase(SoundEffect effect)
+        protected void ControlLoadedBase(SoundEffect effect, bool isFirstTime)
         {
             _currentSoundEffect = effect;
-
-            if (SelectedElementMap.TryGetValue(SelectedElementIndex, out var element))
-                element?.IsSelected = true;
-
-            TestEffectModel.ButtonAction = () =>
+            TestEffectModel.ButtonAction ??= () =>
             {
                 TaskCompletionSource tcs = new();
                 TestEffectModel.IsAvailable = false;
@@ -67,7 +63,13 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 });
             };
 
-            ControlLoadedBase();
+            // Note: We have to call the ControlLoadedBase before setting the selected entity,
+            //       as the SelectedElementMap is populated as a part of the navigation
+            //       registration that happens inside that method.
+            ControlLoadedBase(isFirstTime);
+
+            if (SelectedElementMap.TryGetValue(SelectedElementIndex, out var element))
+                element?.IsSelected = true;
         }
 
         protected void TestSoundEffect(TaskCompletionSource tcs, int optionId = -1)
@@ -151,24 +153,21 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private int _selectedChangeRemoveTestIndex = 0;
         #endregion
 
-        #region Protected methods
-        protected abstract int GetMultipleOptionsModeScrollerIndex();
-
-        protected void ControlLoadedBase(SoundEffect effect, MultipleOptionMode multipleOptionsMode, bool showMultipleOptionsModeScroller)
+        public void InitializeControl(SoundEffect effect, MultipleOptionMode multipleOptionsMode, bool showMultipleOptionsModeScroller, bool isFirstTime)
         {
-            PopulateOptionsList(AvailableMultipleOptionModeTypes, MultipleOptionModes);
-            if (multipleOptionsMode != MultipleOptionMode.None)
+            if (isFirstTime)
             {
-                while (MultipleOptionModes[GetMultipleOptionsModeScrollerIndex()] != multipleOptionsMode)
-                    ScrollerNavRelay.RaiseEvent(InputEvent.NavigationDirection.Down);
+                PopulateOptionsList(AvailableMultipleOptionModeTypes, MultipleOptionModes);
+                _selectedChangeRemoveTestMap.Add(0, ChangeEffectOptionModel);
+                _selectedChangeRemoveTestMap.Add(1, RemoveEffectOptionModel);
+                _selectedChangeRemoveTestMap.Add(2, TestEffectOptionModel);
             }
 
             ShowMultipleOptionsScroller = showMultipleOptionsModeScroller;
-            _selectedChangeRemoveTestMap.Add(0, ChangeEffectOptionModel);
-            _selectedChangeRemoveTestMap.Add(1, RemoveEffectOptionModel);
-            _selectedChangeRemoveTestMap.Add(2, TestEffectOptionModel);
+            while (MultipleOptionModes[GetMultipleOptionsModeScrollerIndex()] != multipleOptionsMode)
+                ScrollerNavRelay.RaiseEvent(InputEvent.NavigationDirection.Down);
 
-            TestEffectOptionModel.ButtonAction = () =>
+            TestEffectOptionModel.ButtonAction ??= () =>
             {
                 var selectedOption = SelectedElementMap.Values.Where(x => x is SoundEffectOption).FirstOrDefault(x => x.IsSelected);
                 if (selectedOption is not SoundEffectOption option)
@@ -184,8 +183,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 });
             };
 
-            ControlLoadedBase(effect);
+            ControlLoadedBase(effect, isFirstTime);
         }
+
+        #region Protected methods
+        protected abstract int GetMultipleOptionsModeScrollerIndex();
 
         protected override void HandleNavigation(object? sender, NavigationEventArgs e)
         {
@@ -298,7 +300,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             // The file options, the add button, potentially one scroller and lastly two buttons
             var numberOfElements = numberOfOptions + 1 + (ShowMultipleOptionsScroller ? 1 : 0) + 2;
             var navigationNodes = new NavigationManager.Node[numberOfElements];
+
+            foreach (var element in SelectedElementMap)
+                element.Value.IsSelected = false;
             SelectedElementMap.Clear();
+
             var elementCtr = 0;
 
             // The options
@@ -326,7 +332,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             navigationNodes[elementCtr++] = new(0, buttonRow);
 
             SelectedElementMap.Add(elementCtr, RemoveButtonModel);
-            navigationNodes[elementCtr] = new(2, buttonRow);
+            navigationNodes[elementCtr] = new(1, buttonRow);
 
             return navigationNodes;
         }

@@ -25,12 +25,12 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         public FileAndSpeechSoundEffectEditContent()
         {
             InitializeComponent();
-            Loaded += ControlLoaded;
+            multipleOptionModeScroller.ControlInitialized += MultipleOptionModeScrollerInitialized;
         }
 
-        private void ControlLoaded(object sender, RoutedEventArgs e)
+        private void MultipleOptionModeScrollerInitialized(object sender, RoutedEventArgs e)
         {
-            Loaded -= ControlLoaded;
+            multipleOptionModeScroller.ControlInitialized -= MultipleOptionModeScrollerInitialized;
 
             if (DataContext is FromFileSoundEffectEditor fileEditor)
             {
@@ -61,6 +61,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 renameEffectBox.Focus();
                 renameEffectBox.CaretIndex = _effect?.RawName.Length ?? 0;
             };
+
+            _baseEditor.InitializeControl(_effect, _effect.Mode, _effect.EffectOptions.Count > 1, true);
         }
     }
 }

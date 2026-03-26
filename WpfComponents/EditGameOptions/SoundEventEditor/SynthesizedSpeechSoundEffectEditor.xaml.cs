@@ -20,7 +20,13 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             nameof(SoundEffect),
             typeof(SpeechSoundEffect),
             typeof(SynthesizedSpeechSoundEffectEditor),
-            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender));
+            new FrameworkPropertyMetadata(default, FrameworkPropertyMetadataOptions.AffectsRender, SoundEffectChangedCallback));
+
+        private static void SoundEffectChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SynthesizedSpeechSoundEffectEditor editor && editor.IsLoaded && e.NewValue is SpeechSoundEffect effect)
+                editor.InitializeControl(effect, effect.Mode, effect.EffectOptions.Count > 1, false);
+        }
 
         public string SpeechText
         {
@@ -62,11 +68,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private void ControlLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= ControlLoaded;
-
-            if (NavigationRelay == default || SoundEffect == default)
-                return;
-
-            ControlLoadedBase(SoundEffect, SoundEffect.Mode, SoundEffect.EffectOptions.Count > 1);
 
             foreach (var s in Enum.GetValues<TextVariable>())
             {
