@@ -4,7 +4,8 @@
              xmlns:sound="clr-namespace:PokerTracker3000.GameSession.Sound"
              xmlns:components="clr-namespace:PokerTracker3000.WpfComponents"
              xmlns:converters="clr-namespace:PokerTracker3000.WpfComponents.Converters"
-             xmlns:editgameoptions="clr-namespace:PokerTracker3000.WpfComponents.EditGameOptions">
+             xmlns:editgameoptions="clr-namespace:PokerTracker3000.WpfComponents.EditGameOptions"
+             xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules">
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
           HorizontalAlignment="Center"
@@ -150,11 +151,63 @@
         </TextBlock>
 
         <!-- Selected event name -->
-        <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                   Text="{Binding Path=SelectedSoundEvent.Name}"
+        <TextBlock Text="{Binding Path=SelectedSoundEvent.Name}"
                    Grid.Column="1"
                    HorizontalAlignment="Center"
-                   FontSize="16"/>
+                   FontSize="16">
+            <TextBlock.Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MainTextBlockStyle}">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=ShowRenameEffectEditBox}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <!-- Rename input box -->
+        <Border  Grid.Column="1"
+                 Grid.RowSpan="2"
+                 VerticalAlignment="Top"
+                 Margin="20,-10,20,0"
+                 Height="40"
+                 Width="250"
+                 Background="{StaticResource BackgroundColorDarkerShade}"
+                 CornerRadius="5"
+                 Padding="5">
+            <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="Opacity" Value="0" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=ShowRenameEffectEditBox}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <TextBox  x:Name="renameInputBox"
+                      Style="{StaticResource MainTextBoxStyle}"
+                      HorizontalAlignment="Stretch"
+                      Height="30"
+                      HorizontalContentAlignment="Center"
+                      VerticalContentAlignment="Center">
+                <TextBox.Text>
+                    <Binding Path="SelectedSoundEvent.Name" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <validation:TextLengthValidationRule Min="1" Max="25" FieldName="Name"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </Border>
 
         <!-- Sound effect info -->
         <StackPanel Orientation="Vertical"
@@ -387,7 +440,7 @@
                 </ContentControl>
             </Border>
         </StackPanel>
-        
+
         <!-- Create new sound effect box -->
         <Border Grid.Column="1"
                 Grid.Row="1"

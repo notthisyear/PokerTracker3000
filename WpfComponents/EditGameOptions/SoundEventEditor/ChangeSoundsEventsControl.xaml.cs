@@ -95,6 +95,19 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             typeof(ChangeSoundsEventsControl),
             new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
         private static readonly DependencyProperty s_addSoundEffectBoxOpenProperty = s_addSoundEffectBoxOpenPropertyKey.DependencyProperty;
+
+        public bool ShowRenameEffectEditBox
+        {
+            get => (bool)GetValue(s_showRenameEffectEditBoxProperty);
+            private set => SetValue(s_showRenameEffectEditBoxPropertyKey, value);
+        }
+        private static readonly DependencyPropertyKey s_showRenameEffectEditBoxPropertyKey = DependencyProperty.RegisterReadOnly(
+            nameof(ShowRenameEffectEditBox),
+            typeof(bool),
+            typeof(ChangeSoundsEventsControl),
+            new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
+        private static readonly DependencyProperty s_showRenameEffectEditBoxProperty = s_showRenameEffectEditBoxPropertyKey.DependencyProperty;
+
         #endregion
 
         #region Public properties
@@ -273,7 +286,12 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             };
             RenameSoundEventModel.ButtonAction = () =>
             {
-                // TODO: Implement
+                if (SelectedSoundEvent == default)
+                    return;
+
+                ShowRenameEffectEditBox = true;
+                renameInputBox.Focus();
+                renameInputBox.CaretIndex = SelectedSoundEvent.Name.Length;
             };
             TestSoundEventModel.ButtonAction = () =>
             {
@@ -485,6 +503,10 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (_selectedArea == SelectedArea.ConditionAndEffectEditBox)
                 throw new InvalidOperationException($"Navigation for {_selectedArea} cannot be handled here");
 
+            // Skip navigation if the rename box is open
+            if (ShowRenameEffectEditBox)
+                return;
+
             var (id, oldIdx) = _navigationIdAndSelectedIndex[_selectedArea];
             var newIdx = SessionManager.NavigationManager.Navigate(id, oldIdx, e);
             _navigationIdAndSelectedIndex[_selectedArea] = (id, newIdx);
@@ -634,6 +656,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         {
             if (e == InputEvent.ButtonEventType.GoBack)
             {
+                if (ShowRenameEffectEditBox)
+                {
+                    ShowRenameEffectEditBox = false;
+                    return;
+                }
                 // Deselect the currently selected element in the effect and condition area
                 HandleNavigationInConditionAndEffectArea(selectedElementIndex, -1);
                 _selectedArea = SelectedArea.SoundEvent;
@@ -642,6 +669,12 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             if (e != InputEvent.ButtonEventType.Select)
                 return;
+
+            if (ShowRenameEffectEditBox)
+            {
+                ShowRenameEffectEditBox = false;
+                return;
+            }
 
             if (!_selectedEntityMap[SelectedArea.ConditionAndEffect].TryGetValue(selectedElementIndex, out var entity))
                 return;
