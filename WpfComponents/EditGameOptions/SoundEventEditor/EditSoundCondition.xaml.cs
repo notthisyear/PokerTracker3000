@@ -194,6 +194,9 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (RemoveButtonModel.IsSelected && e.ButtonEvent == InputEvent.ButtonEventType.Select)
             {
                 RemoveButtonModel.IsSelected = false;
+                // Note: The control is usually never unloaded during remove (we instantly select the
+                //       next one in the list), so we need to manually reset the input column here.
+                SelectedInputColumn = 0;
                 RemoveButtonModel.ButtonAction?.Invoke();
                 e.Handled = true;
             }
@@ -213,7 +216,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 else if (e.ButtonEvent == InputEvent.ButtonEventType.GoBack && ShowConditionValueEditField)
                 {
                     ShowConditionValueEditField = false;
-                    // Note: This is for the case where a validation error causes up to not update the condition, 
+                    // Note: This is for the case where a validation error causes us to not update the condition,
                     //       hence not retriggering the condition so that CurrentValue gets updated in ReloadSettings
                     CurrentValue = Condition.ConditionValue;
                     e.Handled = true;

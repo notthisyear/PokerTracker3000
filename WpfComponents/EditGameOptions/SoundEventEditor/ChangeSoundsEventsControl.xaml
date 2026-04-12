@@ -198,7 +198,17 @@
                         <TextBlock Style="{StaticResource tableHeadlineText}" Text="Conditions"/>
 
                         <!-- Conditions -->
-                        <Border Style="{StaticResource conditionsAndEffectsItemControlStyle}">
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}" BasedOn="{StaticResource conditionsAndEffectsItemControlStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=SelectedSoundEvent.Conditions.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <ItemsControl ItemsSource="{Binding Path=SelectedSoundEvent.Conditions}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -230,7 +240,17 @@
                         <TextBlock Style="{StaticResource tableHeadlineText}" Text="Sound effects"/>
 
                         <!-- Sound effects -->
-                        <Border Style="{StaticResource conditionsAndEffectsItemControlStyle}">
+                        <Border>
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}" BasedOn="{StaticResource conditionsAndEffectsItemControlStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=SelectedSoundEvent.SoundEffectsOnEvent.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <ItemsControl ItemsSource="{Binding Path=SelectedSoundEvent.SoundEffectsOnEvent}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
