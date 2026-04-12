@@ -151,8 +151,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         {
             InitializeComponent();
 
-            conditionVariableScroller.ControlInitialized += ConditionVariableInitilized;
-            conditionCheckScroller.ControlInitialized += ConditionCheckScrollerInitilized;
+            conditionVariableScroller.ControlInitialized += ConditionVariableInitialized;
+            conditionCheckScroller.ControlInitialized += ConditionCheckScrollerInitialized;
             gameEventScroller.ControlInitialized += GameEventScrollerInitialized;
 
         }
@@ -235,15 +235,15 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         #endregion
 
         #region Initialization
-        private void ConditionVariableInitilized(object sender, RoutedEventArgs e)
+        private void ConditionVariableInitialized(object sender, RoutedEventArgs e)
         {
-            conditionVariableScroller.ControlInitialized -= ConditionVariableInitilized;
+            conditionVariableScroller.ControlInitialized -= ConditionVariableInitialized;
             RunRestOfInitializationIfAllDone();
         }
 
-        private void ConditionCheckScrollerInitilized(object sender, RoutedEventArgs e)
+        private void ConditionCheckScrollerInitialized(object sender, RoutedEventArgs e)
         {
-            conditionCheckScroller.ControlInitialized -= ConditionCheckScrollerInitilized;
+            conditionCheckScroller.ControlInitialized -= ConditionCheckScrollerInitialized;
             RunRestOfInitializationIfAllDone();
         }
 
@@ -283,12 +283,6 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 PopulateOptionsList(AvailableConditionCheckTypes, _conditionCheckTypes);
                 PopulateOptionsList(AvailableGameEventTypes, _gameEventTypes);
             }
-            else
-            {
-                conditionVariableScroller.SelectedIndexChanged -= ConditionVariableScrollerSelectedIndexChanged;
-                conditionCheckScroller.SelectedIndexChanged -= ConditionCheckScrollerSelectedIndexChanged;
-                gameEventScroller.SelectedIndexChanged -= GameEventScrollerSelectedIndexChanged;
-            }
 
             while (_conditionVariables[conditionVariableScroller.CurrentSelectedIndex] != condition.ConditionVariable)
                 ConditionVariableNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
@@ -306,7 +300,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     GameEventNavigator.RaiseEvent(InputEvent.NavigationDirection.Down);
             }
 
-            if (!isFirstTime)
+            if (isFirstTime)
             {
                 conditionVariableScroller.SelectedIndexChanged += ConditionVariableScrollerSelectedIndexChanged;
                 conditionCheckScroller.SelectedIndexChanged += ConditionCheckScrollerSelectedIndexChanged;
@@ -347,6 +341,13 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         {
             SelectedGameEventType = _gameEventTypes[gameEventScroller.CurrentSelectedIndex];
             ValidateCurrentSettings();
+        }
+
+        protected override void OnUnload()
+        {
+            conditionVariableScroller.SelectedIndexChanged -= ConditionVariableScrollerSelectedIndexChanged;
+            conditionCheckScroller.SelectedIndexChanged -= ConditionCheckScrollerSelectedIndexChanged;
+            gameEventScroller.SelectedIndexChanged -= GameEventScrollerSelectedIndexChanged;
         }
         #endregion
     }

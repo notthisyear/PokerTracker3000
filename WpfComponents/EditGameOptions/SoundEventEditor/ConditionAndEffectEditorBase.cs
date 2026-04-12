@@ -109,6 +109,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             }
         }
 
+        protected virtual void OnUnload() { }
+
         protected abstract NavigationManager.Node[] GetNavigationNodes();
 
         protected abstract void HandleNavigation(object? sender, NavigationEventArgs e);
@@ -122,6 +124,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             Debug.WriteLine("ControlUnloaded ran!");
 
             Unloaded -= ControlUnloaded;
+            OnUnload();
             _cachedNavigationManager?.RemoveNavigation(NavigationId);
         }
         #endregion

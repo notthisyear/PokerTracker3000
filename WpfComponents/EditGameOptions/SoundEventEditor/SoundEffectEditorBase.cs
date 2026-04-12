@@ -164,8 +164,12 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             }
 
             ShowMultipleOptionsScroller = showMultipleOptionsModeScroller;
-            while (MultipleOptionModes[GetMultipleOptionsModeScrollerIndex()] != multipleOptionsMode)
-                ScrollerNavRelay.RaiseEvent(InputEvent.NavigationDirection.Down);
+
+            if (showMultipleOptionsModeScroller)
+            {
+                while (MultipleOptionModes[GetMultipleOptionsModeScrollerIndex()] != multipleOptionsMode)
+                    ScrollerNavRelay.RaiseEvent(InputEvent.NavigationDirection.Down);
+            }
 
             TestEffectOptionModel.ButtonAction ??= () =>
             {
