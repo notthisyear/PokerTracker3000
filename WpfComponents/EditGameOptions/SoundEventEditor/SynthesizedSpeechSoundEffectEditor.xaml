@@ -6,14 +6,15 @@
              xmlns:validation="clr-namespace:PokerTracker3000.WpfComponents.ValidationRules">
     
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
-            HorizontalAlignment="Center"
-            Margin="10,0,10,0">
+          HorizontalAlignment="Center"
+          Margin="10,0,10,0">
 
         <!-- Content -->
         <editgameoptions:FileAndSpeechSoundEffectEditContent x:Name="mainContent"/>
 
         <!-- Edit speech option -->
-        <Border  Background="{StaticResource BackgroundColorDarkerShade}"
+        <Border  x:Name="editSpeechBox"
+                 Background="{StaticResource BackgroundColorDarkerShade}"
                  Grid.Row="0"
                  Grid.RowSpan="2"
                  HorizontalAlignment="Stretch"
@@ -62,64 +63,68 @@
         </Border>
 
         <!-- Speech variable info -->
-        <Border  Background="{StaticResource BackgroundColorDarkerShadeWithOpacity}"
-                 Grid.Row="0"
-                 Grid.RowSpan="2"
-                 HorizontalAlignment="Right"
-                 VerticalAlignment="Top"
-                 CornerRadius="5"
-                 Padding="10"
-                 Margin="0,0,-250,0">
-            <Border.Style>
-                <Style TargetType="{x:Type Border}">
-                    <Setter Property="Opacity" Value="0" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Path=ShowSpeechEditBox}" Value="True">
-                            <DataTrigger.EnterActions>
-                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
-                            </DataTrigger.EnterActions>
-                            <DataTrigger.ExitActions>
-                                <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
-                            </DataTrigger.ExitActions>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
-            <StackPanel Orientation="Vertical">
-                <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                           Text="Synthesized speech variables"
-                           FontWeight="Bold"/>
-                <ItemsControl ItemsSource="{Binding Path=SpeechVariables}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="55" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
+        <Popup Placement="Right"
+               IsOpen="{Binding ElementName=editSpeechBox, Path=DataContext.ShowSpeechEditBox, Mode=OneWay}"
+               HorizontalOffset="10"
+               AllowsTransparency="True"
+               PlacementTarget="{Binding ElementName=editSpeechBox}"
+               PopupAnimation="Fade">
 
-                                <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                           Text="{Binding Path=Name}" />
-                                <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                           Text="-"
-                                           Grid.Column="1" />
-                                <TextBlock Style="{StaticResource MainTextBlockStyle}"
-                                           FontStyle="Italic"
-                                           Text="{Binding Path=Description}"
-                                           Grid.Column="2" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
+            <Border  Background="{StaticResource BackgroundColorDarkerShadeWithOpacity}"
+                     HorizontalAlignment="Right"
+                     VerticalAlignment="Top"
+                     CornerRadius="5"
+                     Padding="10">
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="Opacity" Value="0" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=ShowSpeechEditBox}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard Storyboard="{StaticResource animateOpacityToOne}" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard Storyboard="{StaticResource animateOpacityToZero}" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                               Text="Synthesized speech variables"
+                               FontWeight="Bold"/>
+                    <ItemsControl ItemsSource="{Binding Path=SpeechVariables}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="55" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
 
+                                    <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                               Text="{Binding Path=Name}" />
+                                    <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                               Text="-"
+                                               Grid.Column="1" />
+                                    <TextBlock Style="{StaticResource MainTextBlockStyle}"
+                                               FontStyle="Italic"
+                                               Text="{Binding Path=Description}"
+                                               Grid.Column="2" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </Popup>
     </Grid>
     
 </editgameoptions:FileOrSpeechEffectEditorBase>

@@ -53,7 +53,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 return;
 
             // A scroller was selected
-            if (element is ScrollerSelectable)
+            if (element is EffectProperty1ScrollerSelectable)
             {
                 var oldIndex = builtInSoundEffectScroller.CurrentSelectedIndex;
                 ScrollerNavRelay.RaiseEvent(e.Direction);
@@ -100,7 +100,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             SelectedElementMap.Clear();
 
             // The scroller
-            SelectedElementMap.Add(0, ScrollerSelectable);
+            SelectedElementMap.Add(0, EffectProperty1ScrollerSelectable);
             navigationNodes[0] = new(0, 0);
 
             // Add the two buttons

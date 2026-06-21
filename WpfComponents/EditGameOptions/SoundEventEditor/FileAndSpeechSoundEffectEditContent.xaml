@@ -49,14 +49,44 @@
                 <Grid>
                     <!-- Options -->
                     <Border Padding="5"
-                                CornerRadius="5"
-                                BorderThickness="0"
-                                Margin="0,0,0,20"
-                                MinWidth="270">
+                            CornerRadius="5"
+                            BorderThickness="0"
+                            Margin="0,0,0,20"
+                            MinWidth="270">
                         <Border.Background>
                             <SolidColorBrush Color="{StaticResource PrimaryColorRaw}" Opacity="0.4" />
                         </Border.Background>
-                        <ItemsControl ItemsSource="{Binding Path=SoundEffect.EffectOptions}">
+
+                        <components:ScrollingCollectionViewItemsControl x:Name="effectOptionsScroller"
+                                                                        Options="{Binding Path=SoundEffect.EffectOptions}"
+                                                                        NavigatorRelay="{Binding Path=OptionListNavRelay}"
+                                                                        VerticalSpacing="25"
+                                                                        Height="100"
+                                                                        NumberOfVisibleOptions="4"
+                                                                        ElementOutsideVisibleRangeOpacity="0.3"
+                                                                        NonSelectedElementsOpacity="0.7"
+                                                                        FontFamily="{StaticResource CascadiaCode}"
+                                                                        SelectedElementColor="{StaticResource MainHighlightColor}"
+                                                                        Foreground="{StaticResource MainTextColor}">
+                            <components:ScrollingCollectionViewItemsControl.Style>
+                                <Style TargetType="{x:Type components:ScrollingCollectionViewItemsControl}">
+                                    <Setter Property="HighlightSelectedElement" Value="False" />
+                                    <Style.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding Path=IsActive}" Value="True" />
+                                                <Condition Binding="{Binding Path=EffectOptionScrollerSelectable.IsSelected}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <MultiDataTrigger.Setters>
+                                                <Setter Property="HighlightSelectedElement" Value="True" />
+                                            </MultiDataTrigger.Setters>
+                                        </MultiDataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </components:ScrollingCollectionViewItemsControl.Style>
+                        </components:ScrollingCollectionViewItemsControl>
+                        
+                        <!--<ItemsControl ItemsSource="{Binding Path=SoundEffect.EffectOptions}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Vertical" />
@@ -87,7 +117,7 @@
                                     </editgameoptions:SoundEditOption>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        </ItemsControl>-->
                     </Border>
 
                     <!-- Change/remove/test buttons -->
@@ -178,7 +208,7 @@
                                 <MultiDataTrigger>
                                     <MultiDataTrigger.Conditions>
                                         <Condition Binding="{Binding Path=IsActive}" Value="True" />
-                                        <Condition Binding="{Binding Path=ScrollerSelectable.IsSelected}" Value="True" />
+                                        <Condition Binding="{Binding Path=EffectProperty1ScrollerSelectable.IsSelected}" Value="True" />
                                     </MultiDataTrigger.Conditions>
                                     <MultiDataTrigger.Setters>
                                         <Setter Property="CenterItemColor" Value="{StaticResource MainHighlightColor}" />

@@ -24,7 +24,7 @@
         <converters:SecondsToTimestampConverter x:Key="secondsToTimestampConverter" />
         <converters:EmptyImageConverter x:Key="emptyImageConverter" />
         <converters:StringShortenerConverter x:Key="stringShortenerConverter" />
-        
+
         <!-- Animation -->
         <Storyboard x:Key="animateOpacityToOne"
                     PresentationOptions:Freeze="True">

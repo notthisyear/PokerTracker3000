@@ -7,12 +7,15 @@ using System.Windows;
 using PokerTracker3000.Common;
 using PokerTracker3000.GameSession;
 using PokerTracker3000.GameSession.Sound;
+
 using static PokerTracker3000.Interfaces.IInputRelay;
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 
 namespace PokerTracker3000.WpfComponents.EditGameOptions
 {
-    public sealed class ScrollerSelectable : SelectableEntity { }
+    public sealed class EffectOptionScrollerSelectable : SelectableEntity { }
+
+    public sealed class EffectProperty1ScrollerSelectable : SelectableEntity { }
 
     public abstract class SoundEffectEditorBase : ConditionAndEffectEditorBase
     {
@@ -34,9 +37,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         public ButtonOptionModel AddOptionModel { get; } = new("Add", type: ButtonOptionModel.OptionType.Success);
 
+        public NavigationOnlyRelay OptionListNavRelay { get; } = new();
+
         public NavigationOnlyRelay ScrollerNavRelay { get; } = new();
 
-        public ScrollerSelectable ScrollerSelectable { get; } = new();
+        public EffectProperty1ScrollerSelectable EffectProperty1ScrollerSelectable { get; } = new();
         #endregion
 
         #region Private fields
@@ -56,7 +61,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 TaskCompletionSource tcs = new();
                 TestEffectModel.IsAvailable = false;
                 TestSoundEffect(tcs);
-                Task.Run(() =>
+                _ = Task.Run(() =>
                 {
                     tcs.Task.Wait();
                     Application.Current.Dispatcher.Invoke(() => { TestEffectModel.IsAvailable = true; });
@@ -85,6 +90,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
     public abstract class FileOrSpeechEffectEditorBase : SoundEffectEditorBase
     {
         #region Public and protected properties
+        public EffectOptionScrollerSelectable EffectOptionScrollerSelectable { get; } = new();
+
         public ButtonOptionModel RenameEffectModel { get; } = new("Rename");
 
         public ButtonOptionModel ChangeEffectOptionModel { get; } = new("Change");
@@ -173,14 +180,11 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             TestEffectOptionModel.ButtonAction ??= () =>
             {
-                var selectedOption = SelectedElementMap.Values.Where(x => x is SoundEffectOption).FirstOrDefault(x => x.IsSelected);
-                if (selectedOption is not SoundEffectOption option)
-                    return;
-
+                var optionIndex = GetEffectOptionsModeScrollerIndex();
                 TaskCompletionSource tcs = new();
                 TestEffectOptionModel.IsAvailable = false;
-                TestSoundEffect(tcs, option.Id);
-                Task.Run(() =>
+                TestSoundEffect(tcs, optionIndex);
+                _ = Task.Run(() =>
                 {
                     tcs.Task.Wait();
                     Application.Current.Dispatcher.Invoke(() => { TestEffectOptionModel.IsAvailable = true; });
@@ -191,7 +195,13 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         }
 
         #region Protected methods
+        protected abstract int GetEffectOptionsModeScrollerIndex();
+
         protected abstract int GetMultipleOptionsModeScrollerIndex();
+
+        protected virtual void EnsureTopVisibleEffectOptionSelected() { }
+
+        protected virtual void EnsureBottomVisibleEffectOptionSelected() { }
 
         protected override void HandleNavigation(object? sender, NavigationEventArgs e)
         {
@@ -226,8 +236,18 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             if (!SelectedElementMap.TryGetValue(SelectedElementIndex, out var element))
                 return;
 
-            // A scroller was selected
-            if (element is ScrollerSelectable)
+            // The options scroller is selected
+            if (element is EffectOptionScrollerSelectable)
+            {
+                var oldIndex = GetEffectOptionsModeScrollerIndex();
+                OptionListNavRelay.RaiseEvent(e.Direction);
+                e.Handled = oldIndex != GetEffectOptionsModeScrollerIndex();
+                if (e.Handled)
+                    return;
+            }
+
+            // A property scroller was selected
+            if (element is EffectProperty1ScrollerSelectable)
             {
                 var oldIndex = GetMultipleOptionsModeScrollerIndex();
                 ScrollerNavRelay.RaiseEvent(e.Direction);
@@ -244,6 +264,19 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             // If the new element index points to a selectable element
             if (SelectedElementMap.TryGetValue(SelectedElementIndex, out element))
                 element?.IsSelected = true;
+
+            // In the case of ending up in the options scroller, we might need to
+            // change the selected index to make it look as expected
+            if (element is EffectOptionScrollerSelectable)
+            {
+                var enteredFromBelow = e.Direction == InputEvent.NavigationDirection.Up;
+                var enteredFromAbove = e.Direction == InputEvent.NavigationDirection.Down;
+
+                if (enteredFromBelow)
+                    EnsureBottomVisibleEffectOptionSelected();
+                else if (enteredFromAbove)
+                    EnsureTopVisibleEffectOptionSelected();
+            }
             e.Handled = true;
         }
 
@@ -276,8 +309,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     button.ButtonAction?.Invoke();
                     e.Handled = true;
                 }
-                // If a sound effect option was pressed, option the change/remove/test option dialog
-                else if (element is SoundEffectOption)
+                // If a sound effect option was pressed, show the change/remove/test option dialog
+                else if (element is EffectOptionScrollerSelectable)
                 {
                     ShowChangeRemoveTestEffectOptions = true;
                     _selectedChangeRemoveTestMap[_selectedChangeRemoveTestIndex].IsSelected = true;
@@ -298,11 +331,10 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             }
         }
 
-        protected NavigationManager.Node[] GetNavigationNodesForOptions(ObservableCollection<SoundEffectOption> options)
+        protected NavigationManager.Node[] GetNavigationNodesForOptions(bool hasOptions)
         {
-            var numberOfOptions = options.Count;
-            // The file options, the add button, potentially one scroller and lastly two buttons
-            var numberOfElements = numberOfOptions + 1 + (ShowMultipleOptionsScroller ? 1 : 0) + 2;
+            // The options (if any), the add button, potentially one scroller and lastly two buttons
+            var numberOfElements = (hasOptions ? 1 : 0) + 1 + (ShowMultipleOptionsScroller ? 1 : 0) + 2;
             var navigationNodes = new NavigationManager.Node[numberOfElements];
 
             foreach (var element in SelectedElementMap)
@@ -311,32 +343,30 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             var elementCtr = 0;
 
-            // The options
-            for (var i = 0; i < numberOfOptions; i++)
+            // The options scroller
+            if (hasOptions)
             {
-                SelectedElementMap.Add(elementCtr, options[i]);
-                navigationNodes[elementCtr] = new(0, i);
-                elementCtr++;
+                SelectedElementMap.Add(elementCtr, EffectOptionScrollerSelectable);
+                navigationNodes[elementCtr++] = new(0, 0);
             }
 
             // The add button
             SelectedElementMap.Add(elementCtr, AddOptionModel);
             navigationNodes[elementCtr++] = new(1, 0);
 
-            // The scroller
+            // The property scroller
             if (ShowMultipleOptionsScroller)
             {
-                SelectedElementMap.Add(elementCtr, ScrollerSelectable);
+                SelectedElementMap.Add(elementCtr, EffectProperty1ScrollerSelectable);
                 navigationNodes[elementCtr++] = new(2, 0);
             }
 
             // Add the two buttons
-            var buttonRow = Math.Max(1, numberOfOptions);
             SelectedElementMap.Add(elementCtr, RenameEffectModel);
-            navigationNodes[elementCtr++] = new(0, buttonRow);
+            navigationNodes[elementCtr++] = new(0, 1);
 
             SelectedElementMap.Add(elementCtr, RemoveButtonModel);
-            navigationNodes[elementCtr] = new(1, buttonRow);
+            navigationNodes[elementCtr] = new(1, 1);
 
             return navigationNodes;
         }

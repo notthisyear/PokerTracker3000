@@ -33,6 +33,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             get => (string)GetValue(SpeechTextProperty);
             set => SetValue(SpeechTextProperty, value);
         }
+
         public static readonly DependencyProperty SpeechTextProperty = DependencyProperty.Register(
             nameof(SpeechText),
             typeof(string),
@@ -74,6 +75,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 var (attr, _) = s.GetCustomAttributeFromEnum<SynthesizedSpeechVariableAttribute>();
                 SpeechVariables.Add(attr!);
             }
+
+            // TODO: Fix the button presses for speech, see the file version for inspiration
 
             AddOptionModel.ButtonAction = () =>
             {
@@ -139,11 +142,21 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
             };
         }
 
+        protected override int GetEffectOptionsModeScrollerIndex()
+            => mainContent.MultipleEffectModeSelectedIndex;
+
         protected override int GetMultipleOptionsModeScrollerIndex()
              => mainContent.MultipleOptionModeSelectedIndex;
 
+        protected override void EnsureTopVisibleEffectOptionSelected()
+            => mainContent.EnsureTopVisibleEffectOptionSelected();
+
+        protected override void EnsureBottomVisibleEffectOptionSelected()
+            => mainContent.EnsureBottomVisibleEffectOptionSelected();
+
+
         protected override NavigationManager.Node[] GetNavigationNodes()
-             => GetNavigationNodesForOptions(SoundEffect?.EffectOptions ?? []);
+             => GetNavigationNodesForOptions(SoundEffect.EffectOptions.Count > 0);
 
     }
 }
