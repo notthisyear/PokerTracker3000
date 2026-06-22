@@ -9,10 +9,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using Microsoft.VisualBasic;
 using PokerTracker3000.GameSession.Sound;
 using PokerTracker3000.Interfaces;
-
 using InputEvent = PokerTracker3000.Input.UserInputEvent;
 using NavigationEventArgs = PokerTracker3000.Interfaces.IInputRelay.NavigationEventArgs;
 
@@ -64,6 +62,18 @@ namespace PokerTracker3000.WpfComponents
             typeof(int),
             typeof(ScrollingCollectionViewItemsControl),
             new FrameworkPropertyMetadata(30, FrameworkPropertyMetadataOptions.AffectsRender, VerticalSpacingUpdated));
+
+        public double MaxTextWidth
+        {
+            get { return (double)GetValue(MaxTextWidthProperty); }
+            set { SetValue(MaxTextWidthProperty, value); }
+        }
+        public static readonly DependencyProperty MaxTextWidthProperty = DependencyProperty.Register(
+            nameof(MaxTextWidth),
+            typeof(double),
+            typeof(ScrollingCollectionViewItemsControl),
+            new FrameworkPropertyMetadata(300.0, FrameworkPropertyMetadataOptions.AffectsRender, VerticalSpacingUpdated));
+
 
         public bool HighlightSelectedElement
         {
@@ -528,8 +538,22 @@ namespace PokerTracker3000.WpfComponents
                 optionIdx++;
                 _currentMaxTextLength = Math.Max(MeasureWidthOfText(_boxes[i].Block), _currentMaxTextLength);
             }
-            mainPanel.Margin = new Thickness(0.0, 0.0, 2 * _currentMaxTextLength, 0.0);
 
+            var desiredWidth = _currentMaxTextLength;
+            if (desiredWidth > MaxTextWidth)
+            {
+                // Typically "W" and "M" are the widest letters, so we should have little margin measuring those two
+                var approximateWidthPerCharacter = 0.5 * MeasureWidthOfText(_boxes[0].Block, "MW");
+                var maxNumberOfCharacters = (int)Math.Floor(MaxTextWidth / approximateWidthPerCharacter);
+
+                for (var i = 0; i < _boxes.Count; i++)
+                {
+                    if (_boxes[i].Block.Text.Length > maxNumberOfCharacters)
+                        _boxes[i].Block.Text = $"{_boxes[i].Block.Text[..(maxNumberOfCharacters - 3)]}...";
+                }
+            }
+
+            mainGrid.Width = MaxTextWidth + 20;
         }
 
         private void StyleTextElements()
@@ -717,15 +741,18 @@ namespace PokerTracker3000.WpfComponents
 
         private void CheckIfItemsOutsideOfList(int numberOfElements)
         {
+            if (Options == null)
+                throw new InvalidOperationException("How did this happen...?");
+
             // Check if there are items outside of the list
             var hasMoreOptionsThanElements = Options.Count > numberOfElements;
             HasElementsAboveTop = hasMoreOptionsThanElements && CurrentLowestVisibleIndex > 0;
             HasElementsBelowLast = hasMoreOptionsThanElements && ((CurrentLowestVisibleIndex + numberOfElements) <= (Options.Count - 1));
         }
 
-        private static double MeasureWidthOfText(TextBlock tb)
+        private static double MeasureWidthOfText(TextBlock tb, string customText = "")
         {
-            var t = new FormattedText(tb.Text,
+            var t = new FormattedText(string.IsNullOrEmpty(customText) ? tb.Text : customText,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
                 new Typeface(tb.FontFamily, tb.FontStyle, tb.FontWeight, tb.FontStretch),

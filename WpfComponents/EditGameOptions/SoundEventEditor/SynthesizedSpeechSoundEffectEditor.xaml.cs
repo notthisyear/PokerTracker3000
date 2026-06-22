@@ -76,54 +76,59 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                 SpeechVariables.Add(attr!);
             }
 
-            // TODO: Fix the button presses for speech, see the file version for inspiration
-
             AddOptionModel.ButtonAction = () =>
             {
-                if (SoundEffect != default)
+                var defaultText = "New speech";
+
+                var numberOfOptionsBefore = SoundEffect.EffectOptions.Count;
+                SoundEffect.AddSpeechOption(defaultText);
+                ShowMultipleOptionsScroller = SoundEffect.EffectOptions.Count > 1;
+                SoundEffect.Mode = ShowMultipleOptionsScroller ?
+                    MultipleOptionModes[mainContent.MultipleOptionModeSelectedIndex] :
+                    MultipleOptionMode.None;
+
+                // Note: The navigation only changes when we go from 0 -> 1 or from 1 -> 2, as that's
+                //       when we get actual options as well as the multiple option mode scroller.
+                if (numberOfOptionsBefore < 2)
                 {
-                    var defaultText = "New speech";
-
-                    SoundEffect.AddSpeechOption(defaultText);
-                    ShowMultipleOptionsScroller = SoundEffect.EffectOptions.Count > 1;
-                    SoundEffect.Mode = ShowMultipleOptionsScroller ?
-                        MultipleOptionModes[mainContent.MultipleOptionModeSelectedIndex] :
-                        MultipleOptionMode.None;
-
                     NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
 
-                    // Select the new option
-                    AddOptionModel.IsSelected = false;
-                    SelectedElementIndex = SoundEffect.EffectOptions.Count - 1;
-                    SelectedElementMap[SelectedElementIndex].IsSelected = true;
-
-                    ShowSpeechEditBox = true;
-                    SpeechText = defaultText;
-                    speechEffectBox.Focus();
-                    speechEffectBox.CaretIndex = defaultText.Length;
+                    // We need to reselect the element as all elements gets deselect as when
+                    // we regenerate the navigation nodes
+                    if (SelectedElementMap.TryGetValue(SelectedElementIndex, out var newSelectedEntity))
+                        newSelectedEntity.IsSelected = true;
                 }
             };
             ChangeEffectOptionModel.ButtonAction = () =>
             {
-                if (!SelectedElementMap.TryGetValue(SelectedElementIndex, out var entity) ||
-                    entity is not SoundEffectOption option)
-                {
+                var selectedOptionIndex = GetEffectOptionsModeScrollerIndex();
+                if (selectedOptionIndex >= SoundEffect.EffectOptions.Count)
                     return;
-                }
 
-                ShowSpeechEditBox = true;
-                SpeechText = option.Name;
-                speechEffectBox.Focus();
-                speechEffectBox.CaretIndex = SpeechText.Length;
+                var option = SoundEffect.EffectOptions[selectedOptionIndex];
+
+                if (ShowSpeechEditBox)
+                {
+                    ShowSpeechEditBox = false;
+                    option.Name = SpeechText;
+                }
+                else
+                {
+                    ShowSpeechEditBox = true;
+                    SpeechText = option.Name;
+                    speechEffectBox.Focus();
+                    speechEffectBox.CaretIndex = SpeechText.Length;
+                }
             };
             RemoveEffectOptionModel.ButtonAction = () =>
             {
-                if (!SelectedElementMap.TryGetValue(SelectedElementIndex, out var entity) ||
-                   entity is not SoundEffectOption option ||
-                   SoundEffect == default)
-                {
+                var selectedOptionIndex = GetEffectOptionsModeScrollerIndex();
+                if (selectedOptionIndex >= SoundEffect.EffectOptions.Count)
                     return;
-                }
+
+                var numberOfOptionsBefore = SoundEffect.EffectOptions.Count;
+                var option = SoundEffect.EffectOptions[selectedOptionIndex];
+
                 ShowChangeRemoveTestEffectOptions = false;
                 option.IsSelected = false;
 
@@ -133,12 +138,15 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                         MultipleOptionModes[mainContent.MultipleOptionModeSelectedIndex] :
                         MultipleOptionMode.None;
 
-                NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
-                SelectedElementIndex = Math.Max(SelectedElementIndex - 1, 0);
-
-                if (SelectedElementMap.TryGetValue(SelectedElementIndex, out var newSelectedEntity))
-                    newSelectedEntity.IsSelected = true;
-
+                // Note: The navigation only changes when we go from 0 -> 1 or from 1 -> 2, as that's
+                //       when we get actual options as well as the multiple option mode scroller.
+                if (numberOfOptionsBefore <= 2)
+                {
+                    NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
+                    SelectedElementIndex = 0;
+                    if (SelectedElementMap.TryGetValue(SelectedElementIndex, out var newSelectedEntity))
+                        newSelectedEntity.IsSelected = true;
+                }
             };
         }
 
@@ -148,12 +156,22 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         protected override int GetMultipleOptionsModeScrollerIndex()
              => mainContent.MultipleOptionModeSelectedIndex;
 
+        protected override int GetIdOfSelectedOption()
+        {
+            if (SoundEffect == null)
+                throw new InvalidOperationException("The SoundEffect is unset");
+
+            if (mainContent.MultipleEffectModeSelectedIndex >= SoundEffect.EffectOptions.Count)
+                throw new InvalidOperationException("Selected effect index larger than the count");
+
+            return SoundEffect.EffectOptions[mainContent.MultipleEffectModeSelectedIndex].Id;
+        }
+
         protected override void EnsureTopVisibleEffectOptionSelected()
             => mainContent.EnsureTopVisibleEffectOptionSelected();
 
         protected override void EnsureBottomVisibleEffectOptionSelected()
             => mainContent.EnsureBottomVisibleEffectOptionSelected();
-
 
         protected override NavigationManager.Node[] GetNavigationNodes()
              => GetNavigationNodesForOptions(SoundEffect.EffectOptions.Count > 0);

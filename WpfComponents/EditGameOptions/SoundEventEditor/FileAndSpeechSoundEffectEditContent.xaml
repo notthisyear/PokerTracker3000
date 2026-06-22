@@ -62,8 +62,9 @@
                                                                         NavigatorRelay="{Binding Path=OptionListNavRelay}"
                                                                         VerticalSpacing="25"
                                                                         Height="100"
+                                                                        MaxTextWidth="280"
                                                                         NumberOfVisibleOptions="4"
-                                                                        ElementOutsideVisibleRangeOpacity="0.3"
+                                                                        ElementOutsideVisibleRangeOpacity="0"
                                                                         NonSelectedElementsOpacity="0.7"
                                                                         FontFamily="{StaticResource CascadiaCode}"
                                                                         SelectedElementColor="{StaticResource MainHighlightColor}"
@@ -85,39 +86,6 @@
                                 </Style>
                             </components:ScrollingCollectionViewItemsControl.Style>
                         </components:ScrollingCollectionViewItemsControl>
-                        
-                        <!--<ItemsControl ItemsSource="{Binding Path=SoundEffect.EffectOptions}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Vertical" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <editgameoptions:SoundEditOption DisplayName="{Binding Path=Name}"
-                                                                         MaxTextLength="40">
-
-                                        <editgameoptions:SoundEditOption.Style>
-                                            <Style TargetType="{x:Type editgameoptions:SoundEditOption}">
-                                                <Setter Property="IsSelected" Value="False" />
-                                                <Style.Triggers>
-                                                    <MultiDataTrigger>
-                                                        <MultiDataTrigger.Conditions>
-                                                            <Condition Binding="{Binding Path=IsSelected}" Value="True" />
-                                                            <Condition Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.IsActive}"
-                                                                           Value="True" />
-                                                        </MultiDataTrigger.Conditions>
-                                                        <MultiDataTrigger.Setters>
-                                                            <Setter Property="IsSelected" Value="True" />
-                                                        </MultiDataTrigger.Setters>
-                                                    </MultiDataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </editgameoptions:SoundEditOption.Style>
-                                    </editgameoptions:SoundEditOption>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>-->
                     </Border>
 
                     <!-- Change/remove/test buttons -->
@@ -166,9 +134,9 @@
 
             <!-- Multiple options scroller -->
             <StackPanel Orientation="Horizontal"
-                             VerticalAlignment="Top"
-                             HorizontalAlignment="Left"
-                            Margin="0,20,0,0">
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Left"
+                        Margin="0,20,0,0">
                 <StackPanel.Style>
                     <Style TargetType="{x:Type StackPanel}">
                         <Setter Property="Opacity" Value="0" />

@@ -1,10 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Media;
 using System.Speech.Synthesis;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using PokerTracker3000.Common;
@@ -32,13 +33,12 @@ namespace PokerTracker3000.GameSession.Sound
         #region Private fields
         private readonly IGameEventBus _eventBus;
         private readonly SpeechSynthesizer _synth;
-        private readonly Thread _audioThread;
-        private readonly ConcurrentQueue<SoundItem> _audioQueue;
+        private readonly Task _audioQueueMonitorTask;
+        private readonly Channel<SoundItem> _audioChannel = Channel.CreateUnbounded<SoundItem>();
         private readonly Dictionary<BuiltInSoundEffectType, string> _builtInSoundEffectsPaths;
-        private readonly TaskCompletionSource _tcs = new();
-        private readonly object _gameSoundsAccessLock = new();
+        private readonly CancellationTokenSource _cts = new();
 
-        private bool _shouldExit = false;
+        private readonly object _gameSoundsAccessLock = new();
         #endregion
 
         public AudioManager(IGameEventBus eventBus, Dictionary<BuiltInSoundEffectType, string> builtInEffectPaths)
@@ -51,10 +51,7 @@ namespace PokerTracker3000.GameSession.Sound
 
             BindingOperations.EnableCollectionSynchronization(GameSounds, _gameSoundsAccessLock);
 
-            _audioQueue = new();
-
-            _audioThread = new(_ => MonitorAudioQueue()) { IsBackground = true };
-            _audioThread.Start();
+            _audioQueueMonitorTask = MonitorAudioQueue();
 
             //_eventBus.RegisterListener(this, AudioTriggeringEventReceived,
             //    [
@@ -95,23 +92,23 @@ namespace PokerTracker3000.GameSession.Sound
                 var t = new Task(() =>
                 {
                     var completionSource = new TaskCompletionSource();
-                    _audioQueue.Enqueue(SoundItem.Get(effect, completionSource));
+                    _ = _audioChannel.Writer.TryWrite(SoundItem.Get(effect, completionSource));
                     completionSource.Task.Wait();
                 });
                 t.Start();
                 effectTasks.Add(t);
             }
 
-            Task.Run(() =>
+            _ = Task.Run(async () =>
             {
-                Task.WhenAll(effectTasks).Wait();
+                await Task.WhenAll(effectTasks).ConfigureAwait(false);
                 tcs?.SetResult();
             });
         }
 
         public void TestSoundEffect(SoundEffect effect, TaskCompletionSource? tcs = default, int optionId = -1)
         {
-            _audioQueue.Enqueue(SoundItem.Get(effect, tcs, optionId));
+            _ = _audioChannel.Writer.TryWrite(SoundItem.Get(effect, tcs, optionId));
         }
 
         public void AddSoundEvent(SoundEvent soundEvent)
@@ -181,63 +178,66 @@ namespace PokerTracker3000.GameSession.Sound
         //    }
         //}
 
-        private void MonitorAudioQueue()
+        private async Task MonitorAudioQueue()
         {
-            while (!_shouldExit)
+            while (!_cts.IsCancellationRequested)
             {
-                if (_audioQueue.TryDequeue(out var item))
+                try
                 {
-                    switch (item.Effect)
-                    {
-                        case BuiltInSoundEffect builtInEffect:
-                            if (_builtInSoundEffectsPaths.TryGetValue(builtInEffect.BuiltInEffect, out var audioPath))
-                            {
-                                using var player = new SoundPlayer(audioPath);
-                                player.PlaySync();
-                                item.Tcs?.SetResult();
-                            }
-                            break;
-
-                        case FromFileSoundEffect fromFileSoundEffect:
-                            {
-                                var option = (item.OptionId > -1) ?
-                                    fromFileSoundEffect.EffectOptions.FirstOrDefault(x => x.Id == item.OptionId) :
-                                    fromFileSoundEffect.EffectOptions[fromFileSoundEffect.GetNextOptionIndex()];
-
-                                if (option != default)
-                                {
-                                    using var player = new SoundPlayer(option.Path);
-                                    player.PlaySync();
-                                    item.Tcs?.SetResult();
-                                }
-                            }
-                            break;
-
-                        case SpeechSoundEffect speechSoundEffect:
-                            {
-                                var option = (item.OptionId > -1) ?
-                                    speechSoundEffect.EffectOptions.FirstOrDefault(x => x.Id == item.OptionId) :
-                                    speechSoundEffect.EffectOptions[speechSoundEffect.GetNextOptionIndex()];
-
-                                if (option != default)
-                                {
-                                    _synth.Speak(SpeechSoundEffect.GetSpeechForSoundEffectOption(option, item.Message));
-                                    item.Tcs?.SetResult();
-                                }
-                            }
-                            break;
-                    }
+                    await foreach (var item in _audioChannel.Reader.ReadAllAsync(_cts.Token).ConfigureAwait(false))
+                        PlaySoundItem(item);
                 }
-                else
-                {
-                    Thread.Sleep(1000);
-                }
+                catch (OperationCanceledException) { }
             }
 
             _synth.Dispose();
-            _tcs.SetResult();
         }
 
+        private void PlaySoundItem(SoundItem item)
+        {
+            switch (item.Effect)
+            {
+                case BuiltInSoundEffect builtInEffect:
+                    if (_builtInSoundEffectsPaths.TryGetValue(
+                        builtInEffect.BuiltInEffect,
+                        out var audioPath))
+                    {
+                        using var player = new SoundPlayer(audioPath);
+                        player.PlaySync();
+                        item.Tcs?.SetResult();
+                    }
+                    break;
+
+                case FromFileSoundEffect fromFileSoundEffect:
+                    {
+                        var option = (item.OptionId > -1) ?
+                            fromFileSoundEffect.EffectOptions.FirstOrDefault(x => x.Id == item.OptionId) :
+                            fromFileSoundEffect.EffectOptions[fromFileSoundEffect.GetNextOptionIndex()];
+
+                        if (option != default)
+                        {
+                            using var player = new SoundPlayer(option.Path);
+                            player.PlaySync();
+                            item.Tcs?.SetResult();
+                        }
+                    }
+                    break;
+
+                case SpeechSoundEffect speechSoundEffect:
+                    {
+                        var option = (item.OptionId > -1) ?
+                            speechSoundEffect.EffectOptions.FirstOrDefault(x => x.Id == item.OptionId) :
+                            speechSoundEffect.EffectOptions[speechSoundEffect.GetNextOptionIndex()];
+
+                        if (option != default)
+                        {
+                            _synth.Speak(SpeechSoundEffect.GetSpeechForSoundEffectOption(option, item.Message));
+                            item.Tcs?.SetResult();
+                        }
+                    }
+                    break;
+            }
+        }
         //private string GetPathForBuiltInEffect(BuiltInSoundEffectType effectType)
         //    => effectType switch
         //    {
@@ -384,8 +384,8 @@ namespace PokerTracker3000.GameSession.Sound
             if (m is not ApplicationClosingMessage message)
                 return;
 
-            _shouldExit = true;
-            _tcs.Task.Wait();
+            _cts.Cancel();
+            _audioQueueMonitorTask.GetAwaiter().GetResult();
             message.NumberOfClosingCallbacksCalled++;
         }
         #endregion

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using PokerTracker3000.Common;
@@ -180,10 +178,10 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
             TestEffectOptionModel.ButtonAction ??= () =>
             {
-                var optionIndex = GetEffectOptionsModeScrollerIndex();
+                var optionId = GetIdOfSelectedOption();
                 TaskCompletionSource tcs = new();
                 TestEffectOptionModel.IsAvailable = false;
-                TestSoundEffect(tcs, optionIndex);
+                TestSoundEffect(tcs, optionId);
                 _ = Task.Run(() =>
                 {
                     tcs.Task.Wait();
@@ -198,6 +196,8 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         protected abstract int GetEffectOptionsModeScrollerIndex();
 
         protected abstract int GetMultipleOptionsModeScrollerIndex();
+
+        protected abstract int GetIdOfSelectedOption();
 
         protected virtual void EnsureTopVisibleEffectOptionSelected() { }
 

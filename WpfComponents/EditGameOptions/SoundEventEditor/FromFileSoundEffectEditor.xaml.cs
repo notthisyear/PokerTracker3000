@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System;
+using System.IO;
 using System.Windows;
 using Ookii.Dialogs.Wpf;
 using PokerTracker3000.GameSession;
@@ -63,7 +63,15 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
                     // Note: The navigation only changes when we go from 0 -> 1 or from 1 -> 2, as that's
                     //       when we get actual options as well as the multiple option mode scroller.
                     if (numberOfOptionsBefore < 2)
+                    {
                         NavigationManager.ReplaceNavigation(NavigationId, GetNavigationNodes());
+
+                        // We need to reselect the element as all elements gets deselect as when
+                        // we regenerate the navigation nodes
+                        if (SelectedElementMap.TryGetValue(SelectedElementIndex, out var newSelectedEntity))
+                            newSelectedEntity.IsSelected = true;
+                    }
+
                 }
             };
             ChangeEffectOptionModel.ButtonAction = () =>
@@ -113,6 +121,17 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
 
         protected override int GetMultipleOptionsModeScrollerIndex()
              => mainContent.MultipleOptionModeSelectedIndex;
+
+        protected override int GetIdOfSelectedOption()
+        {
+            if (SoundEffect == null)
+                throw new InvalidOperationException("The SoundEffect is unset");
+
+            if (mainContent.MultipleEffectModeSelectedIndex >= SoundEffect.EffectOptions.Count)
+                throw new InvalidOperationException("Selected effect index larger than the count");
+
+            return SoundEffect.EffectOptions[mainContent.MultipleEffectModeSelectedIndex].Id;
+        }
 
         protected override void EnsureTopVisibleEffectOptionSelected()
            => mainContent.EnsureTopVisibleEffectOptionSelected();

@@ -10,7 +10,7 @@
     <Grid DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=.}"
           HorizontalAlignment="Center"
           VerticalAlignment="Center"
-          Height="500"
+          Height="530"
           Margin="50,0,0,0">
 
         <Grid.ColumnDefinitions>
@@ -56,7 +56,8 @@
         <!-- Event triggers -->
         <StackPanel Orientation="Vertical"
                     VerticalAlignment="Top"
-                    Grid.Row="1">
+                    Grid.Row="1"
+                    Margin="0,20,0,0">
 
             <!-- No sound events-->
             <TextBlock Text="No sound events"

@@ -142,9 +142,9 @@
             <Setter Property="Opacity" Value="0.9" />
         </Style>
         <Style x:Key="SymbolButtonStyle" TargetType="{x:Type TextBlock}">
-            <Setter Property="Foreground" Value="{DynamicResource MainTextColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource MainTextColor}"/>
             <Setter Property="FontSize" Value="10" />
-            <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="RenderOptions.ClearTypeHint" Value="Auto" />

@@ -51,7 +51,7 @@ namespace PokerTracker3000.WpfComponents.EditGameOptions
         private void FileAndSpeechSoundEffectEditContentLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= FileAndSpeechSoundEffectEditContentLoaded;
-            // TODO: Remove event hooks on unload. Check how we did it in outer places.
+            // TODO: Remove event hooks on unload. Check how we did it in other places.
             if (DataContext is FromFileSoundEffectEditor fileEditor)
             {
                 _baseEditor = fileEditor;
